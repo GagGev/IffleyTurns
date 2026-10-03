@@ -48,7 +48,6 @@ OUTPUT_NAMES = (
     "treatments.parquet",
     "feature_manifest.json",
 )
-EXCLUDED_FLAG_MARKERS = ("inactive", "deprecated", "obsolete", "non-rare")
 FREQUENCY_WEIGHTS = {
     "obligate": 1.0,
     "very frequent": 0.895,
@@ -243,16 +242,6 @@ class Disease:
     @property
     def orpha_id(self) -> str:
         return f"ORPHA:{self.code}"
-
-    def is_feature_entity(self) -> bool:
-        """Return whether this catalog entity belongs in the disease cohort."""
-
-        labels = " ".join(self.flags).lower()
-        if any(marker in labels for marker in EXCLUDED_FLAG_MARKERS):
-            return False
-        if self.disorder_group.lower() == "group of disorders":
-            return False
-        return self.disorder_type.lower() not in {"category", "clinical group"}
 
 
 @dataclass
@@ -2054,11 +2043,12 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
             omim_to_orpha,
             efo_to_orpha,
         ) = build_crosswalks(catalog, mondo_terms)
-        diseases = {
-            orpha_id: disease
-            for orpha_id, disease in catalog.items()
-            if disease.is_feature_entity()
-        }
+        # Product 1 is keyed by canonical ORPHA IDs.  Keep every catalog
+        # entity so literature pairs involving common diseases, broad disease
+        # groups, or legacy records can still be joined to generated features.
+        # Flags and disorder type/group remain in diseases.parquet, allowing
+        # downstream consumers to apply narrower cohort rules when needed.
+        diseases = dict(catalog)
         stats["catalog_entities"] = len(catalog)
         stats["included_diseases"] = len(diseases)
         stats["mondo_terms"] = len(mondo_terms)
@@ -2305,9 +2295,12 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
             },
             "cohort": {
                 "canonical_identifier": "ORPHA",
-                "excluded_flags_containing": list(EXCLUDED_FLAG_MARKERS),
-                "excluded_groups": ["Group of disorders"],
-                "excluded_types": ["Category", "Clinical group"],
+                "inclusion_rule": (
+                    "all entities in Orphadata product 1 with a canonical ORPHA ID"
+                ),
+                "excluded_flags_containing": [],
+                "excluded_groups": [],
+                "excluded_types": [],
             },
             "source_versions": {
                 "orphadata_product1": product1_metadata,

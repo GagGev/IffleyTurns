@@ -249,12 +249,16 @@ class DiseaseDistanceEvaluator:
         disease_a_id: str | int,
         disease_b_id: str | int,
         weights: Optional[Mapping[str, float]] = None,
+        *,
+        allow_no_comparable: bool = False,
     ) -> Dict[str, Any]:
         """Calculate an explainable weighted distance between two diseases.
 
         The returned ``distance`` lies in [0, 1], where 0 means identical on all
         comparable selected features and 1 means no similarity.  The result also
-        contains each component's overlap and effective normalized weight.
+        contains each component's overlap and effective normalized weight.  When
+        ``allow_no_comparable`` is true, an annotation-free pair is returned with
+        ``similarity`` and ``distance`` set to ``None`` instead of raising.
         """
 
         disease_a = self.get_disease(disease_a_id)
@@ -279,7 +283,7 @@ class DiseaseDistanceEvaluator:
             if component["available"]
             and selected_weights[component["feature"]] > 0
         )
-        if available_weight <= 0:
+        if available_weight <= 0 and not allow_no_comparable:
             raise ValueError(
                 "The two diseases have no comparable features with a positive weight."
             )
@@ -288,16 +292,27 @@ class DiseaseDistanceEvaluator:
         for component in components:
             configured_weight = selected_weights[component["feature"]]
             component["configured_weight"] = configured_weight
-            if component["available"] and configured_weight > 0:
+            if (
+                available_weight > 0
+                and component["available"]
+                and configured_weight > 0
+            ):
                 effective_weight = configured_weight / available_weight
                 component["effective_weight"] = effective_weight
                 weighted_similarity += effective_weight * component["similarity"]
             else:
                 component["effective_weight"] = 0.0
 
-        # Protect callers from insignificant floating-point overshoots.
-        weighted_similarity = min(1.0, max(0.0, weighted_similarity))
-        distance = 1.0 - weighted_similarity
+        if available_weight > 0:
+            # Protect callers from insignificant floating-point overshoots.
+            similarity: Optional[float] = min(
+                1.0,
+                max(0.0, weighted_similarity),
+            )
+            distance: Optional[float] = 1.0 - similarity
+        else:
+            similarity = None
+            distance = None
         return {
             "disease_a": {
                 "orpha_id": disease_a["orpha_id"],
@@ -308,7 +323,8 @@ class DiseaseDistanceEvaluator:
                 "name": disease_b["name"],
             },
             "distance": distance,
-            "similarity": weighted_similarity,
+            "similarity": similarity,
+            "comparable": available_weight > 0,
             "available_weight_before_normalization": available_weight,
             "configured_weights": selected_weights,
             "components": components,

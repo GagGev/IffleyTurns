@@ -63,6 +63,7 @@ Rare disease - A disease affecting less than 1 in 2,000 people
 ## Methods
 Approach 1: Calculate a 'distance' between two given diseases
 Approach 2: Given a disease, determine distance from all other diseases
+Approach 3: Map the diseases into a multidimensional space, similar to embeddings
 
 ### Simple approach
 Use the generated features to create a simple "distance" metric that determines how close the two diseases are by assigning an "importance" score to each of the feature types.
