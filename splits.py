@@ -36,10 +36,25 @@ from evaluation import normalize_orpha_id
 
 PROJECT_ROOT = Path(__file__).resolve().parent
 DEFAULT_INPUT = PROJECT_ROOT / "literature_review" / "literature_disease_pairs.csv"
+DEFAULT_DIMENSION_INPUT = (
+    PROJECT_ROOT / "literature_review" / "paper_dimension_scores.csv"
+)
+DEFAULT_NAME_MAPPING = (
+    PROJECT_ROOT / "literature_review" / "disease_name_mapping.csv"
+)
 DEFAULT_FEATURE_DIR = PROJECT_ROOT / ".data" / "features"
 DEFAULT_OUTPUT_DIR = PROJECT_ROOT / ".data" / "splits"
 DEFAULT_SALT = "rare-disease-literature-splits-v1"
 SPLIT_NAMES = ("train", "validation", "test")
+DIMENSIONS = (
+    "phenotype",
+    "genetic",
+    "mechanism",
+    "therapeutic",
+    "natural_history",
+    "diagnostic_confusability",
+    "comorbidity",
+)
 METADATA_COLUMNS = ("_pair_id", "_paper_id", "_split")
 REJECTION_COLUMNS = ("_rejection_reason", "_rejection_detail")
 
@@ -341,6 +356,274 @@ def split_rows(
     return splits, rejected, fieldnames, counts
 
 
+def _normalize_disease_name(value: str) -> str:
+    return " ".join(value.casefold().split())
+
+
+def load_name_to_orpha_ids(
+    path: Path,
+) -> tuple[Dict[str, set[str]], Dict[str, set[str]]]:
+    """Load exact paper-name and canonical-name ORPHA mappings."""
+
+    if not path.is_file():
+        raise FileNotFoundError(f"Disease name mapping CSV not found: {path}")
+    exact: Dict[str, set[str]] = defaultdict(set)
+    canonical: Dict[str, set[str]] = defaultdict(set)
+    with path.open("r", encoding="utf-8-sig", newline="") as file:
+        reader = csv.DictReader(file)
+        required = {"name_in_papers", "canonical_name", "orpha_id"}
+        missing = required - set(reader.fieldnames or [])
+        if missing:
+            raise ValueError(
+                f"{path} is missing required column(s): "
+                + ", ".join(sorted(missing))
+            )
+        for row in reader:
+            raw_ids = row.get("orpha_id", "")
+            if not raw_ids.strip():
+                continue
+            ids = set(_parse_orpha_ids(raw_ids))
+            paper_name = _normalize_disease_name(row.get("name_in_papers", ""))
+            canonical_name = _normalize_disease_name(
+                row.get("canonical_name", "")
+            )
+            if paper_name:
+                exact[paper_name].update(ids)
+            if canonical_name:
+                canonical[canonical_name].update(ids)
+    return exact, canonical
+
+
+def _resolve_dimension_disease(
+    name: str,
+    exact_mapping: Mapping[str, set[str]],
+    canonical_mapping: Mapping[str, set[str]],
+) -> set[str]:
+    normalized = _normalize_disease_name(name)
+    return set(exact_mapping.get(normalized) or canonical_mapping.get(normalized) or [])
+
+
+def load_row_orpha_mapping(csv_bytes: bytes) -> Dict[str, tuple[str, str]]:
+    """Index aggregate literature ORPHA mappings by one-based source row ID."""
+
+    reader = csv.DictReader(
+        io.StringIO(csv_bytes.decode("utf-8-sig"), newline="")
+    )
+    required = {"disease_a_orpha_id", "disease_b_orpha_id"}
+    missing = required - set(reader.fieldnames or [])
+    if missing:
+        raise ValueError(
+            "Aggregate literature CSV is missing ORPHA mapping column(s): "
+            + ", ".join(sorted(missing))
+        )
+    return {
+        str(row_id): (
+            row.get("disease_a_orpha_id", ""),
+            row.get("disease_b_orpha_id", ""),
+        )
+        for row_id, row in enumerate(reader, start=1)
+    }
+
+
+def split_dimension_rows(
+    csv_bytes: bytes,
+    *,
+    exact_mapping: Mapping[str, set[str]],
+    canonical_mapping: Mapping[str, set[str]],
+    row_orpha_mapping: Mapping[str, tuple[str, str]],
+    feature_orpha_ids: Optional[set[str]],
+    train_ratio: float,
+    validation_ratio: float,
+    salt: str,
+) -> tuple[
+    Dict[str, list[Dict[str, str]]],
+    list[Dict[str, str]],
+    list[str],
+    Counter[str],
+]:
+    """Map and split paper-level scores for all seven similarity dimensions."""
+
+    reader = csv.DictReader(
+        io.StringIO(csv_bytes.decode("utf-8-sig"), newline="")
+    )
+    fieldnames = list(reader.fieldnames or [])
+    required = {
+        "disease_a",
+        "disease_b",
+        "pmid",
+        *(f"w_{dimension}" for dimension in DIMENSIONS),
+        *(f"s_{dimension}" for dimension in DIMENSIONS),
+    }
+    missing = required - set(fieldnames)
+    if missing:
+        raise ValueError(
+            "Dimension CSV is missing required column(s): "
+            + ", ".join(sorted(missing))
+        )
+    conflicting = (set(METADATA_COLUMNS) | set(REJECTION_COLUMNS)) & set(fieldnames)
+    if conflicting:
+        raise ValueError(
+            "Dimension CSV already contains reserved output column(s): "
+            + ", ".join(sorted(conflicting))
+        )
+
+    splits: Dict[str, list[Dict[str, str]]] = {
+        split_name: [] for split_name in SPLIT_NAMES
+    }
+    rejected: list[Dict[str, str]] = []
+    counts: Counter[str] = Counter()
+
+    for source_row in reader:
+        counts["input_rows"] += 1
+        row = {field: source_row.get(field, "") or "" for field in fieldnames}
+        paper_id = make_paper_id(row)
+
+        invalid_dimension = ""
+        scored_dimensions = 0
+        for dimension in DIMENSIONS:
+            raw_weight = row[f"w_{dimension}"].strip()
+            raw_score = row[f"s_{dimension}"].strip()
+            try:
+                weight = float(raw_weight)
+                if not math.isfinite(weight) or not 0.0 <= weight <= 1.0:
+                    raise ValueError
+                if raw_score:
+                    score = float(raw_score)
+                    if not math.isfinite(score) or not 0.0 <= score <= 1.0:
+                        raise ValueError
+                    if weight > 0:
+                        scored_dimensions += 1
+                elif weight > 0:
+                    raise ValueError
+            except ValueError:
+                invalid_dimension = dimension
+                break
+        if invalid_dimension or scored_dimensions == 0:
+            counts["rejected_invalid_dimension_values"] += 1
+            rejected.append(
+                _reject(
+                    row,
+                    fieldnames=fieldnames,
+                    paper_id=paper_id,
+                    reason="invalid_dimension_values",
+                    detail=invalid_dimension or "no positive-weight score",
+                )
+            )
+            continue
+
+        source_mapping = row_orpha_mapping.get(row.get("row_id", "").strip())
+        if source_mapping is not None:
+            ids_a = set(_parse_orpha_ids(source_mapping[0]))
+            ids_b = set(_parse_orpha_ids(source_mapping[1]))
+        else:
+            ids_a = _resolve_dimension_disease(
+                row["disease_a"],
+                exact_mapping,
+                canonical_mapping,
+            )
+            ids_b = _resolve_dimension_disease(
+                row["disease_b"],
+                exact_mapping,
+                canonical_mapping,
+            )
+        if not ids_a or not ids_b:
+            missing_sides = (
+                "both"
+                if not ids_a and not ids_b
+                else "disease_a"
+                if not ids_a
+                else "disease_b"
+            )
+            counts["rejected_missing_orpha_mapping"] += 1
+            rejected.append(
+                _reject(
+                    row,
+                    fieldnames=fieldnames,
+                    paper_id=paper_id,
+                    reason="missing_orpha_mapping",
+                    detail=missing_sides,
+                )
+            )
+            continue
+        if len(ids_a) != 1 or len(ids_b) != 1:
+            counts["rejected_ambiguous_orpha_mapping"] += 1
+            rejected.append(
+                _reject(
+                    row,
+                    fieldnames=fieldnames,
+                    paper_id=paper_id,
+                    reason="ambiguous_orpha_mapping",
+                    detail=(
+                        f"{';'.join(sorted(ids_a, key=_orpha_sort_key))} | "
+                        f"{';'.join(sorted(ids_b, key=_orpha_sort_key))}"
+                    ),
+                )
+            )
+            continue
+
+        orpha_id_a = next(iter(ids_a))
+        orpha_id_b = next(iter(ids_b))
+        pair_id = make_pair_id(orpha_id_a, orpha_id_b)
+        if orpha_id_a == orpha_id_b:
+            counts["rejected_same_disease_pair"] += 1
+            rejected.append(
+                _reject(
+                    row,
+                    fieldnames=fieldnames,
+                    paper_id=paper_id,
+                    reason="same_disease_pair",
+                    pair_id=pair_id,
+                )
+            )
+            continue
+
+        if feature_orpha_ids is not None:
+            unavailable = sorted(
+                {orpha_id_a, orpha_id_b} - feature_orpha_ids,
+                key=_orpha_sort_key,
+            )
+            if unavailable:
+                counts["rejected_feature_not_generated"] += 1
+                rejected.append(
+                    _reject(
+                        row,
+                        fieldnames=fieldnames,
+                        paper_id=paper_id,
+                        reason="feature_not_generated",
+                        detail=";".join(unavailable),
+                        pair_id=pair_id,
+                    )
+                )
+                continue
+
+        split_name = assign_split(
+            pair_id,
+            train_ratio=train_ratio,
+            validation_ratio=validation_ratio,
+            salt=salt,
+        )
+        enriched = dict(row)
+        enriched.update(
+            {
+                "_pair_id": pair_id,
+                "_paper_id": paper_id,
+                "_split": split_name,
+            }
+        )
+        splits[split_name].append(enriched)
+        counts["eligible_observations"] += 1
+        counts[f"{split_name}_rows"] += 1
+        for dimension in DIMENSIONS:
+            if (
+                row[f"s_{dimension}"].strip()
+                and float(row[f"w_{dimension}"]) > 0
+            ):
+                counts[f"{dimension}_scored_rows"] += 1
+
+    counts["rejected_observations"] = len(rejected)
+    return splits, rejected, fieldnames, counts
+
+
 def _write_csv_atomic(
     path: Path,
     fieldnames: Sequence[str],
@@ -500,6 +783,18 @@ def parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
         help=f"generated feature directory (default: {DEFAULT_FEATURE_DIR})",
     )
     parser.add_argument(
+        "--dimension-input",
+        type=Path,
+        default=DEFAULT_DIMENSION_INPUT,
+        help=f"seven-dimension score CSV (default: {DEFAULT_DIMENSION_INPUT})",
+    )
+    parser.add_argument(
+        "--name-mapping",
+        type=Path,
+        default=DEFAULT_NAME_MAPPING,
+        help=f"disease name-to-ORPHA mapping CSV (default: {DEFAULT_NAME_MAPPING})",
+    )
+    parser.add_argument(
         "--output-dir",
         type=Path,
         default=DEFAULT_OUTPUT_DIR,
@@ -532,6 +827,11 @@ def parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
         action="store_true",
         help="do not reject ORPHA IDs absent from generated diseases.parquet",
     )
+    parser.add_argument(
+        "--skip-dimension-data",
+        action="store_true",
+        help="only create the original aggregate-score splits",
+    )
     return parser.parse_args(argv)
 
 
@@ -549,6 +849,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         return 2
 
     input_path = args.input.expanduser().resolve()
+    dimension_input_path = args.dimension_input.expanduser().resolve()
+    name_mapping_path = args.name_mapping.expanduser().resolve()
     feature_dir = args.feature_dir.expanduser().resolve()
     output_dir = args.output_dir.expanduser().resolve()
     try:
@@ -592,6 +894,71 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
             source_fieldnames=fieldnames,
             manifest=manifest,
         )
+
+        dimension_result = None
+        if not args.skip_dimension_data:
+            if not dimension_input_path.is_file():
+                raise FileNotFoundError(
+                    f"Dimension score CSV not found: {dimension_input_path}"
+                )
+            dimension_bytes = dimension_input_path.read_bytes()
+            exact_mapping, canonical_mapping = load_name_to_orpha_ids(
+                name_mapping_path
+            )
+            row_orpha_mapping = load_row_orpha_mapping(csv_bytes)
+            (
+                dimension_splits,
+                dimension_rejected,
+                dimension_fieldnames,
+                dimension_counts,
+            ) = split_dimension_rows(
+                dimension_bytes,
+                exact_mapping=exact_mapping,
+                canonical_mapping=canonical_mapping,
+                row_orpha_mapping=row_orpha_mapping,
+                feature_orpha_ids=feature_ids,
+                train_ratio=args.train_ratio,
+                validation_ratio=args.validation_ratio,
+                salt=args.salt,
+            )
+            dimension_output_dir = output_dir / "dimensions"
+            dimension_manifest = _build_manifest(
+                input_path=dimension_input_path,
+                input_hash=hashlib.sha256(dimension_bytes).hexdigest(),
+                feature_dir=feature_dir,
+                feature_filter_enabled=feature_ids is not None,
+                output_dir=dimension_output_dir,
+                splits=dimension_splits,
+                rejected=dimension_rejected,
+                counts=dimension_counts,
+                train_ratio=args.train_ratio,
+                validation_ratio=args.validation_ratio,
+                salt=args.salt,
+                expand_ambiguous=False,
+            )
+            dimension_manifest["dimensions"] = list(DIMENSIONS)
+            dimension_manifest["name_mapping"] = {
+                "file": str(name_mapping_path),
+                "sha256": hashlib.sha256(
+                    name_mapping_path.read_bytes()
+                ).hexdigest(),
+            }
+            if dimension_manifest["integrity"]["pair_overlap_count"]:
+                raise RuntimeError(
+                    "Internal error: a dimension ORPHA pair spans multiple splits."
+                )
+            write_outputs(
+                dimension_output_dir,
+                splits=dimension_splits,
+                rejected=dimension_rejected,
+                source_fieldnames=dimension_fieldnames,
+                manifest=dimension_manifest,
+            )
+            dimension_result = (
+                dimension_output_dir,
+                dimension_manifest,
+                dimension_rejected,
+            )
     except (FileNotFoundError, RuntimeError, ValueError, OSError, UnicodeError) as error:
         print(f"error: {error}", file=sys.stderr)
         return 1
@@ -611,6 +978,18 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         "papers spanning splits: "
         f"{manifest['integrity']['papers_spanning_multiple_splits']}"
     )
+    if dimension_result is not None:
+        dimension_output_dir, dimension_manifest, dimension_rejected = (
+            dimension_result
+        )
+        print(f"Created seven-dimension splits in {dimension_output_dir}")
+        for split_name in SPLIT_NAMES:
+            statistics = dimension_manifest["splits"][split_name]
+            print(
+                f"  {split_name}: {statistics['rows']:,} rows, "
+                f"{statistics['unique_pairs']:,} pairs"
+            )
+        print(f"  rejected: {len(dimension_rejected):,} observations")
     return 0
 
 

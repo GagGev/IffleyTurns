@@ -15,7 +15,7 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass
-from typing import Any, Dict, Optional, Protocol, Sequence, runtime_checkable
+from typing import Any, Dict, Mapping, Optional, Protocol, Sequence, runtime_checkable
 
 import numpy as np
 from sklearn.metrics import (
@@ -372,6 +372,70 @@ def _average_ranks(values: np.ndarray) -> np.ndarray:
     return ranks
 
 
+def weighted_regression_metrics(
+    true_values: ArrayLike,
+    predictions: ArrayLike,
+    sample_weight: ArrayLike,
+) -> Dict[str, Any]:
+    """Calculate model-agnostic regression metrics using sample weights."""
+
+    truth = _one_dimensional(true_values, "true_values").astype(np.float64)
+    predicted = _one_dimensional(predictions, "predictions").astype(np.float64)
+    weights = _one_dimensional(sample_weight, "sample_weight").astype(np.float64)
+    if not (len(truth) == len(predicted) == len(weights)):
+        raise ValueError(
+            "true_values, predictions, and sample_weight must have equal lengths."
+        )
+    if (
+        not np.all(np.isfinite(truth))
+        or not np.all(np.isfinite(predicted))
+        or not np.all(np.isfinite(weights))
+    ):
+        raise ValueError("Weighted regression inputs must all be finite.")
+    if np.any(weights < 0) or float(np.sum(weights)) <= 0:
+        raise ValueError("sample_weight must be non-negative with a positive sum.")
+
+    def weighted_correlation(values_a: np.ndarray, values_b: np.ndarray) -> Optional[float]:
+        mean_a = float(np.average(values_a, weights=weights))
+        mean_b = float(np.average(values_b, weights=weights))
+        centered_a = values_a - mean_a
+        centered_b = values_b - mean_b
+        denominator = math.sqrt(
+            float(np.sum(weights * centered_a * centered_a))
+            * float(np.sum(weights * centered_b * centered_b))
+        )
+        if denominator <= 0:
+            return None
+        return float(np.sum(weights * centered_a * centered_b) / denominator)
+
+    weight_sum = float(np.sum(weights))
+    return {
+        "examples": int(len(truth)),
+        "weight_sum": weight_sum,
+        "effective_sample_size": float(
+            weight_sum * weight_sum / np.sum(weights * weights)
+        ),
+        "mean_absolute_error": float(
+            mean_absolute_error(truth, predicted, sample_weight=weights)
+        ),
+        "root_mean_squared_error": float(
+            math.sqrt(
+                mean_squared_error(truth, predicted, sample_weight=weights)
+            )
+        ),
+        "r2": (
+            float(r2_score(truth, predicted, sample_weight=weights))
+            if len(truth) >= 2
+            else None
+        ),
+        "pearson_correlation": weighted_correlation(truth, predicted),
+        "spearman_correlation": weighted_correlation(
+            _average_ranks(truth),
+            _average_ranks(predicted),
+        ),
+    }
+
+
 def evaluate_regressor(
     model: Predictor,
     features: Any,
@@ -387,3 +451,48 @@ def evaluate_regressor(
         metrics=regression_metrics(true_values, predictions),
         predictions=predictions,
     )
+
+
+def evaluate_dimension_regressors(
+    models: Mapping[str, Predictor],
+    features_by_dimension: Mapping[str, Any],
+    targets_by_dimension: Mapping[str, ArrayLike],
+    sample_weights_by_dimension: Mapping[str, ArrayLike],
+) -> Dict[str, RegressionEvaluation]:
+    """Evaluate independently trained regressors for every score dimension."""
+
+    dimensions = set(models)
+    for name, values in (
+        ("features", features_by_dimension),
+        ("targets", targets_by_dimension),
+        ("sample weights", sample_weights_by_dimension),
+    ):
+        if set(values) != dimensions:
+            raise ValueError(
+                f"Dimension keys for {name} do not match model keys."
+            )
+
+    results: Dict[str, RegressionEvaluation] = {}
+    for dimension in sorted(dimensions):
+        predictions = _one_dimensional(
+            np.asarray(
+                models[dimension].predict(features_by_dimension[dimension]),
+                dtype=np.float64,
+            ),
+            f"{dimension} predictions",
+        )
+        results[dimension] = RegressionEvaluation(
+            metrics={
+                "unweighted": regression_metrics(
+                    targets_by_dimension[dimension],
+                    predictions,
+                ),
+                "confidence_weighted": weighted_regression_metrics(
+                    targets_by_dimension[dimension],
+                    predictions,
+                    sample_weights_by_dimension[dimension],
+                ),
+            },
+            predictions=predictions,
+        )
+    return results
