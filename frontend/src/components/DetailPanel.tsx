@@ -41,6 +41,9 @@ interface Props {
   visibleIds: Set<string>
   selection: Selection
   user: UserContext
+  clusterColour: (index: number) => string
+  focusCluster: number | null
+  onFocusCluster: (next: number | null) => void
   onSelectDisease: (id: string) => void
   onSelectPair: (a: string, b: string) => void
 }
@@ -54,6 +57,38 @@ export function DetailPanel(props: Props) {
     return <DiseaseDetail {...props} id={selection.id} />
   }
   return <PairDetail {...props} a={selection.a} b={selection.b} />
+}
+
+function ClusterCard({
+  cluster,
+  colour,
+  active,
+  isHub,
+  onToggle,
+}: {
+  cluster: GraphData['clusters'][number]
+  colour: string
+  active: boolean
+  isHub: boolean
+  onToggle: () => void
+}) {
+  return (
+    <div className="cluster-card">
+      <span className="swatch" style={{ background: colour }} aria-hidden />
+      <div>
+        <strong>
+          {cluster.id} · {cluster.label}
+        </strong>
+        <p className="muted small">
+          {plural(cluster.size, 'disease')} · {Math.round(cluster.purity * 100)}% {cluster.topCategory}
+          {isHub ? ' · hub of this cluster' : ` · hub: ${displayName(cluster.hubName)}`}
+        </p>
+        <button type="button" className="link-button" onClick={onToggle}>
+          {active ? 'Stop highlighting cluster' : 'Highlight cluster in graph'}
+        </button>
+      </div>
+    </div>
+  )
 }
 
 function SupportKey({ edge }: { edge: GraphEdge }) {
@@ -163,7 +198,7 @@ function ModalityChips({ graph, present }: { graph: GraphData; present: string[]
   )
 }
 
-function DiseaseDetail({ id, graph, nodes, edgesByNode, visibleIds, onSelectPair }: Props & { id: string }) {
+function DiseaseDetail({ id, graph, nodes, edgesByNode, visibleIds, onSelectPair, clusterColour, focusCluster, onFocusCluster }: Props & { id: string }) {
   const node = nodes.get(id)
   const incident = useMemo(() => [...(edgesByNode.get(id) ?? [])].sort((a, b) => b.score - a.score), [edgesByNode, id])
   if (!node) {
@@ -188,6 +223,15 @@ function DiseaseDetail({ id, graph, nodes, edgesByNode, visibleIds, onSelectPair
           {node.category && <span className="status">{node.category}</span>}
         </p>
         {node.disorderType && <p className="muted small">{node.disorderType}</p>}
+        {graph.clusters[node.cluster] && (
+          <ClusterCard
+            cluster={graph.clusters[node.cluster]}
+            colour={clusterColour(node.cluster)}
+            active={focusCluster === node.cluster}
+            onToggle={() => onFocusCluster(focusCluster === node.cluster ? null : node.cluster)}
+            isHub={graph.clusters[node.cluster].hubId === node.id}
+          />
+        )}
       </section>
       <section className="panel-section">
         <h3>Profile</h3>

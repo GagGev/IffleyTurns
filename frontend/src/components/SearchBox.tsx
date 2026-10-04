@@ -1,6 +1,6 @@
 import { useId, useMemo, useState } from 'react'
 import type { GraphNode } from '../data/types'
-import { displayName, plural } from '../lib/format'
+import { clusterId, displayName, plural } from '../lib/format'
 import { searchKey } from '../lib/graph'
 
 interface Props {
@@ -106,7 +106,7 @@ export function SearchBox({ diseases, onSelect }: Props) {
             >
               <span className="search-name">{displayName(d.name)}</span>
               <span className="search-meta">
-                {d.origin === 'user' ? 'Added by you' : `${d.id} · ${d.category || d.disorderType}`} ·{' '}
+                {d.origin === 'user' ? 'Added by you' : `${d.id}${d.cluster >= 0 ? ` · ${clusterId(d.cluster)}` : ''} · ${d.category || d.disorderType}`} ·{' '}
                 {plural(d.degree, 'edge')}
               </span>
             </li>

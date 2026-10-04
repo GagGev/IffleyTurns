@@ -4,7 +4,7 @@
 // is not running.
 
 import { useCallback, useState } from 'react'
-import type { DiseaseInput, Placement } from '../data/types'
+import type { DiseaseInput, PaperEntry, Placement } from '../data/types'
 
 export interface UserDisease {
   id: string
@@ -12,6 +12,8 @@ export interface UserDisease {
   /** Readable names for IDs picked from suggestions (HPO terms, drugs, ...). */
   labels?: Record<string, string>
   placement?: Placement
+  /** Set when the disease is the focal disease of an uploaded paper. */
+  paper?: PaperEntry
   createdAt: string
 }
 
@@ -238,11 +240,31 @@ export function useUserDiseases() {
     },
     [commit],
   )
+  /** Adds a paper's focal disease together with the placement the paper's extraction implies. */
+  const addPaper = useCallback(
+    (
+      input: DiseaseInput,
+      labels: Record<string, string>,
+      build: (id: string) => { placement: Placement; paper: PaperEntry },
+    ): UserDisease => {
+      const id = newUserId(input.name)
+      const created: UserDisease = {
+        id,
+        input: compactInput(input),
+        labels,
+        ...build(id),
+        createdAt: new Date().toISOString(),
+      }
+      commit((current) => [...current, created])
+      return created
+    },
+    [commit],
+  )
   const update = useCallback(
     (id: string, change: Partial<Omit<UserDisease, 'id'>>) =>
       commit((current) => current.map((d) => (d.id === id ? { ...d, ...change } : d))),
     [commit],
   )
   const remove = useCallback((id: string) => commit((current) => current.filter((d) => d.id !== id)), [commit])
-  return { diseases, add, update, remove }
+  return { diseases, add, addPaper, update, remove }
 }

@@ -15,6 +15,7 @@ import {
   PREVALENCE_CLASSES,
   type UserDisease,
 } from '../lib/userDiseases'
+import { ACCEPTED_FILES } from '../lib/paperService'
 import { TermInput } from './TermInput'
 
 export type DialogMode = { kind: 'add' } | { kind: 'edit'; disease: UserDisease } | null
@@ -31,13 +32,17 @@ interface Props {
   others: UserDisease[]
   onAdd: (items: SavedDisease[]) => void
   onUpdate: (id: string, item: SavedDisease) => void
+  /** Extract a disease from a paper and place it; resolves true when it was added. */
+  onUploadPaper: (file: File) => Promise<boolean>
+  paperBusy: string | null
+  paperError: string | null
   onClose: () => void
 }
 
 export function AddDiseaseDialog(props: Props) {
   const { mode, onClose } = props
   const dialog = useRef<HTMLDialogElement>(null)
-  const [tab, setTab] = useState<'form' | 'json'>('form')
+  const [tab, setTab] = useState<'form' | 'json' | 'paper'>('form')
   const titleId = useId()
 
   useEffect(() => {
@@ -65,12 +70,17 @@ export function AddDiseaseDialog(props: Props) {
               <button type="button" role="tab" aria-selected={tab === 'json'} onClick={() => setTab('json')}>
                 Upload JSON
               </button>
+              <button type="button" role="tab" aria-selected={tab === 'paper'} onClick={() => setTab('paper')}>
+                From a paper
+              </button>
             </div>
           )}
           {mode.kind === 'edit' || tab === 'form' ? (
             <DiseaseForm key={mode.kind === 'edit' ? mode.disease.id : 'new'} {...props} initial={mode.kind === 'edit' ? mode.disease : undefined} />
-          ) : (
+          ) : tab === 'json' ? (
             <JsonImport {...props} />
+          ) : (
+            <PaperImport {...props} />
           )}
         </>
       )}
@@ -352,6 +362,67 @@ function CheckGroup({ label, options, values, onChange }: { label: string; optio
 }
 
 // --- JSON upload -----------------------------------------------------------------
+
+function PaperImport({ onUploadPaper, paperBusy, paperError, onClose }: Props) {
+  const [dragging, setDragging] = useState(false)
+  const inputId = useId()
+
+  const take = async (file: File | undefined) => {
+    if (file && (await onUploadPaper(file))) onClose()
+  }
+
+  return (
+    <div className="dialog-body">
+      <p className="muted small">
+        Upload a paper about a disease. v2_5 extracts its phenotypes, genes, drugs, inheritance and onset, and the disease is
+        placed in the graph with the paper’s own comparisons checked against it. You can also upload a result file written by{' '}
+        <code>python -m v2_5.place_paper --output result.json</code>.
+      </p>
+      <p className="callout small">
+        <strong>Mock extraction.</strong> Until the v2_5 pipeline is connected, PDF, text and XML files get a stand-in result
+        generated from the graph, marked MOCK. Result JSON files are used as they are.
+      </p>
+      <label
+        htmlFor={inputId}
+        className={`drop-zone${dragging ? " is-dragging" : ""}`}
+        onDragOver={(e) => {
+          e.preventDefault()
+          setDragging(true)
+        }}
+        onDragLeave={() => setDragging(false)}
+        onDrop={(e) => {
+          e.preventDefault()
+          setDragging(false)
+          void take(e.dataTransfer.files[0])
+        }}
+      >
+        {paperBusy ? `${paperBusy}…` : 'Drop a paper here, or click to choose a file'}
+        <span className="muted small">PDF, text, XML or v2_5 result JSON</span>
+        <input
+          id={inputId}
+          type="file"
+          hidden
+          accept={ACCEPTED_FILES}
+          disabled={paperBusy !== null}
+          onChange={(e) => {
+            void take(e.target.files?.[0])
+            e.target.value = ''
+          }}
+        />
+      </label>
+      {paperError && (
+        <p className="callout small" role="alert">
+          {paperError}
+        </p>
+      )}
+      <footer className="dialog-footer">
+        <button type="button" className="button" onClick={onClose}>
+          Cancel
+        </button>
+      </footer>
+    </div>
+  )
+}
 
 function JsonImport({ onAdd, onClose }: Props) {
   const [text, setText] = useState('')

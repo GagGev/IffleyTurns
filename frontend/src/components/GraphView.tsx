@@ -2,8 +2,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import ForceGraph2D from 'react-force-graph-2d'
 import type { ForceGraphMethods, LinkObject, NodeObject } from 'react-force-graph-2d'
 import { edgeShard } from '../data/source'
-import type { GraphEdge, GraphNode } from '../data/types'
-import { displayName, modalityLabel, percentile, plural } from '../lib/format'
+import type { ClusterInfo, GraphEdge, GraphNode } from '../data/types'
+import { clusterId, displayName, modalityLabel, percentile, plural } from '../lib/format'
+import { isClaimOnly } from '../lib/graph'
 import type { Selection } from '../lib/selection'
 import { type CanvasColours, withAlpha } from '../lib/theme'
 
@@ -32,6 +33,15 @@ interface Props {
   /** Changes whenever the graph should re-fit to the viewport. */
   fitKey: string
   colours: CanvasColours
+  /** Fill colour of a disease (by cluster, category or plain). */
+  colourOf: (disease: GraphNode) => string
+  clusters: ClusterInfo[]
+  /** Opacity of edges that are not highlighted; low when nodes carry the colour. */
+  edgeAlpha: number
+  /** Edges drawn in a given colour regardless of highlighting (the claims of the active paper). */
+  edgeTint: Map<string, string> | null
+  /** Diseases to bring into view when nothing is selected (the diseases a paper concerns). */
+  frameIds: string[] | null
   onSelectDisease: (id: string) => void
   onSelectPair: (a: string, b: string) => void
   onClear: () => void
@@ -82,7 +92,7 @@ class NodeStore {
   }
 }
 
-const nodeRadius = (degree: number) => 1.6 + Math.sqrt(degree) * 0.55
+const nodeRadius = (degree: number) => 2 + Math.sqrt(degree) * 0.6
 const endId = (end: L['source']) => (typeof end === 'object' ? (end as N).id : String(end))
 
 function diamond(ctx: CanvasRenderingContext2D, x: number, y: number, d: number) {
@@ -94,7 +104,7 @@ function diamond(ctx: CanvasRenderingContext2D, x: number, y: number, d: number)
 }
 
 export function GraphView(props: Props) {
-  const { nodes, edges, pinnedIds, selection, highlightNodes, highlightEdges, colours, fixedLayout } = props
+  const { nodes, edges, pinnedIds, selection, highlightNodes, highlightEdges, colours, fixedLayout, colourOf, clusters, edgeAlpha, edgeTint, frameIds } = props
   const wrapper = useRef<HTMLDivElement>(null)
   const graph = useRef<ForceGraphMethods<N, L>>(undefined)
   const [store] = useState(() => new NodeStore())
@@ -182,7 +192,7 @@ export function GraphView(props: Props) {
   // Bring the selection into view with its neighbours around it, so a close
   // pair is not blown up to fill the screen.
   const frame = useMemo(() => {
-    if (!selection) return new Set<string>()
+    if (!selection) return new Set<string>(frameIds ?? [])
     const ids = selection.kind === 'disease' ? [selection.id] : [selection.a, selection.b]
     const out = new Set(ids)
     for (const e of edges) {
@@ -190,9 +200,9 @@ export function GraphView(props: Props) {
       if (ids.includes(e.target)) out.add(e.source)
     }
     return out
-  }, [selection, edges])
+  }, [selection, edges, frameIds])
   // Re-frame when the selection changes or gains edges (e.g. a placement arrives).
-  const frameKey = selection ? `${JSON.stringify(selection)}:${frame.size}` : ''
+  const frameKey = selection ? `${JSON.stringify(selection)}:${frame.size}` : frameIds?.length ? `paper:${frameIds.length}:${frameIds[0]}` : ''
   const frameRef = useRef(frame)
   useEffect(() => {
     frameRef.current = frame
@@ -203,7 +213,11 @@ export function GraphView(props: Props) {
     if (!fg || !frameKey) return false
     const placed = [...frameRef.current].filter((id) => store.get(id)?.x !== undefined)
     if (placed.length === 0) return false
-    fg.zoomToFit(600, 60, (n) => frameRef.current.has(n.id))
+    fg.zoomToFit(600, frameRef.current.size <= 4 ? 220 : 60, (n) => frameRef.current.has(n.id))
+    // A handful of close diseases would otherwise be blown up until their dots overlap.
+    setTimeout(() => {
+      if (fg.zoom() > 3) fg.zoom(3, 300)
+    }, 700)
     return true
   }, [frameKey, store])
 
@@ -218,8 +232,10 @@ export function GraphView(props: Props) {
 
   const drawNode = useCallback(
     (node: N, ctx: CanvasRenderingContext2D, scale: number) => {
-      const r = nodeRadius(node.degree)
       const dimmed = highlightNodes !== null && !highlightNodes.has(node.id)
+      // A small highlighted set (a gene's diseases, a paper's claims) is drawn larger so it stands out.
+      const picked = highlightNodes !== null && !dimmed && highlightNodes.size <= 300
+      const r = nodeRadius(node.degree) * (picked ? 1.5 : 1) + (picked ? 1.5 : 0)
       const selected = selectedIds.has(node.id)
       const hovered = hover?.kind === 'node' && hover.node.id === node.id
       const added = node.disease.origin !== 'catalogue'
@@ -229,8 +245,15 @@ export function GraphView(props: Props) {
       ctx.beginPath()
       if (added) diamond(ctx, x, y, r * 1.4)
       else ctx.arc(x, y, r, 0, 2 * Math.PI)
-      ctx.fillStyle = withAlpha(colours.node, dimmed ? 0.12 : 0.9)
+      const fill = colourOf(node.disease)
+      ctx.fillStyle = withAlpha(fill, dimmed ? 0.1 : 0.92)
       ctx.fill()
+      if (added && !dimmed) {
+        // Added diseases keep a ring so they stay distinguishable from catalogue diseases of the same cluster.
+        ctx.lineWidth = 1.5 / scale
+        ctx.strokeStyle = colours.ink
+        ctx.stroke()
+      }
 
       if (selected || hovered) {
         ctx.beginPath()
@@ -241,7 +264,11 @@ export function GraphView(props: Props) {
         ctx.stroke()
       }
 
-      const inFocus = highlightNodes !== null && highlightNodes.has(node.id) && highlightNodes.size <= 40
+      // Labels for a small set: always when it is tiny, once zoomed in when it would crowd.
+      const inFocus =
+        highlightNodes !== null &&
+        highlightNodes.has(node.id) &&
+        (highlightNodes.size <= 3 || (highlightNodes.size <= 60 && scale > 2))
       const showLabel =
         selected ||
         hovered ||
@@ -267,8 +294,21 @@ export function GraphView(props: Props) {
       ctx.strokeText(label, x, ly)
       ctx.fillStyle = dimmed ? colours.muted : colours.ink
       ctx.fillText(label, x, ly)
+      // Second line: the ORPHA ID and cluster, when the label has room to be read.
+      if (selected || hovered || (inFocus && scale > 1.5)) {
+        const detail = `${node.disease.id}${node.disease.cluster >= 0 ? ` · ${clusterId(node.disease.cluster)}` : ''}`
+        const small = (selected ? 10.5 : 9.5) / scale
+        ctx.font = `400 ${small}px system-ui, -apple-system, "Segoe UI", sans-serif`
+        const dy = fontSize * 1.15
+        const y2 = above ? ly - dy : ly + dy
+        ctx.lineWidth = 3 / scale
+        ctx.strokeStyle = withAlpha(colours.surface, 0.9)
+        ctx.strokeText(detail, x, y2)
+        ctx.fillStyle = colours.muted
+        ctx.fillText(detail, x, y2)
+      }
     },
-    [highlightNodes, selectedIds, hover, colours, selection, store],
+    [highlightNodes, selectedIds, hover, colours, selection, store, colourOf],
   )
 
   const paintNodeArea = useCallback((node: N, colour: string, ctx: CanvasRenderingContext2D, scale: number) => {
@@ -281,23 +321,30 @@ export function GraphView(props: Props) {
 
   const linkColour = useCallback(
     (link: L) => {
+      const tint = edgeTint?.get(link.edge.id)
+      if (tint) return withAlpha(tint, 0.95)
       const base = colours.support[link.edge.support]
       if (hover?.kind === 'link' && hover.link === link) return base
-      if (highlightEdges !== null) return highlightEdges.has(link.edge.id) ? withAlpha(base, 0.95) : withAlpha(base, 0.05)
-      return withAlpha(base, 0.4)
+      if (highlightEdges !== null) {
+        // A very large highlighted set (every disease of one onset class) is drawn lighter so it stays readable.
+        const alpha = highlightEdges.size > 200 ? 0.45 : 0.95
+        return highlightEdges.has(link.edge.id) ? withAlpha(base, alpha) : withAlpha(base, 0.05)
+      }
+      return withAlpha(base, edgeAlpha)
     },
-    [colours, highlightEdges, hover],
+    [colours, highlightEdges, hover, edgeAlpha, edgeTint],
   )
 
   const linkWidth = useCallback(
     (link: L) => {
+      if (edgeTint?.has(link.edge.id)) return hover?.kind === 'link' && hover.link === link ? 3.6 : 2.6
       const emphasised = highlightEdges?.has(link.edge.id) || (hover?.kind === 'link' && hover.link === link)
-      return emphasised ? 2.2 : 0.7
+      return emphasised ? (highlightEdges && highlightEdges.size > 200 ? 1 : 2.2) : 0.7
     },
-    [highlightEdges, hover],
+    [highlightEdges, hover, edgeTint],
   )
 
-  const tooltip = hover && renderTooltip(hover, nodes)
+  const tooltip = hover && renderTooltip(hover, nodes, clusters, colourOf)
   const tooltipStyle = useMemo(() => {
     const width = 300
     const left = Math.min(pointer.x + 14, size.width - width - 8)
@@ -329,7 +376,7 @@ export function GraphView(props: Props) {
           nodePointerAreaPaint={paintNodeArea}
           linkColor={linkColour}
           linkWidth={linkWidth}
-          linkLineDash={(link) => (link.edge.origin === 'user' ? [2, 2] : null)}
+          linkLineDash={(link) => (isClaimOnly(link.edge) ? [5, 4] : link.edge.origin === 'user' ? [2, 2] : null)}
           linkHoverPrecision={4}
           maxZoom={6}
           minZoom={0.05}
@@ -361,19 +408,43 @@ export function GraphView(props: Props) {
   )
 }
 
-function renderTooltip(hover: NonNullable<Hover>, nodes: Map<string, GraphNode>) {
+function renderTooltip(
+  hover: NonNullable<Hover>,
+  nodes: Map<string, GraphNode>,
+  clusters: ClusterInfo[],
+  colourOf: (d: GraphNode) => string,
+) {
   if (hover.kind === 'node') {
     const d = hover.node.disease
+    const cluster = clusters[d.cluster]
     return (
       <>
         <div className="tooltip-title">{displayName(d.name)}</div>
         <div className="tooltip-meta">
-          {d.origin === 'user' ? 'Added by you' : d.category || d.id} · {plural(hover.node.degree, 'edge')}
+          {d.origin === 'user' ? 'Added by you' : d.id} · {plural(hover.node.degree, 'edge')}
         </div>
+        {d.origin !== 'user' && d.category && <div className="tooltip-meta">{d.category}</div>}
+        {cluster && (
+          <div className="tooltip-meta">
+            <span className="swatch" style={{ background: colourOf(d) }} aria-hidden />
+            {cluster.id} · {cluster.label}
+            {d.origin === 'user' ? ' (nearest neighbours)' : ''}
+          </div>
+        )}
       </>
     )
   }
   const e = hover.link.edge
+  if (isClaimOnly(e)) {
+    return (
+      <>
+        <div className="tooltip-title">
+          {displayName(nodes.get(e.source)?.name ?? e.source)} – {displayName(nodes.get(e.target)?.name ?? e.target)}
+        </div>
+        <div className="tooltip-meta">A paper says these are similar; the graph has no edge between them.</div>
+      </>
+    )
+  }
   return (
     <>
       <div className="tooltip-value">

@@ -8,6 +8,8 @@ export interface Filters {
   /** Only edges whose largest contribution comes from this modality. */
   mainModality: string | null
   category: string | null
+  /** Only edges inside this cluster (index into GraphData.clusters). */
+  cluster: number | null
   /** Only edges where both diseases list each other among their top-k. */
   mutualOnly: boolean
 }
@@ -17,6 +19,7 @@ export const DEFAULT_FILTERS: Filters = {
   minPercentile: 0,
   mainModality: null,
   category: null,
+  cluster: null,
   mutualOnly: true,
 }
 
@@ -33,6 +36,12 @@ export function filterEdges(edges: GraphEdge[], filters: Filters, nodes: Map<str
       const a = nodes.get(e.source)
       const b = nodes.get(e.target)
       const inside = (n?: GraphNode) => n?.category === filters.category || n?.origin === 'user'
+      if (!inside(a) || !inside(b)) return false
+    }
+    if (filters.cluster !== null) {
+      const a = nodes.get(e.source)
+      const b = nodes.get(e.target)
+      const inside = (n?: GraphNode) => n?.cluster === filters.cluster || n?.origin === 'user'
       if (!inside(a) || !inside(b)) return false
     }
     return true
@@ -79,3 +88,6 @@ export function searchKey(value: string): string {
     .replace(/[̀-ͯ]/g, '')
     .toLowerCase()
 }
+
+/** An edge drawn only to show a paper's claim: the graph has no such edge. */
+export const isClaimOnly = (edge: GraphEdge) => edge.id.startsWith('claim:')
