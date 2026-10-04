@@ -9,10 +9,10 @@ supervised labels.
 ## Resumable relationship acquisition
 
 `acquire_relationships.py` is the larger dual-source collector. It searches
-Europe PMC and PubMed E-utilities for up to 5,000 real records, deduplicates
-them by PMID, PMCID, DOI, then normalized title, and maps exact disease names to
-the local Orphanet release. Ambiguous aliases remain unmapped and enter the
-review queue.
+Europe PMC and PubMed E-utilities up to a configurable safety ceiling,
+deduplicates records by PMID, PMCID, DOI, then normalized title, and maps exact
+disease names to the local Orphanet release. Ambiguous aliases remain unmapped
+and enter the review queue.
 
 The pipeline first detects disease mentions and short candidate passages. It
 then assigns independent automated scores for clinical phenotype, genetic
@@ -21,7 +21,7 @@ Missing dimensions remain `NA`. Abstract-derived scores always have confidence
 1, and every automated score or `NA` remains `unverified`.
 
 ```powershell
-python literature_review/acquisition/acquire_relationships.py run --max-papers 5000
+python literature_review/acquisition/acquire_relationships.py run --max-papers 50000
 python literature_review/acquisition/acquire_relationships.py validate
 python literature_review/acquisition/acquire_relationships.py report
 python -m unittest literature_review/acquisition/test_acquire_relationships.py -v
@@ -32,8 +32,27 @@ responses and `acquisition_report.json` are stored beside it. Successful
 responses are checksum-verified and reused on subsequent runs, while failed
 requests are retried. PubMed traffic is limited to three requests per second
 without an API key and ten with `NCBI_API_KEY`; Europe PMC requests are also
-serialized and rate-limited. Full text is requested only from the Europe PMC
-open-access XML endpoint for records marked open access.
+serialized and rate-limited. PubMed searches larger than its documented
+9,999-ID limit are divided into publication-date shards and checked against the
+reported total. Full text is requested only from the Europe PMC open-access XML
+endpoint for records marked open access.
+
+To evaluate the feature-based v1 weighted-Jaccard baseline against the acquired
+scores without changing the original literature CSVs:
+
+```powershell
+python literature_review/acquisition/export_v1_benchmark.py
+python experiments/01_compare_evaluation_literature_review.py `
+  --literature-csv .data/experiments/v1_acquired/literature_disease_pairs.csv `
+  --output .data/experiments/v1_acquired/pair_results.csv `
+  --summary-json .data/experiments/v1_acquired/summary.json
+```
+
+The adapter preserves `NA` as missing and creates a paper/pair target by
+normalizing each available ordinal score to `[0,1]`, then taking an
+extraction-confidence-weighted mean. These targets remain automated and
+unverified, so this run is diagnostic rather than a validated performance
+claim.
 
 ## Acquired release: 2026-10-04
 

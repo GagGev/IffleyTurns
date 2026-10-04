@@ -1053,10 +1053,9 @@ def discover_pubmed(
                 flush=True,
             )
         if len(identifiers) != total:
-            print(
-                f"PubMed search warning: sharded retrieval returned "
-                f"{len(identifiers)} of {total} reported IDs",
-                flush=True,
+            raise RuntimeError(
+                f"PubMed sharded retrieval returned {len(identifiers)} "
+                f"of {total} reported IDs"
             )
     for offset in range(0, len(identifiers), 200):
         batch = identifiers[offset : offset + 200]
@@ -1647,6 +1646,38 @@ def build_report(
             GROUP BY source,request_kind,status ORDER BY source,request_kind,status"""
         )
     ]
+    epmc_hits, epmc_retrieved = db.execute(
+        """SELECT MAX(result_count),SUM(records_received) FROM search_log
+        WHERE source='Europe PMC' AND request_kind='search' AND status='complete'"""
+    ).fetchone()
+    pubmed_hits = db.execute(
+        """SELECT MAX(result_count) FROM search_log
+        WHERE source='PubMed' AND request_kind='search' AND status='complete'"""
+    ).fetchone()[0]
+    pubmed_sharded = db.execute(
+        """SELECT SUM(records_received) FROM search_log
+        WHERE source='PubMed' AND request_kind='search' AND status='complete'
+        AND page_token LIKE 'publication_date:%'"""
+    ).fetchone()[0]
+    if not pubmed_sharded:
+        pubmed_sharded = db.execute(
+            """SELECT MAX(records_received) FROM search_log
+            WHERE source='PubMed' AND request_kind='search' AND status='complete'"""
+        ).fetchone()[0]
+    discovery_coverage = {
+        "europe_pmc": {
+            "reported_hits": epmc_hits or 0,
+            "records_retrieved": min(epmc_hits or 0, epmc_retrieved or 0),
+            "search_exhausted": bool(epmc_hits and epmc_retrieved >= epmc_hits),
+        },
+        "pubmed": {
+            "reported_hits": pubmed_hits or 0,
+            "records_retrieved": min(pubmed_hits or 0, pubmed_sharded or 0),
+            "search_exhausted": bool(
+                pubmed_hits and pubmed_sharded and pubmed_sharded >= pubmed_hits
+            ),
+        },
+    }
     score_distribution = {
         row[0]: row[1]
         for row in db.execute(
@@ -1683,6 +1714,7 @@ def build_report(
         ).fetchone()[0],
         "automated_score_distribution": score_distribution,
         "api_request_status": request_status,
+        "discovery_coverage": discovery_coverage,
         "requested_paper_limit": requested_limit,
         "found_5000_legitimate_papers": papers >= 5000,
         "found_requested_limit": papers >= requested_limit,
