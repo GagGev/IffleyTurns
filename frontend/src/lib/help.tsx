@@ -14,13 +14,14 @@ export type HelpTopic =
   | 'filters'
   | 'support'
   | 'mutual'
-  | 'percentile'
+  | 'score'
   | 'mainEvidence'
   | 'cluster'
   | 'category'
   | 'symptoms'
   | 'nodeColour'
   | 'readingGraph'
+  | 'diseasePapers'
 
 const verdictList = (
   <dl className="help-list">
@@ -166,15 +167,18 @@ export const HELP: Record<HelpTopic, { title: string; body: ReactNode }> = {
       </>
     ),
   },
-  percentile: {
-    title: 'Minimum percentile',
+  score: {
+    title: 'Minimum score',
     body: (
       <>
         <p>
-          How unusual the similarity is. The model scored 200,000 random pairs of diseases. An edge at the 99.9th
-          percentile scores higher than 99.9% of those random pairs.
+          The similarity score the model gives each link: higher means the two diseases are more alike. It adds up the
+          evidence from every kind of data the two diseases share, so it has no fixed maximum.
         </p>
-        <p>Raise this to keep only the most exceptional similarities.</p>
+        <p>
+          In this graph scores run from about −3 to 30. A typical link scores about 2.5, and a typical mutual link about
+          4. Raise the minimum to keep only the strongest similarities.
+        </p>
       </>
     ),
   },
@@ -248,6 +252,23 @@ export const HELP: Record<HelpTopic, { title: string; body: ReactNode }> = {
           <dd>Colours diseases by when they start or how they are inherited.</dd>
           <dt>Similarity to a disease</dt>
           <dd>Shades every disease by how similar it is to the one you pick.</dd>
+        </dl>
+      </>
+    ),
+  },
+  diseasePapers: {
+    title: 'Papers in the literature set',
+    body: (
+      <>
+        <p>
+          Papers from this project's literature set that discuss this disease together with another one. Click a
+          disease name to open that pair, or show the paper's claims on the graph.
+        </p>
+        <dl className="help-list">
+          <dt>Curated</dt>
+          <dd>From the reviewed set: each claim was read and scored for which kinds of similarity it describes.</dd>
+          <dt>Unreviewed co-mention</dt>
+          <dd>From the latest automatic acquisition run: the paper mentions both diseases, but nobody has checked the claim yet.</dd>
         </dl>
       </>
     ),

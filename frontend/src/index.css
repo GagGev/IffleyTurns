@@ -760,7 +760,8 @@ input[type='checkbox'] {
 
 .stats {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
   gap: 8px;
   margin-bottom: 12px;
 }
@@ -2034,6 +2035,8 @@ details[open] summary {
 .info-popover {
   position: fixed;
   z-index: 100;
+  /* Never takes the pointer from the "?" underneath (that made it flicker). */
+  pointer-events: none;
   max-width: calc(100vw - 16px);
   padding: 10px 12px;
   background: var(--surface-1);
@@ -2197,14 +2200,22 @@ details[open] summary {
   line-height: 1.55;
 }
 .patient-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--surface-1);
+  border-bottom: 1px solid var(--border);
+  font-size: 14px;
+}
+/* Same width as the content column, so the links sit right above it. */
+.patient-header-inner {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 12px 16px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 12px 20px;
-  background: var(--surface-1);
-  border-bottom: 1px solid var(--border);
-  font-size: 14px;
 }
 .patient-brand {
   font-weight: 600;
@@ -2219,10 +2230,39 @@ details[open] summary {
   gap: 16px;
 }
 .patient-notice {
+  margin: 0;
   background: var(--warning-bg);
-  border-radius: 10px;
-  padding: 14px 16px;
-  font-size: 15px;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--text-secondary);
+}
+.patient-notice strong {
+  color: var(--text-primary);
+}
+.describe {
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+}
+.describe {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.describe .button {
+  align-self: flex-start;
+}
+.patient-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+  border-top: 1px solid var(--border);
+  padding-top: 14px;
+}
+.patient-actions .button {
+  align-self: auto;
 }
 .patient-card {
   position: relative;
@@ -2315,29 +2355,87 @@ details[open] summary {
   border-radius: 999px;
   padding: 2px 10px;
 }
-.example-list {
+/* Example conditions: a grid of cards, two across in the content column. */
+.example-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 12px;
+}
+.example-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: var(--surface-2);
+  border-radius: 10px;
+  padding: 14px;
+}
+.example-card h4 {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.35;
+}
+.shared-tags {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.shared-tags li {
+  font-size: 12px;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 1px 8px;
+}
+.example-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  font-size: 14px;
+}
+.key-papers {
+  margin-top: auto;
+  border-top: 1px solid var(--border);
+  padding-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.key-papers-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.key-papers ul {
   list-style: none;
   margin: 0;
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 6px;
 }
-.example-list li {
-  border-top: 1px solid var(--border);
-  padding-top: 10px;
+.key-papers li {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  font-size: 13px;
+  line-height: 1.35;
 }
-.example-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 12px;
+.key-papers li a {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 .example-explanation {
-  background: var(--surface-2);
+  margin: 0;
+  background: var(--surface-1);
   border-radius: 8px;
   padding: 10px 12px;
   font-size: 15px;
@@ -2356,4 +2454,36 @@ details[open] summary {
   .home {
     padding-top: 6vh;
   }
+}
+
+/* "← Back to …": one step of selection history in the toolbar. */
+.back-button {
+  max-width: 280px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* A disease's papers in the literature set. */
+.disease-papers {
+  list-style: none;
+  margin: 0 0 8px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.disease-papers li {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  font-size: 13px;
+}
+.disease-paper-title {
+  font-weight: 500;
+  line-height: 1.35;
+}
+.disease-paper-with .link-button {
+  font-size: inherit;
 }

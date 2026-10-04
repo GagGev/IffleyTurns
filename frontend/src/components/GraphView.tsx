@@ -3,7 +3,7 @@ import ForceGraph2D from 'react-force-graph-2d'
 import type { ForceGraphMethods, LinkObject, NodeObject } from 'react-force-graph-2d'
 import { edgeShard } from '../data/source'
 import type { ClusterInfo, GraphEdge, GraphNode } from '../data/types'
-import { clusterId, displayName, modalityLabel, percentile, plural } from '../lib/format'
+import { clusterId, displayName, modalityLabel, plural, score } from '../lib/format'
 import { isClaimOnly } from '../lib/graph'
 import type { Selection } from '../lib/selection'
 import { type CanvasColours, withAlpha } from '../lib/theme'
@@ -504,7 +504,7 @@ function renderTooltip(
   return (
     <>
       <div className="tooltip-value">
-        {percentile(e.percentile)} <span className="tooltip-meta">percentile vs random pairs</span>
+        {score(e.score)} <span className="tooltip-meta">similarity score</span>
       </div>
       <div className="tooltip-title">
         {displayName(nodes.get(e.source)?.name ?? e.source)} – {displayName(nodes.get(e.target)?.name ?? e.target)}

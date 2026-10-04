@@ -1,7 +1,7 @@
 import { useEffect, useId, useMemo, useRef, useState } from 'react'
 import { placeDisease } from '../data/source'
 import type { ApiHealth, DiseaseInput, Placement } from '../data/types'
-import { displayName, download, modalityLabel, percentile, plural } from '../lib/format'
+import { displayName, download, modalityLabel, plural, score } from '../lib/format'
 import {
   compactInput,
   countFeatures,
@@ -314,7 +314,7 @@ function DiseaseForm({ api, others, onAdd, onUpdate, onClose, initial }: Props &
                     {displayName(n.name)}
                     <span className="muted small">
                       {' '}
-                      · {percentile(n.percentile)} · {modalityLabel(n.explanation[0]?.modality)}
+                      · score {score(n.score)} · {modalityLabel(n.explanation[0]?.modality)}
                     </span>
                   </span>
                 </li>

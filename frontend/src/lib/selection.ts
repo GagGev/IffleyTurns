@@ -8,6 +8,14 @@ export type Selection =
   | { kind: 'pair'; a: string; b: string }
   | null
 
+/** Same disease, or the same pair in either order. */
+export function sameSelection(a: Selection, b: Selection): boolean {
+  if (!a || !b) return a === b
+  if (a.kind === 'disease') return b.kind === 'disease' && a.id === b.id
+  if (b.kind !== 'pair') return false
+  return (a.a === b.a && a.b === b.b) || (a.a === b.b && a.b === b.a)
+}
+
 function parse(hash: string): Selection {
   const params = new URLSearchParams(hash.replace(/^#/, ''))
   const disease = params.get('disease')

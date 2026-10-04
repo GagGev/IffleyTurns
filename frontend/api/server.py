@@ -14,6 +14,7 @@ Endpoints:
     POST /api/patient/interpret           {"text"}: patient's words -> HPO terms to confirm
     POST /api/patient/explain-disease     {"id", "name"}: Orphanet description in plain words
     POST /api/patient/explain-group       {"category", "examples", "shared"}: a group in plain words
+    GET  /api/patient/papers?id=ORPHA:x   up to 2 most-cited papers about a disease (Europe PMC)
 
 POST /api/place body:
     {"disease": {<v2 JSON: name, description, phenotypes, genes, ...>},
@@ -47,7 +48,7 @@ from typing import Any, Callable, Optional
 from urllib.parse import parse_qs, urlparse
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from patient import MedGemma, PatientHelper  # noqa: E402
+from patient import MedGemma, PaperFinder, PatientHelper  # noqa: E402
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 V2_DIR = PROJECT_ROOT / "v2"
@@ -201,26 +202,33 @@ class PlacementService:
             raise RuntimeError(self.error or "The v2 model is still loading.")
 
 
-class Descriptions:
-    """Orphanet clinical descriptions from v2's cached bundle, loaded on first use."""
+class DiseaseRecords:
+    """Name, synonyms and Orphanet description of each disease, from v2's cached bundle, loaded on first use."""
 
-    def __init__(self, loader: Callable[[], dict[str, str]]):
+    def __init__(self, loader: Callable[[], dict[str, dict[str, Any]]]):
         self._loader = loader
-        self._texts: Optional[dict[str, str]] = None
+        self._records: Optional[dict[str, dict[str, Any]]] = None
         self._lock = threading.Lock()
 
-    def __call__(self, disease_id: str) -> Optional[str]:
+    def record(self, disease_id: str) -> Optional[dict[str, Any]]:
         with self._lock:
-            if self._texts is None:
-                self._texts = self._loader()
-        return self._texts.get(disease_id) or None
+            if self._records is None:
+                self._records = self._loader()
+        return self._records.get(disease_id)
+
+    def description(self, disease_id: str) -> Optional[str]:
+        record = self.record(disease_id)
+        return (record or {}).get("description") or None
 
 
-def load_descriptions() -> dict[str, str]:
+def load_disease_records() -> dict[str, dict[str, Any]]:
     sys.path.insert(0, str(V2_DIR))
     from data_sources import load_bundle
 
-    return {d: r.get("description") or "" for d, r in load_bundle().records.items()}
+    return {
+        d: {"name": r.get("name"), "synonyms": list(r.get("synonyms") or []), "description": r.get("description") or ""}
+        for d, r in load_bundle().records.items()
+    }
 
 
 def load_v2() -> tuple[Any, Callable, Callable]:
@@ -276,6 +284,9 @@ class Handler(SimpleHTTPRequestHandler):
             return self._api(lambda: self.service.suggest(params.get("field", [""])[0], params.get("q", [""])[0]))
         if url.path == "/api/patient/status":
             return self._api(lambda: self._patient().status())
+        if url.path == "/api/patient/papers":
+            disease_id = parse_qs(url.query).get("id", [""])[0]
+            return self._api(lambda: self._patient().key_papers(disease_id))
         if url.path.startswith("/api/"):
             return self._send_json(HTTPStatus.NOT_FOUND, {"error": "Unknown endpoint"})
         if not self.has_static:
@@ -332,11 +343,13 @@ def main(argv: Optional[list[str]] = None) -> int:
 
     service = PlacementService(load_v2)
     threading.Thread(target=service.load, daemon=True).start()
+    records = DiseaseRecords(load_disease_records)
     patient = PatientHelper(
         MedGemma(),
         lambda field, q, limit: service.suggest(field, q, limit),
-        Descriptions(load_descriptions),
+        records.description,
         service.vocabulary,
+        PaperFinder(records.record),
     )
     server = make_server(service, args.host, args.port, DIST_DIR, patient)
     where = f"http://{args.host}:{args.port}"

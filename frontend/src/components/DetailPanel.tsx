@@ -10,14 +10,14 @@ import {
   isOrpha,
   modalityLabel,
   orphanetUrl,
-  percentile,
-  percentileSentence,
   plural,
   score,
 } from '../lib/format'
 import type { Selection } from '../lib/selection'
 import { FREQUENCIES, phenotypeWeights, type UserDisease } from '../lib/userDiseases'
 import { EdgeExplanation } from './EdgeExplanation'
+import type { Literature } from '../data/annotations'
+import { DiseasePapers } from './DiseasePapers'
 
 /** What the panel needs to show and act on the user's added diseases. */
 export interface UserContext {
@@ -46,6 +46,11 @@ interface Props {
   onFocusCluster: (next: number | null) => void
   onSelectDisease: (id: string) => void
   onSelectPair: (a: string, b: string) => void
+  /** The literature set, for listing a disease's papers. */
+  literature: Literature | null
+  literatureError: string | null
+  /** Show a paper's claims on the graph. */
+  onOpenPaper: (paperId: string) => void
 }
 
 export function DetailPanel(props: Props) {
@@ -107,7 +112,7 @@ function EdgeRow({ edge, other, nodes, filtered, onClick }: {
       <button type="button" onClick={onClick}>
         <SupportKey edge={edge} />
         <span className="pair-names">{displayName(nodes.get(other)?.name ?? other)}</span>
-        <span className="num">{percentile(edge.percentile)}</span>
+        <span className="num">{score(edge.score)}</span>
         <span className="muted">{modalityLabel(edge.mainModality)}</span>
       </button>
     </li>
@@ -137,7 +142,20 @@ function ModalityChips({ graph, present }: { graph: GraphData; present: string[]
   )
 }
 
-function DiseaseDetail({ id, graph, nodes, edgesByNode, visibleIds, onSelectPair, clusterColour, focusCluster, onFocusCluster }: Props & { id: string }) {
+function DiseaseDetail({
+  id,
+  graph,
+  nodes,
+  edgesByNode,
+  visibleIds,
+  onSelectPair,
+  clusterColour,
+  focusCluster,
+  onFocusCluster,
+  literature,
+  literatureError,
+  onOpenPaper,
+}: Props & { id: string }) {
   const node = nodes.get(id)
   const incident = useMemo(() => [...(edgesByNode.get(id) ?? [])].sort((a, b) => b.score - a.score), [edgesByNode, id])
   if (!node) {
@@ -181,7 +199,7 @@ function DiseaseDetail({ id, graph, nodes, edgesByNode, visibleIds, onSelectPair
           Most similar diseases <span className="muted">· {plural(incident.length, 'edge')}</span>
         </h3>
         <p className="muted small">
-          Ranked by score; percentile against random disease pairs.
+          Ranked by similarity score; higher is more similar.
           {hidden > 0 && ` ${hidden} hidden from the graph by the current filters.`}
         </p>
         <ul className="pair-list">
@@ -197,6 +215,15 @@ function DiseaseDetail({ id, graph, nodes, edgesByNode, visibleIds, onSelectPair
           ))}
         </ul>
       </section>
+      <DiseasePapers
+        key={id}
+        id={id}
+        literature={literature}
+        error={literatureError}
+        nodes={nodes}
+        onSelectPair={onSelectPair}
+        onOpenPaper={onOpenPaper}
+      />
     </div>
   )
 }
@@ -395,6 +422,20 @@ function UserDiseaseDetail({ disease, graph, nodes, edgesByNode, user, onSelectP
   )
 }
 
+const scoreRanges = new WeakMap<GraphData, { median: number; max: number }>()
+
+/** "Higher than most links in the graph (median 2.5)": puts a raw model score in context. */
+function scoreSentence(value: number, graph: GraphData): string {
+  let range = scoreRanges.get(graph)
+  if (!range) {
+    const scores = graph.edges.map((e) => e.score).sort((a, b) => a - b)
+    range = { median: scores[Math.floor(scores.length / 2)] ?? 0, max: scores[scores.length - 1] ?? 0 }
+    scoreRanges.set(graph, range)
+  }
+  const relation = value >= range.median ? 'above' : 'below'
+  return `Higher means more similar. This is ${relation} the median link in the graph (${score(range.median)}; the highest is ${score(range.max)}).`
+}
+
 // --- Pair --------------------------------------------------------------------------
 
 function useEdgeDetail(graph: GraphData, edge: GraphEdge | undefined, userDetails: Map<string, EdgeDetail>) {
@@ -468,12 +509,8 @@ function PairDetail({ a, b, graph, nodes, edgesById, user, onSelectDisease }: Pr
           <section className="panel-section">
             <div className="stats">
               <div className="stat">
-                <span className="stat-value">{percentile(edge.percentile)}</span>
-                <span className="stat-label">Percentile</span>
-              </div>
-              <div className="stat">
                 <span className="stat-value">{score(edge.score)}</span>
-                <span className="stat-label">Score (logit)</span>
+                <span className="stat-label">Score</span>
               </div>
               <div className="stat">
                 <span className="stat-value stat-support">
@@ -483,7 +520,7 @@ function PairDetail({ a, b, graph, nodes, edgesById, user, onSelectDisease }: Pr
                 <span className="stat-label">Support</span>
               </div>
             </div>
-            <p className="small">{percentileSentence(edge.percentile)}.</p>
+            <p className="small">{scoreSentence(edge.score, graph)}</p>
             <p className="muted small">{SUPPORT_MEANING[edge.support]}</p>
             {edge.origin === 'graph' && (
               <p className="muted small">

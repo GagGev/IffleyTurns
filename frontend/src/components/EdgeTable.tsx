@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import type { GraphEdge, GraphNode } from '../data/types'
-import { capitalise, displayName, modalityLabel, percentile, score } from '../lib/format'
+import { capitalise, displayName, modalityLabel, score } from '../lib/format'
 import { supportRank } from '../data/source'
 
 interface Props {
@@ -10,7 +10,7 @@ interface Props {
   onSelectPair: (a: string, b: string) => void
 }
 
-type SortKey = 'a' | 'b' | 'support' | 'score' | 'percentile' | 'main'
+type SortKey = 'a' | 'b' | 'support' | 'score' | 'main'
 
 const MAX_ROWS = 500
 
@@ -30,8 +30,6 @@ export function EdgeTable({ edges, nodes, selectedEdgeId, onSelectPair }: Props)
           return supportRank(e.support)
         case 'score':
           return e.score
-        case 'percentile':
-          return e.percentile
         case 'main':
           return modalityLabel(e.mainModality)
       }
@@ -68,7 +66,6 @@ export function EdgeTable({ edges, nodes, selectedEdgeId, onSelectPair }: Props)
             {header('b', 'Disease B')}
             {header('support', 'Support')}
             {header('score', 'Score', true)}
-            {header('percentile', 'Percentile', true)}
             {header('main', 'Main evidence')}
           </tr>
         </thead>
@@ -94,7 +91,6 @@ export function EdgeTable({ edges, nodes, selectedEdgeId, onSelectPair }: Props)
                 {e.mutual && <span className="muted small"> · mutual</span>}
               </td>
               <td className="num">{score(e.score)}</td>
-              <td className="num">{percentile(e.percentile)}</td>
               <td>{modalityLabel(e.mainModality)}</td>
             </tr>
           ))}

@@ -12,11 +12,13 @@ MedGemma is reached through any OpenAI-compatible endpoint on this machine
 
 from __future__ import annotations
 
+import html
 import json
 import os
 import re
 import threading
 import urllib.error
+import urllib.parse
 import urllib.request
 from typing import Any, Callable, Optional
 from urllib.parse import urlparse
@@ -170,11 +172,13 @@ class PatientHelper:
         suggest: Callable[[str, str, int], list[dict[str, str]]],
         description: Callable[[str], Optional[str]],
         vocabulary: Callable[[str], list[tuple[str, str]]] = lambda field: [],
+        papers: Optional["PaperFinder"] = None,
     ):
         self.medgemma = medgemma
         self.suggest = suggest
         self.description = description
         self.vocabulary = vocabulary
+        self.papers = papers
         self._cache: dict[tuple, Any] = {}
         self._lock = threading.Lock()
 
@@ -237,6 +241,13 @@ class PatientHelper:
         text = self._cached(("disease", disease_id), lambda: self.medgemma.chat(SIMPLIFY_PROMPT, source[:3000], 220))
         return {"id": disease_id, "text": text}
 
+    def key_papers(self, disease_id: str) -> dict[str, Any]:
+        if not disease_id:
+            raise ValueError("Send the disease's ID.")
+        if self.papers is None:
+            raise RuntimeError("Paper lookup is not configured.")
+        return self.papers.papers(disease_id)
+
     def explain_group(self, group: dict[str, Any]) -> dict[str, str]:
         category = str(group.get("category", ""))
         examples = [str(x) for x in group.get("examples", [])][:6]
@@ -250,3 +261,112 @@ class PatientHelper:
         )
         text = self._cached(("group", category, tuple(examples), tuple(shared)), lambda: self.medgemma.chat(GROUP_PROMPT, user, 180))
         return {"text": text}
+
+
+# --- Key papers ------------------------------------------------------------------------
+
+EUROPE_PMC = "https://www.ebi.ac.uk/europepmc/webservices/rest/search"
+GENERIC_WORDS = {
+    "syndrome", "disease", "disorder", "familial", "isolated", "congenital", "type", "related", "deficiency",
+    "hereditary", "inherited", "form", "rare", "primary", "secondary", "autosomal", "dominant", "recessive", "linked",
+    "early", "onset", "adult", "juvenile", "infantile", "neonatal", "childhood", "with", "without", "and", "due",
+}
+MAX_SYNONYM_HITS = 200  # A synonym matching more papers than this is a broad term, not this disease.
+
+
+ANIMAL_STUDY = re.compile(
+    r"\b(dogs?|cats?|canine|feline|bovine|equine|porcine|ovine|horses?|cattle|mice|mouse|murine|rats?|zebrafish|sheep|"
+    r"pigs?|calf|calves|primates?|veterinary)\b",
+    re.I,
+)
+
+
+def distinctive_words(name: str) -> set[str]:
+    """Stemmed content words, so "dermoids" in a title matches "dermoid" in a disease name."""
+
+    return {stem(w) for w in re.findall(r"[a-z0-9]+", name.lower()) if len(w) >= 4 and w not in GENERIC_WORDS}
+
+
+def europe_pmc_search(query: str, page_size: int = 6) -> tuple[int, list[dict[str, Any]]]:
+    params = {"query": f"{query} AND SRC:MED", "format": "json", "pageSize": page_size, "sort": "CITED desc", "resultType": "lite"}
+    url = EUROPE_PMC + "?" + urllib.parse.urlencode(params)
+    with urllib.request.urlopen(url, timeout=12) as response:
+        document = json.load(response)
+    return int(document.get("hitCount") or 0), document.get("resultList", {}).get("result", [])
+
+
+class PaperFinder:
+    """The most-cited papers about a disease from Europe PMC, by its name or a specific synonym.
+
+    Only the public disease name is sent.  A paper is kept only if its title shares a distinctive word with the name
+    searched, so a synonym that happens to appear in an unrelated abstract does not produce a wrong paper.
+    """
+
+    def __init__(
+        self,
+        record: Callable[[str], Optional[dict[str, Any]]],
+        search: Callable[[str], tuple[int, list[dict[str, Any]]]] = europe_pmc_search,
+        limit: int = 2,
+    ):
+        self.record = record
+        self.search = search
+        self.limit = limit
+        self._cache: dict[str, dict[str, Any]] = {}
+        self._lock = threading.Lock()
+
+    def papers(self, disease_id: str) -> dict[str, Any]:
+        with self._lock:
+            if disease_id in self._cache:
+                return self._cache[disease_id]
+        record = self.record(disease_id)
+        if not record:
+            raise ValueError(f"Unknown disease {disease_id!r}.")
+        name = str(record.get("name") or disease_id)
+        search_url = "https://europepmc.org/search?" + urllib.parse.urlencode({"query": f'"{name}"'})
+        try:
+            papers = self._find(name, [str(s) for s in record.get("synonyms") or []])
+        except (urllib.error.URLError, OSError, ValueError):
+            return {"id": disease_id, "papers": [], "searchUrl": search_url, "error": "Europe PMC could not be reached."}
+        result = {"id": disease_id, "papers": papers, "searchUrl": search_url}
+        with self._lock:
+            self._cache[disease_id] = result
+        return result
+
+    def _find(self, name: str, synonyms: list[str]) -> list[dict[str, Any]]:
+        specific = [s for s in synonyms if len(s) > 5 and not s.isupper() and s.lower() != name.lower()]
+        attempts = [("TITLE", name, False)] + [("TITLE", s, True) for s in specific]
+        attempts += [("TITLE_ABS", name, False)] + [("TITLE_ABS", s, True) for s in specific]
+        found: list[dict[str, Any]] = []
+        for field, term, is_synonym in attempts:
+            words = distinctive_words(term) or distinctive_words(name)
+            if not words:
+                continue
+            hits, results = self.search(f'{field}:"{term}"')
+            if is_synonym and hits > MAX_SYNONYM_HITS:
+                continue
+            for r in results:
+                title = re.sub(r"<[^>]+>", "", html.unescape(str(r.get("title") or ""))).strip()
+                # The title must share two distinctive words with the term (one if it has only one), and be about people.
+                if not title or len(distinctive_words(title) & words) < min(2, len(words)) or ANIMAL_STUDY.search(title):
+                    continue
+                if any(p["title"] == title for p in found):
+                    continue
+                pmcid = r.get("pmcid")
+                url = (
+                    f"https://europepmc.org/article/PMC/{pmcid}" if pmcid
+                    else f"https://europepmc.org/article/MED/{r.get('pmid')}" if r.get("pmid")
+                    else f"https://doi.org/{r.get('doi')}" if r.get("doi") else None
+                )
+                if not url:
+                    continue
+                found.append({
+                    "title": title,
+                    "year": r.get("pubYear"),
+                    "journal": r.get("journalTitle"),
+                    "citedBy": int(r.get("citedByCount") or 0),
+                    "openAccess": r.get("isOpenAccess") == "Y",
+                    "url": url,
+                })
+                if len(found) >= self.limit:
+                    return found
+        return found

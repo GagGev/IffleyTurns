@@ -156,6 +156,11 @@ deliberately simple and framed throughout as "not a diagnosis":
    example conditions, and **who to talk to**. Each example shows the symptoms
    it shares, an Orphanet link and an "Explain simply" button. That button
    rewrites Orphanet's own description; it is not the model's own knowledge.
+   Each example also lists up to two **key papers**: the most-cited Europe PMC
+   papers with the condition's name, or a specific synonym, in the title. Only
+   the public condition name is sent to Europe PMC. Abbreviations, broad
+   synonyms and animal studies are skipped. When nothing reliable is found, a
+   Europe PMC search link is shown instead.
    General resources (GP, Orphanet, Genetic Alliance UK, EURORDIS, NORD) follow.
 
 MedGemma only handles language. Which conditions match is decided by v2. Group
@@ -200,6 +205,7 @@ for the model.
 | `POST /api/patient/interpret` | `{"text"}` → clinical terms with HPO matches for the patient to confirm |
 | `POST /api/patient/explain-disease` | `{"id", "name"}` → Orphanet's description in plain words (`text` is null if there is none) |
 | `POST /api/patient/explain-group` | `{"category", "examples", "shared"}` → a group in plain words |
+| `GET /api/patient/papers?id=ORPHA:x` | up to two most-cited papers about a disease, plus a Europe PMC search link |
 
 ```sh
 npm run test:api   # request handling and patient helpers, with stubs in place of v2 and MedGemma

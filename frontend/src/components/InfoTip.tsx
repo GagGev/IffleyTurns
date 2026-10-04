@@ -24,11 +24,18 @@ export function InfoTip({ topic }: { topic: HelpTopic }) {
     setPinned(false)
   }, [])
 
-  // Place below the button, or above it when there is no room.
+  // Place beside the button when there is room (the sidebar always has the
+  // graph to its right), otherwise below or above it.  It must never cover
+  // the button: hovering a popover on top of it would close and reopen it.
   useLayoutEffect(() => {
     if (!open || !button.current || !popover.current) return
     const r = button.current.getBoundingClientRect()
     const height = popover.current.offsetHeight
+    const clampTop = (top: number) => Math.min(Math.max(GAP, top), window.innerHeight - height - GAP)
+    if (window.innerWidth - r.right - GAP >= WIDTH + GAP) {
+      setPosition({ top: clampTop(r.top - 12), left: r.right + GAP })
+      return
+    }
     const left = Math.min(Math.max(GAP, r.left - 12), window.innerWidth - WIDTH - GAP)
     const below = r.bottom + GAP
     const top = below + height > window.innerHeight - GAP ? Math.max(GAP, r.top - GAP - height) : below

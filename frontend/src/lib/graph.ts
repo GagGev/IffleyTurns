@@ -3,8 +3,8 @@ import { SUPPORT_LEVELS } from '../data/types'
 
 export interface Filters {
   support: Support[]
-  /** Minimum share of random pairs the edge must outscore. */
-  minPercentile: number
+  /** Minimum model score (fusion logit); null for any. */
+  minScore: number | null
   /** Only edges whose largest contribution comes from this modality. */
   mainModality: string | null
   category: string | null
@@ -22,7 +22,7 @@ export interface Filters {
 
 export const DEFAULT_FILTERS: Filters = {
   support: [...SUPPORT_LEVELS],
-  minPercentile: 0,
+  minScore: null,
   mainModality: null,
   category: null,
   cluster: null,
@@ -32,7 +32,8 @@ export const DEFAULT_FILTERS: Filters = {
   symptomMatch: 'all',
 }
 
-export const PERCENTILE_STEPS = [0, 0.9, 0.99, 0.999, 0.9999]
+/** Round thresholds across v2's score range (about -3 to 30; median 2.5, 4.1 for mutual edges). */
+export const SCORE_STEPS = [0, 2, 4, 7, 10, 15]
 
 /**
  * `diseaseSet`, when given, keeps only edges between diseases in it (the
@@ -50,7 +51,7 @@ export function filterEdges(
       if (!inside(e.source) || !inside(e.target)) return false
     }
     if (!filters.support.includes(e.support)) return false
-    if (e.percentile < filters.minPercentile) return false
+    if (filters.minScore !== null && e.score < filters.minScore) return false
     if (filters.mainModality && e.mainModality !== filters.mainModality) return false
     // Links from added diseases are never mutual; keep them visible.
     if (filters.mutualOnly && !e.mutual && e.origin === 'graph') return false

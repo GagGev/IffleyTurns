@@ -2,8 +2,8 @@ import { useMemo } from 'react'
 import type { TermOption } from '../data/annotations'
 import type { GraphData, Support } from '../data/types'
 import { SUPPORT_LEVELS, SUPPORT_MEANING } from '../data/types'
-import { DEFAULT_FILTERS, type Filters, PERCENTILE_STEPS } from '../lib/graph'
-import { capitalise, modalityLabel, percentile } from '../lib/format'
+import { DEFAULT_FILTERS, type Filters, SCORE_STEPS } from '../lib/graph'
+import { capitalise, modalityLabel } from '../lib/format'
 import { InfoTip } from './InfoTip'
 import { TermPicker } from './TermPicker'
 
@@ -60,12 +60,16 @@ export function FilterPanel({ graph, filters, onChange, symptomOptions, symptomE
 
       <label className="field">
         <span className="label-row">
-          Minimum percentile <InfoTip topic="percentile" />
+          Minimum score <InfoTip topic="score" />
         </span>
-        <select value={filters.minPercentile} onChange={(e) => set('minPercentile', Number(e.target.value))}>
-          {PERCENTILE_STEPS.map((p) => (
-            <option key={p} value={p}>
-              {p === 0 ? 'Any' : `≥ ${percentile(p)} of random pairs`}
+        <select
+          value={filters.minScore ?? ''}
+          onChange={(e) => set('minScore', e.target.value === '' ? null : Number(e.target.value))}
+        >
+          <option value="">Any</option>
+          {SCORE_STEPS.map((s) => (
+            <option key={s} value={s}>
+              ≥ {s}
             </option>
           ))}
         </select>

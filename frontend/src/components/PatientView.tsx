@@ -6,6 +6,8 @@ import {
   groupInfo,
   interpretSymptoms,
   type InterpretedTerm,
+  type KeyPaper,
+  keyPapers,
   patientStatus,
   RESOURCES,
 } from '../data/patient'
@@ -37,29 +39,30 @@ const NEIGHBOURS = 30
 const GROUPS_SHOWN = 3
 const EXAMPLES_SHOWN = 4
 
-/** Rank clusters by how many of the closest diseases fall in them, closer ones counting more. */
+/**
+ * Rank groups by how many of the closest diseases fall in them, closer ones
+ * counting more.  Clusters are merged by their main Orphanet category, since
+ * that is what the plain-language group name is based on.
+ */
 function groupNeighbours(neighbours: PlacementNeighbour[], nodes: Map<string, GraphNode>, graph: GraphData): Group[] {
-  const groups = new Map<number, { score: number; examples: Example[] }>()
+  const groups = new Map<string, { score: number; index: number; examples: Example[] }>()
   neighbours.forEach((n, rank) => {
     const node = nodes.get(n.id)
-    if (!node || node.cluster < 0) return
-    const g = groups.get(node.cluster) ?? { score: 0, examples: [] }
+    const category = node && node.cluster >= 0 ? graph.clusters[node.cluster]?.topCategory : undefined
+    if (!node || !category) return
+    const g = groups.get(category) ?? { score: 0, index: node.cluster, examples: [] }
     g.score += 1 / (rank + 1)
     // Patients don't need the HPO codes v2 appends to feature names.
     const shared = (n.explanation.find((e) => e.modality === 'phenotype')?.shared ?? []).map((f) =>
       f.replace(/\s*\(HP:\d+\)$/, ''),
     )
     g.examples.push({ id: n.id, name: n.name, shared })
-    groups.set(node.cluster, g)
+    groups.set(category, g)
   })
   return [...groups.entries()]
     .sort((a, b) => b[1].score - a[1].score)
     .slice(0, GROUPS_SHOWN)
-    .map(([index, g]) => ({
-      index,
-      category: graph.clusters[index]?.topCategory ?? '',
-      examples: g.examples.slice(0, EXAMPLES_SHOWN),
-    }))
+    .map(([category, g]) => ({ index: g.index, category, examples: g.examples.slice(0, EXAMPLES_SHOWN) }))
 }
 
 export function PatientView({ graph, onNavigate }: { graph: GraphData; onNavigate: (view: AppView) => void }) {
@@ -78,9 +81,25 @@ export function PatientView({ graph, onNavigate }: { graph: GraphData; onNavigat
   const [matchError, setMatchError] = useState<string | null>(null)
   const [groups, setGroups] = useState<Group[] | null>(null)
 
+  // Keep checking until both services are up, so starting them after the page loads still works.
   useEffect(() => {
-    patientStatus().then(setMedgemma)
-    apiHealth().then(setPlacement)
+    let cancelled = false
+    let timer: ReturnType<typeof setTimeout>
+    const check = async () => {
+      const [m, p] = await Promise.all([patientStatus(), apiHealth()])
+      if (cancelled) return
+      setMedgemma(m)
+      setPlacement(p)
+      if (m !== 'ready' || p.status !== 'ready') timer = setTimeout(check, p.status === 'loading' ? 2000 : 5000)
+    }
+    void check()
+    return () => {
+      cancelled = true
+      clearTimeout(timer)
+    }
+  }, [])
+
+  useEffect(() => {
     loadAnnotations().then(
       (a) => setOptions(a.symptoms),
       () => setOptions([]),
@@ -136,150 +155,132 @@ export function PatientView({ graph, onNavigate }: { graph: GraphData; onNavigat
   return (
     <div className="patient">
       <header className="patient-header">
-        <button type="button" className="link-button" onClick={() => onNavigate('home')}>
-          ← Home
-        </button>
-        <span className="patient-brand">Rare Disease Explorer · for patients and families</span>
-        <button type="button" className="link-button" onClick={() => onNavigate('research')}>
-          Researcher view
-        </button>
+        <div className="patient-header-inner">
+          <button type="button" className="link-button" onClick={() => onNavigate('home')}>
+            ← Home
+          </button>
+          <span className="patient-brand">Rare Disease Explorer · for patients and families</span>
+          <button type="button" className="link-button" onClick={() => onNavigate('research')}>
+            Researcher view
+          </button>
+        </div>
       </header>
 
       <main className="patient-main">
-        <div className="patient-notice" role="note">
-          <strong>This tool cannot diagnose you or your child.</strong> It shows groups of rare conditions that share some of
-          the symptoms you describe. Many common conditions cause the same symptoms. Please talk to a doctor about any
-          health worries. If symptoms are severe or getting worse quickly, contact your doctor or emergency services now.
-        </div>
+        <p className="patient-notice" role="note">
+          <strong>Not a diagnosis.</strong> This shows groups of rare conditions that share some of the symptoms you
+          choose. Many common conditions cause the same symptoms, so please talk to a doctor about any worries. If
+          symptoms are severe or getting worse quickly, contact your doctor or emergency services.
+        </p>
 
         {groups ? (
           <Results groups={groups} symptoms={symptoms} medgemma={medgemma === 'ready'} onStartAgain={startAgain} onEdit={() => setGroups(null)} />
         ) : (
-          <>
-            <section className="patient-card">
-              <h2>1. Describe the symptoms</h2>
-              {medgemma === 'ready' ? (
-                <>
-                  <label htmlFor="patient-text" className="patient-label">
-                    In your own words, what symptoms or features have you noticed?
-                  </label>
-                  <textarea
-                    id="patient-text"
-                    rows={4}
-                    value={text}
-                    maxLength={2000}
-                    placeholder="For example: my son has fits, is very floppy, and can't sit up yet at one year old."
-                    onChange={(e) => setText(e.target.value)}
-                  />
-                  <button type="button" className="button primary" disabled={!text.trim() || interpreting} onClick={() => void interpret()}>
-                    {interpreting ? 'Reading your description…' : 'Find the medical terms'}
-                  </button>
-                  <p className="muted small">Your description is processed on this computer and is not saved.</p>
-                </>
-              ) : (
-                <p className="muted">
-                  {medgemma === 'checking'
-                    ? 'Checking for the language helper…'
-                    : 'The language helper is not running, so describing symptoms in your own words is unavailable. Please choose symptoms from the list below.'}
-                </p>
-              )}
-              {interpretError && <p className="callout small">{interpretError}</p>}
+          <section className="patient-card">
+            <h2>Choose symptoms</h2>
+            <TermPicker
+              label="Search for a symptom"
+              placeholder="e.g. seizure, tall stature, easy bruising"
+              options={(options ?? []).filter((o) => !has(o.id))}
+              value={null}
+              loading={options === null}
+              onPick={(id) => add({ id, label: labelOf(id) })}
+              onClear={() => {}}
+            />
+            {symptoms.length > 0 ? (
+              <ul className="patient-symptoms" aria-label="Chosen symptoms">
+                {symptoms.map((s) => (
+                  <li key={s.id}>
+                    {s.label}
+                    <button type="button" aria-label={`Remove ${s.label}`} onClick={() => remove(s.id)}>
+                      ×
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="muted small">No symptoms chosen yet.</p>
+            )}
 
-              {interpreted && (
-                <div className="interpreted">
-                  <h3>What we understood</h3>
-                  {interpreted.length === 0 ? (
-                    <p className="muted">We couldn't find any symptoms in that description. Try describing them differently, or search below.</p>
-                  ) : (
-                    <ul className="interpreted-list">
-                      {interpreted.map((t) => (
-                        <li key={t.term}>
-                          {t.matches.length > 0 ? (
-                            <>
-                              <label className="check">
-                                <input
-                                  type="checkbox"
-                                  checked={t.matches.some((m) => has(m.id))}
-                                  onChange={(e) => {
-                                    const current = t.matches.find((m) => has(m.id))
-                                    if (e.target.checked) add(t.matches[0])
-                                    else if (current) remove(current.id)
-                                  }}
-                                />
-                                {t.matches.length === 1 && <span>{t.matches[0].label}</span>}
-                                {t.matches.length > 1 && !t.matches.some((m) => has(m.id)) && (
-                                  <span className="muted">{t.matches[0].label}</span>
-                                )}
-                              </label>
-                              {t.matches.length > 1 && t.matches.some((m) => has(m.id)) && (
-                                <select
-                                  aria-label={`Other meanings of ${t.term}`}
-                                  value={t.matches.find((m) => has(m.id))?.id ?? ''}
-                                  onChange={(e) => {
-                                    for (const m of t.matches) remove(m.id)
-                                    const pick = t.matches.find((m) => m.id === e.target.value)
-                                    if (pick) add(pick)
-                                  }}
-                                >
-                                  <option value="">Not this</option>
-                                  {t.matches.map((m) => (
-                                    <option key={m.id} value={m.id}>
-                                      {m.label}
-                                    </option>
-                                  ))}
-                                </select>
+            {medgemma === 'ready' && (
+              <div className="describe">
+                <label htmlFor="patient-text" className="patient-label">
+                  Or describe them in your own words
+                </label>
+                <textarea
+                  id="patient-text"
+                  rows={3}
+                  value={text}
+                  maxLength={2000}
+                  placeholder="For example: my son has fits, is very floppy, and can't sit up yet at one year old."
+                  onChange={(e) => setText(e.target.value)}
+                />
+                <button type="button" className="button" disabled={!text.trim() || interpreting} onClick={() => void interpret()}>
+                  {interpreting ? 'Reading your description…' : 'Find the symptoms'}
+                </button>
+                <p className="muted small">Processed on this computer and not saved.</p>
+                {interpretError && <p className="callout small">{interpretError}</p>}
+                  {interpreted && (
+                    <div className="interpreted">
+                      <h3>What we understood</h3>
+                      {interpreted.length === 0 ? (
+                        <p className="muted">We couldn't find any symptoms in that description. Try describing them differently, or search above.</p>
+                      ) : (
+                        <ul className="interpreted-list">
+                          {interpreted.map((t) => (
+                            <li key={t.term}>
+                              {t.matches.length > 0 ? (
+                                <>
+                                  <label className="check">
+                                    <input
+                                      type="checkbox"
+                                      checked={t.matches.some((m) => has(m.id))}
+                                      onChange={(e) => {
+                                        const current = t.matches.find((m) => has(m.id))
+                                        if (e.target.checked) add(t.matches[0])
+                                        else if (current) remove(current.id)
+                                      }}
+                                    />
+                                    {t.matches.length === 1 && <span>{t.matches[0].label}</span>}
+                                    {t.matches.length > 1 && !t.matches.some((m) => has(m.id)) && (
+                                      <span className="muted">{t.matches[0].label}</span>
+                                    )}
+                                  </label>
+                                  {t.matches.length > 1 && t.matches.some((m) => has(m.id)) && (
+                                    <select
+                                      aria-label={`Other meanings of ${t.term}`}
+                                      value={t.matches.find((m) => has(m.id))?.id ?? ''}
+                                      onChange={(e) => {
+                                        for (const m of t.matches) remove(m.id)
+                                        const pick = t.matches.find((m) => m.id === e.target.value)
+                                        if (pick) add(pick)
+                                      }}
+                                    >
+                                      <option value="">Not this</option>
+                                      {t.matches.map((m) => (
+                                        <option key={m.id} value={m.id}>
+                                          {m.label}
+                                        </option>
+                                      ))}
+                                    </select>
+                                  )}
+                                </>
+                              ) : (
+                                <span className="muted">
+                                  We couldn't match “{t.term}” to a medical term. Try searching for it above.
+                                </span>
                               )}
-                            </>
-                          ) : (
-                            <span className="muted">
-                              We couldn't match “{t.term}” to a medical term. Try searching for it below.
-                            </span>
-                          )}
-                        </li>
-                      ))}
-                    </ul>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                      <p className="muted small">Please check these. Untick anything that isn't right.</p>
+                    </div>
                   )}
-                  <p className="muted small">Please check these. Untick anything that isn't right.</p>
-                </div>
-              )}
-            </section>
+              </div>
+            )}
 
-            <section className="patient-card">
-              <h2>{medgemma === 'ready' ? '2. Check and add symptoms' : '2. Choose symptoms'}</h2>
-              <TermPicker
-                label="Search for a symptom"
-                placeholder="e.g. seizure, tall stature, easy bruising"
-                options={(options ?? []).filter((o) => !has(o.id))}
-                value={null}
-                loading={options === null}
-                onPick={(id) => add({ id, label: labelOf(id) })}
-                onClear={() => {}}
-              />
-              {symptoms.length > 0 ? (
-                <ul className="patient-symptoms" aria-label="Symptoms to use">
-                  {symptoms.map((s) => (
-                    <li key={s.id}>
-                      {s.label}
-                      <button type="button" aria-label={`Remove ${s.label}`} onClick={() => remove(s.id)}>
-                        ×
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="muted small">No symptoms chosen yet.</p>
-              )}
-            </section>
-
-            <section className="patient-card">
-              <h2>3. See related groups of conditions</h2>
-              {placement.status !== 'ready' && (
-                <p className="callout small">
-                  {placement.status === 'loading'
-                    ? 'The matching service is still starting. Please try again in a moment.'
-                    : 'The matching service is not running, so results cannot be shown.'}
-                </p>
-              )}
+            <div className="patient-actions">
               <button
                 type="button"
                 className="button primary"
@@ -288,9 +289,16 @@ export function PatientView({ graph, onNavigate }: { graph: GraphData; onNavigat
               >
                 {matching ? 'Looking…' : 'Show related groups'}
               </button>
-              {matchError && <p className="callout small">{matchError}</p>}
-            </section>
-          </>
+              {placement.status !== 'ready' && (
+                <span className="muted small">
+                  {placement.status === 'loading'
+                    ? 'Getting ready, this takes a few seconds…'
+                    : "Results can't be shown right now: the matching service isn't running."}
+                </span>
+              )}
+            </div>
+            {matchError && <p className="callout small">{matchError}</p>}
+          </section>
         )}
       </main>
     </div>
@@ -331,7 +339,7 @@ function Results({
         </section>
       )}
       {groups.map((g, i) => (
-        <GroupCard key={g.index} group={g} first={i === 0} medgemma={medgemma} />
+        <GroupCard key={g.category} group={g} first={i === 0} medgemma={medgemma} />
       ))}
       <section className="patient-card">
         <h2>Where to find reliable help</h2>
@@ -382,9 +390,9 @@ function GroupCard({ group, first, medgemma }: { group: Group; first: boolean; m
       {medgemma && !summary && <p className="muted small">Writing a simple explanation…</p>}
 
       <h3>Conditions in this group with similar features</h3>
-      <ul className="example-list">
+      <ul className="example-grid">
         {group.examples.map((e) => (
-          <ExampleItem key={e.id} example={e} medgemma={medgemma} />
+          <ExampleCard key={e.id} example={e} medgemma={medgemma} />
         ))}
       </ul>
 
@@ -397,11 +405,24 @@ function GroupCard({ group, first, medgemma }: { group: Group; first: boolean; m
   )
 }
 
-function ExampleItem({ example, medgemma }: { example: Example; medgemma: boolean }) {
+function ExampleCard({ example, medgemma }: { example: Example; medgemma: boolean }) {
   const [open, setOpen] = useState(false)
   // undefined: not asked yet; null: Orphanet has no description to simplify.
   const [text, setText] = useState<string | null | undefined>(undefined)
   const [error, setError] = useState<string | null>(null)
+  const [papers, setPapers] = useState<{ list: KeyPaper[]; searchUrl: string } | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+    keyPapers(example.id).then(
+      (r) => !cancelled && setPapers({ list: r.papers, searchUrl: r.searchUrl }),
+      () => {},
+    )
+    return () => {
+      cancelled = true
+    }
+  }, [example.id])
+
   const toggle = () => {
     setOpen(!open)
     if (!open && text === undefined && medgemma) {
@@ -411,20 +432,27 @@ function ExampleItem({ example, medgemma }: { example: Example; medgemma: boolea
       )
     }
   }
+
   return (
-    <li>
-      <div className="example-head">
-        <strong>{displayName(example.name)}</strong>
-        <a href={orphanetUrl(example.id)} target="_blank" rel="noreferrer" className="small">
+    <li className="example-card">
+      <h4>{displayName(example.name)}</h4>
+      {example.shared.length > 0 && (
+        <ul className="shared-tags" aria-label="Symptoms it shares">
+          {example.shared.map((s) => (
+            <li key={s}>{s}</li>
+          ))}
+        </ul>
+      )}
+      <div className="example-links">
+        <a href={orphanetUrl(example.id)} target="_blank" rel="noreferrer">
           Orphanet page
         </a>
+        {medgemma && (
+          <button type="button" className="link-button" aria-expanded={open} onClick={toggle}>
+            {open ? 'Hide explanation' : 'Explain simply'}
+          </button>
+        )}
       </div>
-      {example.shared.length > 0 && <p className="muted small">Shares: {example.shared.join(', ')}</p>}
-      {medgemma && (
-        <button type="button" className="link-button small" aria-expanded={open} onClick={toggle}>
-          {open ? 'Hide explanation' : 'Explain simply'}
-        </button>
-      )}
       {open && (
         <p className="example-explanation">
           {error ??
@@ -436,6 +464,30 @@ function ExampleItem({ example, medgemma }: { example: Example; medgemma: boolea
           {text && <span className="muted small"> (Simplified from Orphanet's description by an AI model; may contain mistakes.)</span>}
         </p>
       )}
+      <div className="key-papers">
+        <span className="key-papers-label">Key papers</span>
+        {papers === null ? (
+          <span className="muted small">Looking…</span>
+        ) : papers.list.length > 0 ? (
+          <ul>
+            {papers.list.map((p) => (
+              <li key={p.url}>
+                <a href={p.url} target="_blank" rel="noreferrer" title={p.title}>
+                  {p.title}
+                </a>
+                <span className="muted small">
+                  {[p.journal, p.year].filter(Boolean).join(', ')}
+                  {p.openAccess && ' · free to read'}
+                </span>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <a className="small" href={papers.searchUrl} target="_blank" rel="noreferrer">
+            Search Europe PMC for papers
+          </a>
+        )}
+      </div>
     </li>
   )
 }

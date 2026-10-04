@@ -23,9 +23,9 @@ import {
   parsePaperResult,
   placementFromResult,
 } from './lib/paperService'
-import { download, plural } from './lib/format'
+import { displayName, download, plural } from './lib/format'
 import { DEFAULT_FILTERS, type Filters, filterEdges, findEdge, isClaimOnly, neighbourhood } from './lib/graph'
-import { useHashSelection } from './lib/selection'
+import { sameSelection, type Selection, useHashSelection } from './lib/selection'
 import { categoricalColour, useCanvasColours, verdictColour } from './lib/theme'
 import { exportJson, type UserDisease, useUserDiseases } from './lib/userDiseases'
 import { Home } from './components/Home'
@@ -107,7 +107,16 @@ function useApiHealth(): ApiHealth {
 
 function Explorer({ graph, onNavigate }: { graph: GraphData; onNavigate: (view: AppView) => void }) {
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS)
-  const [selection, select] = useHashSelection()
+  const [selection, setSelection] = useHashSelection()
+  // One step of history: the disease or pair you were looking at before this one.
+  const [previous, setPrevious] = useState<Selection>(null)
+  const select = useCallback(
+    (next: Selection) => {
+      if (selection && !sameSelection(selection, next)) setPrevious(selection)
+      setSelection(next)
+    },
+    [selection, setSelection],
+  )
   const [view, setView] = useState<View>('graph')
   const [scope, setScope] = useState<Scope>('all')
   const [depth, setDepth] = useState(1)
@@ -525,6 +534,14 @@ function Explorer({ graph, onNavigate }: { graph: GraphData; onNavigate: (view: 
     },
   }
 
+  const previousLabel = (() => {
+    if (!previous || (selection && sameSelection(previous, selection))) return null
+    const name = (id: string) => (nodes.has(id) ? displayName(nodes.get(id)!.name) : null)
+    if (previous.kind === 'disease') return name(previous.id)
+    const [a, b] = [name(previous.a), name(previous.b)]
+    return a && b ? `${a} ↔ ${b}` : null
+  })()
+
   // The details sidebar only opens for a selected disease, pair or paper.
   const showDetails = Boolean(selection || activePaper)
 
@@ -631,6 +648,16 @@ function Explorer({ graph, onNavigate }: { graph: GraphData; onNavigate: (view: 
               Neighbourhood
             </button>
           </div>
+          {previousLabel && (
+            <button
+              type="button"
+              className="link-button small back-button"
+              title={`Back to ${previousLabel}`}
+              onClick={() => select(previous)}
+            >
+              ← Back to {previousLabel}
+            </button>
+          )}
           {focused && (
             <label className="inline-field">
               Depth
@@ -732,6 +759,12 @@ function Explorer({ graph, onNavigate }: { graph: GraphData; onNavigate: (view: 
           onFocusCluster={focusCluster}
           onSelectDisease={selectDisease}
           onSelectPair={selectPair}
+          literature={literature}
+          literatureError={literatureError}
+          onOpenPaper={(paperId) => {
+            setActivePaperId(paperId)
+            select(null)
+          }}
         />
         )}
       </aside>

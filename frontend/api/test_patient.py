@@ -15,7 +15,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import server  # noqa: E402
-from patient import MedGemma, MedGemmaUnavailable, PatientHelper, flips_meaning, parse_terms, stem, word_match  # noqa: E402
+from patient import MedGemma, MedGemmaUnavailable, PaperFinder, PatientHelper, flips_meaning, parse_terms, stem, word_match  # noqa: E402
 from test_server import StubModel, stub_parse, stub_place  # noqa: E402
 
 VOCABULARY = [
@@ -109,6 +109,66 @@ class PatientHelperTest(unittest.TestCase):
         self.assertFalse(client.available())
         with self.assertRaises(MedGemmaUnavailable):
             client.chat("system", "user")
+
+
+def fake_search(responses):
+    """Europe PMC stand-in: query -> (hit count, results)."""
+
+    calls = []
+
+    def search(query):
+        calls.append(query)
+        return responses.get(query, (0, []))
+
+    search.calls = calls
+    return search
+
+
+def paper(title, pmid="1", cited=10, pmcid=None):
+    return {"title": title, "pmid": pmid, "pubYear": "2020", "journalTitle": "J", "citedByCount": cited, "pmcid": pmcid,
+            "isOpenAccess": "Y" if pmcid else "N"}
+
+
+class PaperFinderTest(unittest.TestCase):
+    def test_title_match_on_the_name_comes_first(self):
+        search = fake_search({'TITLE:"Marfan syndrome"': (3000, [paper("Marfan syndrome caused by fibrillin mutation", "1"),
+                                                               paper("The revised Ghent nosology for the Marfan syndrome", "2", pmcid="PMC9")])})
+        result = PaperFinder({"ORPHA:558": {"name": "Marfan syndrome", "synonyms": []}}.get, search).papers("ORPHA:558")
+        self.assertEqual([p["title"][:6] for p in result["papers"]], ["Marfan", "The re"])
+        self.assertEqual(result["papers"][1]["url"], "https://europepmc.org/article/PMC/PMC9")
+        self.assertTrue(result["papers"][1]["openAccess"])
+        self.assertEqual(len(search.calls), 1, "stops once two papers are found")
+
+    def test_broad_synonyms_and_abbreviations_are_skipped(self):
+        search = fake_search({
+            'TITLE:"Cerebellar hypoplasia"': (1262, [paper("Lissencephaly with cerebellar hypoplasia")]),
+            'TITLE:"Chiari IV malformation"': (3, [paper("Classifications of the Chiari malformations", "7")]),
+        })
+        record = {"name": "Isolated cerebellar agenesis", "synonyms": ["CND", "Cerebellar hypoplasia", "Chiari IV malformation"]}
+        result = PaperFinder({"ORPHA:1": record}.get, search).papers("ORPHA:1")
+        self.assertEqual([p["title"] for p in result["papers"]], ["Classifications of the Chiari malformations"])
+        self.assertFalse(any('"CND"' in q for q in search.calls))
+
+    def test_papers_must_share_a_distinctive_word_with_the_term(self):
+        search = fake_search({'TITLE_ABS:"pterygium of the conjunctiva and cornea"': (1, [paper("Peroxiredoxin I and II in human eyes")])})
+        record = {"name": "Familial pterygium of the conjunctiva", "synonyms": ["pterygium of the conjunctiva and cornea"]}
+        result = PaperFinder({"ORPHA:2": record}.get, search).papers("ORPHA:2")
+        self.assertEqual(result["papers"], [])
+        self.assertIn("europepmc.org/search", result["searchUrl"])
+
+    def test_animal_studies_are_excluded(self):
+        search = fake_search({'TITLE:"X-linked corneal dermoid"': (0, []), 'TITLE_ABS:"X-linked corneal dermoid"': (2, [
+            paper("Bilateral corneal dermoids and distichiasis in a dog", "1"), paper("Bilateral corneal dermoids", "2")])})
+        result = PaperFinder({"ORPHA:4": {"name": "X-linked corneal dermoid", "synonyms": []}}.get, search).papers("ORPHA:4")
+        self.assertEqual([p["title"] for p in result["papers"]], ["Bilateral corneal dermoids"])
+
+    def test_network_failure_is_reported_not_raised(self):
+        def offline(query):
+            raise urllib.error.URLError("no network")
+
+        result = PaperFinder({"ORPHA:3": {"name": "Fabry disease", "synonyms": []}}.get, offline).papers("ORPHA:3")
+        self.assertEqual(result["papers"], [])
+        self.assertIn("error", result)
 
 
 class PatientApiTest(unittest.TestCase):

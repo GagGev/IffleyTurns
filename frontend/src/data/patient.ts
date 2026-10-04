@@ -29,6 +29,19 @@ export const explainDisease = (id: string, name: string) => post<{ text: string 
 export const explainGroup = (category: string, examples: string[], shared: string[]) =>
   post<{ text: string }>('explain-group', { category, examples, shared })
 
+export interface KeyPaper {
+  title: string
+  year: string | null
+  journal: string | null
+  citedBy: number
+  openAccess: boolean
+  url: string
+}
+
+/** Up to two of the most-cited papers about a disease, and a Europe PMC search for more. */
+export const keyPapers = (id: string) =>
+  api<{ papers: KeyPaper[]; searchUrl: string; error?: string }>(`patient/papers?id=${encodeURIComponent(id)}`)
+
 /** Plain-language name, a one-line description, and who usually looks after it, per Orphanet category. */
 export interface GroupInfo {
   name: string
