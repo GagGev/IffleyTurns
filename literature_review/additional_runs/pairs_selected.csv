@@ -1,0 +1,235 @@
+pair_id,disease_a,disease_b,disease_a_orpha_id,disease_b_orpha_id,synonyms_a,synonyms_b,stratum,pheno_jaccard,n_shared_genes,status_a,status_b
+ORPHA:411511|ORPHA:98794,Angelman syndrome due to a point mutation,Angelman syndrome due to maternal 15q11q13 deletion,ORPHA:411511,ORPHA:98794,,,A_close_relatives,0.65,1,rare,rare
+ORPHA:177901|ORPHA:398069,Prader-Willi syndrome due to paternal deletion of 15q11q13 type 1,Schaaf-Yang syndrome,ORPHA:177901,ORPHA:398069,,,A_close_relatives,0.36,1,rare,rare
+ORPHA:276241|ORPHA:276244,Machado-Joseph disease type 2,Machado-Joseph disease type 3,ORPHA:276241,ORPHA:276244,,,A_close_relatives,0.85,1,rare,rare
+ORPHA:93945|ORPHA:93950,"X-linked intellectual disability, Porteous type","X-linked intellectual disability, Sutherland-Haan type",ORPHA:93945,ORPHA:93950,,,A_close_relatives,0.45,1,rare,rare
+ORPHA:93924|ORPHA:93926,Lobar holoprosencephaly,Midline interhemispheric variant of holoprosencephaly,ORPHA:93924,ORPHA:93926,,,A_close_relatives,1.00,15,rare,rare
+ORPHA:1454|ORPHA:2318,Joubert syndrome with hepatic defect,Joubert syndrome with oculorenal defect,ORPHA:1454,ORPHA:2318,,,A_close_relatives,0.37,1,rare,rare
+ORPHA:177901|ORPHA:177904,Prader-Willi syndrome due to paternal deletion of 15q11q13 type 1,Prader-Willi syndrome due to paternal deletion of 15q11q13 type 2,ORPHA:177901,ORPHA:177904,,,A_close_relatives,0.97,4,rare,rare
+ORPHA:99735|ORPHA:99736,Myotonia permanens,Acetazolamide-responsive myotonia,ORPHA:99735,ORPHA:99736,,,A_close_relatives,0.50,1,rare,rare
+ORPHA:169802|ORPHA:169805,Severe hemophilia A,Moderate hemophilia A,ORPHA:169802,ORPHA:169805,,,A_close_relatives,0.36,1,rare,rare
+ORPHA:177904|ORPHA:398069,Prader-Willi syndrome due to paternal deletion of 15q11q13 type 2,Schaaf-Yang syndrome,ORPHA:177904,ORPHA:398069,,,A_close_relatives,0.36,1,rare,rare
+ORPHA:79443|ORPHA:79444,Pseudohypoparathyroidism type 1A,Pseudohypoparathyroidism type 1C,ORPHA:79443,ORPHA:79444,,,A_close_relatives,0.81,1,rare,rare
+ORPHA:289916|ORPHA:79312,Vitamin B12-unresponsive methylmalonic acidemia type mut0,Vitamin B12-unresponsive methylmalonic acidemia type mut-,ORPHA:289916,ORPHA:79312,,,A_close_relatives,0.50,1,rare,rare
+ORPHA:411511|ORPHA:98795,Angelman syndrome due to a point mutation,Angelman syndrome due to paternal uniparental disomy of chromosome 15,ORPHA:411511,ORPHA:98795,,,A_close_relatives,0.55,1,rare,rare
+ORPHA:79397|ORPHA:79399,Epidermolysis bullosa simplex with mottled pigmentation,"Autosomal dominant generalized epidermolysis bullosa simplex, intermediate form",ORPHA:79397,ORPHA:79399,,,A_close_relatives,0.57,2,rare,rare
+ORPHA:309256|ORPHA:309263,"Metachromatic leukodystrophy, late infantile form","Metachromatic leukodystrophy, juvenile form",ORPHA:309256,ORPHA:309263,,,A_close_relatives,0.82,2,rare,rare
+ORPHA:143|ORPHA:99880,Parathyroid carcinoma,Hyperparathyroidism-jaw tumor syndrome,ORPHA:143,ORPHA:99880,,,A_close_relatives,0.89,1,rare,rare
+ORPHA:276238|ORPHA:276244,Machado-Joseph disease type 1,Machado-Joseph disease type 3,ORPHA:276238,ORPHA:276244,,,A_close_relatives,0.85,1,rare,rare
+ORPHA:254525|ORPHA:254531,Temple syndrome due to paternal 14q32.2 microdeletion,Temple syndrome due to paternal 14q32.2 hypomethylation,ORPHA:254525,ORPHA:254531,,,A_close_relatives,0.39,3,rare,rare
+ORPHA:93925|ORPHA:93926,Alobar holoprosencephaly,Midline interhemispheric variant of holoprosencephaly,ORPHA:93925,ORPHA:93926,,,A_close_relatives,1.00,15,rare,rare
+ORPHA:254531|ORPHA:96184,Temple syndrome due to paternal 14q32.2 hypomethylation,Temple syndrome due to maternal uniparental disomy of chromosome 14,ORPHA:254531,ORPHA:96184,,,A_close_relatives,0.57,3,rare,rare
+ORPHA:98853|ORPHA:98855,Autosomal dominant Emery-Dreifuss muscular dystrophy,Autosomal recessive Emery-Dreifuss muscular dystrophy,ORPHA:98853,ORPHA:98855,,,A_close_relatives,0.86,1,rare,rare
+ORPHA:276238|ORPHA:276241,Machado-Joseph disease type 1,Machado-Joseph disease type 2,ORPHA:276238,ORPHA:276241,,,A_close_relatives,1.00,1,rare,rare
+ORPHA:261537|ORPHA:261552,Mowat-Wilson syndrome due to monosomy 2q22,Mowat-Wilson syndrome due to a ZEB2 point mutation,ORPHA:261537,ORPHA:261552,,,A_close_relatives,0.86,1,rare,rare
+ORPHA:93258|ORPHA:93260,Pfeiffer syndrome type 1,Pfeiffer syndrome type 3,ORPHA:93258,ORPHA:93260,,,A_close_relatives,0.42,1,rare,rare
+ORPHA:352665|ORPHA:453504,Neurodevelopmental disorder-craniofacial dysmorphism-cardiac defect-skeletal anomalies syndrome due to 9q21.3 microdeletion,Neurodevelopmental disorder-craniofacial dysmorphism-cardiac defect-skeletal anomalies syndrome due to a point mutation,ORPHA:352665,ORPHA:453504,,,A_close_relatives,1.00,1,rare,rare
+ORPHA:93259|ORPHA:93260,Pfeiffer syndrome type 2,Pfeiffer syndrome type 3,ORPHA:93259,ORPHA:93260,,,A_close_relatives,0.65,1,rare,rare
+ORPHA:220497|ORPHA:2318,Joubert syndrome with renal defect,Joubert syndrome with oculorenal defect,ORPHA:220497,ORPHA:2318,,,A_close_relatives,0.59,1,rare,rare
+ORPHA:79444|ORPHA:94089,Pseudohypoparathyroidism type 1C,Pseudohypoparathyroidism type 1B,ORPHA:79444,ORPHA:94089,,,A_close_relatives,0.55,1,rare,rare
+ORPHA:2834|ORPHA:357074,Wrinkly skin syndrome,"Autosomal recessive cutis laxa type 2, classic type",ORPHA:2834,ORPHA:357074,,,A_close_relatives,0.40,1,rare,rare
+ORPHA:411536|ORPHA:411543,Mild phosphoribosylpyrophosphate synthetase superactivity,Severe phosphoribosylpyrophosphate synthetase superactivity,ORPHA:411536,ORPHA:411543,,,A_close_relatives,0.41,1,rare,rare
+ORPHA:424|ORPHA:99819,Familial hyperthyroidism due to mutations in TSH receptor,Familial gestational hyperthyroidism,ORPHA:424,ORPHA:99819,,,A_close_relatives,0.75,1,rare,rare
+ORPHA:90695|ORPHA:95494,Non-acquired panhypopituitarism,"Combined pituitary hormone deficiencies, genetic forms",ORPHA:90695,ORPHA:95494,,,A_close_relatives,0.65,1,rare,rare
+ORPHA:227510|ORPHA:98933,"Multiple system atrophy, cerebellar type","Multiple system atrophy, parkinsonian type",ORPHA:227510,ORPHA:98933,,,A_close_relatives,0.86,1,rare,rare
+ORPHA:276621|ORPHA:29072,Sporadic pheochromocytoma/secreting paraganglioma,Hereditary pheochromocytoma-paraganglioma,ORPHA:276621,ORPHA:29072,,,A_close_relatives,0.90,4,rare,rare
+ORPHA:1454|ORPHA:220497,Joubert syndrome with hepatic defect,Joubert syndrome with renal defect,ORPHA:1454,ORPHA:220497,,,A_close_relatives,0.40,1,rare,rare
+ORPHA:220497|ORPHA:475,Joubert syndrome with renal defect,Isolated Joubert syndrome,ORPHA:220497,ORPHA:475,,,A_close_relatives,0.66,1,rare,rare
+ORPHA:309256|ORPHA:309271,"Metachromatic leukodystrophy, late infantile form","Metachromatic leukodystrophy, adult form",ORPHA:309256,ORPHA:309271,,,A_close_relatives,0.65,2,rare,rare
+ORPHA:79443|ORPHA:94089,Pseudohypoparathyroidism type 1A,Pseudohypoparathyroidism type 1B,ORPHA:79443,ORPHA:94089,,,A_close_relatives,0.45,1,rare,rare
+ORPHA:353277|ORPHA:353281,Rubinstein-Taybi syndrome due to CREBBP mutations,Rubinstein-Taybi syndrome due to 16p13.3 microdeletion,ORPHA:353277,ORPHA:353281,,,A_close_relatives,0.63,1,rare,rare
+ORPHA:95713|ORPHA:95720,Athyreosis,Thyroid hypoplasia,ORPHA:95713,ORPHA:95720,,,A_close_relatives,0.48,3,rare,rare
+ORPHA:90321|ORPHA:90322,Cockayne syndrome type 1,Cockayne syndrome type 2,ORPHA:90321,ORPHA:90322,,,A_close_relatives,0.45,2,rare,rare
+ORPHA:398069|ORPHA:98754,Schaaf-Yang syndrome,Prader-Willi syndrome due to maternal uniparental disomy of chromosome 15,ORPHA:398069,ORPHA:98754,,,A_close_relatives,0.36,1,rare,rare
+ORPHA:1454|ORPHA:475,Joubert syndrome with hepatic defect,Isolated Joubert syndrome,ORPHA:1454,ORPHA:475,,,A_close_relatives,0.44,2,rare,rare
+ORPHA:93924|ORPHA:93925,Lobar holoprosencephaly,Alobar holoprosencephaly,ORPHA:93924,ORPHA:93925,,,A_close_relatives,1.00,15,rare,rare
+ORPHA:209951|ORPHA:280384,Autosomal spastic paraplegia type 18,Recessive intellectual disability-motor dysfunction-multiple joint contractures syndrome,ORPHA:209951,ORPHA:280384,,,A_close_relatives,0.42,1,rare,rare
+ORPHA:2348|ORPHA:280365,"Familial partial lipodystrophy, Dunnigan type",Autosomal semi-dominant severe lipodystrophic laminopathy,ORPHA:2348,ORPHA:280365,,,A_close_relatives,0.52,1,rare,rare
+ORPHA:2318|ORPHA:475,Joubert syndrome with oculorenal defect,Isolated Joubert syndrome,ORPHA:2318,ORPHA:475,,,A_close_relatives,0.54,1,rare,rare
+ORPHA:79431|ORPHA:79434,Oculocutaneous albinism type 1A,Oculocutaneous albinism type 1B,ORPHA:79431,ORPHA:79434,,,A_close_relatives,0.65,1,rare,rare
+ORPHA:168558|ORPHA:289548,"46,XY difference of sex development-adrenal insufficiency due to CYP11A1 deficiency",Inherited isolated adrenal insufficiency due to partial CYP11A1 deficiency,ORPHA:168558,ORPHA:289548,,,A_close_relatives,0.98,1,rare,rare
+ORPHA:93258|ORPHA:93259,Pfeiffer syndrome type 1,Pfeiffer syndrome type 2,ORPHA:93258,ORPHA:93259,,,A_close_relatives,0.37,1,rare,rare
+ORPHA:309263|ORPHA:309271,"Metachromatic leukodystrophy, juvenile form","Metachromatic leukodystrophy, adult form",ORPHA:309263,ORPHA:309271,,,A_close_relatives,0.77,2,rare,rare
+ORPHA:177901|ORPHA:98754,Prader-Willi syndrome due to paternal deletion of 15q11q13 type 1,Prader-Willi syndrome due to maternal uniparental disomy of chromosome 15,ORPHA:177901,ORPHA:98754,,,A_close_relatives,0.94,4,rare,rare
+ORPHA:1860|ORPHA:93274,Thanatophoric dysplasia type 1,Thanatophoric dysplasia type 2,ORPHA:1860,ORPHA:93274,,,A_close_relatives,0.56,1,rare,rare
+ORPHA:98794|ORPHA:98795,Angelman syndrome due to maternal 15q11q13 deletion,Angelman syndrome due to paternal uniparental disomy of chromosome 15,ORPHA:98794,ORPHA:98795,,,A_close_relatives,0.42,1,rare,rare
+ORPHA:231214|ORPHA:231226,Beta-thalassemia major,Unstable beta globin chain variant disease,ORPHA:231214,ORPHA:231226,,,A_close_relatives,0.90,1,rare,rare
+ORPHA:220386|ORPHA:93926,Semilobar holoprosencephaly,Midline interhemispheric variant of holoprosencephaly,ORPHA:220386,ORPHA:93926,,,A_close_relatives,1.00,15,rare,rare
+ORPHA:177904|ORPHA:98754,Prader-Willi syndrome due to paternal deletion of 15q11q13 type 2,Prader-Willi syndrome due to maternal uniparental disomy of chromosome 15,ORPHA:177904,ORPHA:98754,,,A_close_relatives,0.94,4,rare,rare
+ORPHA:220386|ORPHA:93924,Semilobar holoprosencephaly,Lobar holoprosencephaly,ORPHA:220386,ORPHA:93924,,,A_close_relatives,1.00,16,rare,rare
+ORPHA:99103|ORPHA:99105,"Atrial septal defect, ostium secundum type","Atrial septal defect, sinus venosus type",ORPHA:99103,ORPHA:99105,,,A_close_relatives,0.41,1,rare,rare
+ORPHA:95712|ORPHA:95713,Thyroid ectopia,Athyreosis,ORPHA:95712,ORPHA:95713,,,A_close_relatives,0.46,2,rare,rare
+ORPHA:1941|ORPHA:307,Juvenile absence epilepsy,Juvenile myoclonic epilepsy,ORPHA:1941,ORPHA:307,,,A_close_relatives,0.44,1,rare,rare
+ORPHA:229|ORPHA:91387,Familial aortic dissection,Familial thoracic aortic aneurysm and aortic dissection,ORPHA:229,ORPHA:91387,,,A_close_relatives,0.46,1,rare,rare
+ORPHA:98962|ORPHA:98963,Granular corneal dystrophy type I,Granular corneal dystrophy type II,ORPHA:98962,ORPHA:98963,,,A_close_relatives,0.46,1,rare,rare
+ORPHA:98960|ORPHA:98962,Thiel-Behnke corneal dystrophy,Granular corneal dystrophy type I,ORPHA:98960,ORPHA:98962,,,A_close_relatives,0.36,1,rare,rare
+ORPHA:220493|ORPHA:475,Joubert syndrome with ocular anomaly,Isolated Joubert syndrome,ORPHA:220493,ORPHA:475,,,A_close_relatives,0.64,5,rare,rare
+ORPHA:93399|ORPHA:93400,Juvenile sialidosis type 2,Congenital sialidosis type 2,ORPHA:93399,ORPHA:93400,,,A_close_relatives,0.51,1,rare,rare
+ORPHA:220386|ORPHA:93925,Semilobar holoprosencephaly,Alobar holoprosencephaly,ORPHA:220386,ORPHA:93925,,,A_close_relatives,1.00,16,rare,rare
+ORPHA:231169|ORPHA:231178,Usher syndrome type 1,Usher syndrome type 2,ORPHA:231169,ORPHA:231178,,,A_close_relatives,0.54,1,rare,rare
+ORPHA:95712|ORPHA:95720,Thyroid ectopia,Thyroid hypoplasia,ORPHA:95712,ORPHA:95720,,,A_close_relatives,0.52,1,rare,rare
+ORPHA:2790|ORPHA:3416,"Endosteal hyperostosis, Worth type",Hyperostosis corticalis generalisata,ORPHA:2790,ORPHA:3416,,,A_close_relatives,0.40,1,rare,rare
+ORPHA:79408|ORPHA:89842,"Autosomal recessive generalized dystrophic epidermolysis bullosa, severe form","Autosomal recessive generalized dystrophic epidermolysis bullosa, intermediate form",ORPHA:79408,ORPHA:89842,,,A_close_relatives,0.39,1,rare,rare
+ORPHA:2965|ORPHA:91347,Prolactinoma,TSH-secreting pituitary adenoma,ORPHA:2965,ORPHA:91347,,,A_close_relatives,0.63,1,rare,rare
+ORPHA:171430|ORPHA:171433,Severe congenital nemaline myopathy,Intermediate nemaline myopathy,ORPHA:171430,ORPHA:171433,,,A_close_relatives,0.39,3,rare,rare
+ORPHA:228302|ORPHA:228305,"Carnitine palmitoyl transferase II deficiency, myopathic form","Carnitine palmitoyl transferase II deficiency, severe infantile form",ORPHA:228302,ORPHA:228305,,,A_close_relatives,0.35,1,rare,rare
+ORPHA:71526|ORPHA:71528,Obesity due to pro-opiomelanocortin deficiency,Obesity due to prohormone convertase I deficiency,ORPHA:71526,ORPHA:71528,,,B_phenotype_twins_diff_genes,1.00,0,rare,rare
+ORPHA:1507|ORPHA:3107,Autosomal recessive Robinow syndrome,Autosomal dominant Robinow syndrome,ORPHA:1507,ORPHA:3107,,,B_phenotype_twins_diff_genes,0.39,0,rare,rare
+ORPHA:328|ORPHA:331,Congenital factor X deficiency,Congenital factor XIII deficiency,ORPHA:328,ORPHA:331,,,B_phenotype_twins_diff_genes,0.38,0,rare,rare
+ORPHA:435651|ORPHA:79085,CIDEC-related familial partial lipodystrophy,AKT2-related familial partial lipodystrophy,ORPHA:435651,ORPHA:79085,,,B_phenotype_twins_diff_genes,0.59,0,rare,rare
+ORPHA:326|ORPHA:35909,Congenital factor V deficiency,Combined deficiency of factor V and factor VIII,ORPHA:326,ORPHA:35909,,,B_phenotype_twins_diff_genes,0.42,0,rare,rare
+ORPHA:177926|ORPHA:326,Bleeding disorder in hemophilia A carriers,Congenital factor V deficiency,ORPHA:177926,ORPHA:326,,,B_phenotype_twins_diff_genes,0.41,0,rare,rare
+ORPHA:177926|ORPHA:329,Bleeding disorder in hemophilia A carriers,Congenital factor XI deficiency,ORPHA:177926,ORPHA:329,,,B_phenotype_twins_diff_genes,0.40,0,rare,rare
+ORPHA:33110|ORPHA:47,Autosomal non-syndromic agammaglobulinemia,X-linked agammaglobulinemia,ORPHA:33110,ORPHA:47,,,B_phenotype_twins_diff_genes,0.36,0,rare,rare
+ORPHA:220493|ORPHA:220497,Joubert syndrome with ocular anomaly,Joubert syndrome with renal defect,ORPHA:220493,ORPHA:220497,,,B_phenotype_twins_diff_genes,0.81,0,rare,rare
+ORPHA:220493|ORPHA:2318,Joubert syndrome with ocular anomaly,Joubert syndrome with oculorenal defect,ORPHA:220493,ORPHA:2318,,,B_phenotype_twins_diff_genes,0.54,0,rare,rare
+ORPHA:326|ORPHA:331,Congenital factor V deficiency,Congenital factor XIII deficiency,ORPHA:326,ORPHA:331,,,B_phenotype_twins_diff_genes,0.38,0,rare,rare
+ORPHA:101078|ORPHA:99014,X-linked Charcot-Marie-Tooth disease type 4,X-linked Charcot-Marie-Tooth disease type 5,ORPHA:101078,ORPHA:99014,,,B_phenotype_twins_diff_genes,0.40,0,rare,rare
+ORPHA:79402|ORPHA:79411,Intermediate generalized junctional epidermolysis bullosa,Self-improving dystrophic epidermolysis bullosa,ORPHA:79402,ORPHA:79411,,,B_phenotype_twins_diff_genes,0.42,0,rare,rare
+ORPHA:276580|ORPHA:324575,Autosomal dominant hyperinsulinism due to Kir6.2 deficiency,Hyperinsulinism due to HNF1A deficiency,ORPHA:276580,ORPHA:324575,,,B_phenotype_twins_diff_genes,0.63,0,rare,rare
+ORPHA:401820|ORPHA:401840,Autosomal recessive spastic paraplegia type 67,Autosomal recessive spastic paraplegia type 71,ORPHA:401820,ORPHA:401840,,,B_phenotype_twins_diff_genes,0.50,0,rare,rare
+ORPHA:199318|ORPHA:238446,15q13.3 microdeletion syndrome,15q11q13 microduplication syndrome,ORPHA:199318,ORPHA:238446,,,B_phenotype_twins_diff_genes,0.43,0,rare,rare
+ORPHA:100993|ORPHA:171612,Autosomal dominant spastic paraplegia type 12,Autosomal dominant spastic paraplegia type 37,ORPHA:100993,ORPHA:171612,,,B_phenotype_twins_diff_genes,0.65,0,rare,rare
+ORPHA:284282|ORPHA:404499,Autosomal recessive cerebellar ataxia-epilepsy-intellectual disability syndrome due to WWOX deficiency,Autosomal recessive cerebellar ataxia-epilepsy-intellectual disability syndrome due to RUBCN deficiency,ORPHA:284282,ORPHA:404499,,,B_phenotype_twins_diff_genes,0.46,0,rare,rare
+ORPHA:231178|ORPHA:231183,Usher syndrome type 2,Usher syndrome type 3,ORPHA:231178,ORPHA:231183,,,B_phenotype_twins_diff_genes,0.43,0,rare,rare
+ORPHA:435660|ORPHA:79085,LIPE-related familial partial lipodystrophy,AKT2-related familial partial lipodystrophy,ORPHA:435660,ORPHA:79085,,,B_phenotype_twins_diff_genes,0.60,0,rare,rare
+ORPHA:98806|ORPHA:99657,"Primary dystonia, DYT6 type","Primary dystonia, DYT2 type",ORPHA:98806,ORPHA:99657,,,B_phenotype_twins_diff_genes,0.36,0,rare,rare
+ORPHA:100989|ORPHA:171863,Autosomal dominant spastic paraplegia type 8,Autosomal dominant spastic paraplegia type 42,ORPHA:100989,ORPHA:171863,,,B_phenotype_twins_diff_genes,0.52,0,rare,rare
+ORPHA:231169|ORPHA:231183,Usher syndrome type 1,Usher syndrome type 3,ORPHA:231169,ORPHA:231183,,,B_phenotype_twins_diff_genes,0.56,0,rare,rare
+ORPHA:100989|ORPHA:100993,Autosomal dominant spastic paraplegia type 8,Autosomal dominant spastic paraplegia type 12,ORPHA:100989,ORPHA:100993,,,B_phenotype_twins_diff_genes,0.64,0,rare,rare
+ORPHA:101075|ORPHA:99014,X-linked Charcot-Marie-Tooth disease type 1,X-linked Charcot-Marie-Tooth disease type 5,ORPHA:101075,ORPHA:99014,,,B_phenotype_twins_diff_genes,0.67,0,rare,rare
+ORPHA:98855|ORPHA:98863,Autosomal recessive Emery-Dreifuss muscular dystrophy,X-linked Emery-Dreifuss muscular dystrophy,ORPHA:98855,ORPHA:98863,,,B_phenotype_twins_diff_genes,0.82,0,rare,rare
+ORPHA:363424|ORPHA:457406,Multiple mitochondrial dysfunctions syndrome type 3,Multiple mitochondrial dysfunctions syndrome type 4,ORPHA:363424,ORPHA:457406,,,B_phenotype_twins_diff_genes,0.36,0,rare,rare
+ORPHA:251274|ORPHA:403,Familial hyperaldosteronism type III,Familial hyperaldosteronism type I,ORPHA:251274,ORPHA:403,,,B_phenotype_twins_diff_genes,0.46,0,rare,rare
+ORPHA:226316|ORPHA:90673,Genetic transient congenital hypothyroidism,Hypothyroidism due to TSH receptor mutations,ORPHA:226316,ORPHA:90673,,,B_phenotype_twins_diff_genes,0.36,0,rare,rare
+ORPHA:100993|ORPHA:100994,Autosomal dominant spastic paraplegia type 12,Autosomal dominant spastic paraplegia type 13,ORPHA:100993,ORPHA:100994,,,B_phenotype_twins_diff_genes,0.36,0,rare,rare
+ORPHA:743|ORPHA:745,Severe hereditary thrombophilia due to congenital protein S deficiency,Severe hereditary thrombophilia due to congenital protein C deficiency,ORPHA:743,ORPHA:745,,,B_phenotype_twins_diff_genes,0.50,0,rare,rare
+ORPHA:401795|ORPHA:401800,Autosomal recessive spastic paraplegia type 59,Autosomal recessive spastic paraplegia type 60,ORPHA:401795,ORPHA:401800,,,B_phenotype_twins_diff_genes,0.38,0,rare,rare
+ORPHA:328|ORPHA:35909,Congenital factor X deficiency,Combined deficiency of factor V and factor VIII,ORPHA:328,ORPHA:35909,,,B_phenotype_twins_diff_genes,0.37,0,rare,rare
+ORPHA:179494|ORPHA:66628,Obesity due to leptin receptor gene deficiency,Obesity due to congenital leptin deficiency,ORPHA:179494,ORPHA:66628,,,B_phenotype_twins_diff_genes,0.95,0,rare,rare
+ORPHA:171612|ORPHA:171863,Autosomal dominant spastic paraplegia type 37,Autosomal dominant spastic paraplegia type 42,ORPHA:171612,ORPHA:171863,,,B_phenotype_twins_diff_genes,0.61,0,rare,rare
+ORPHA:99976|ORPHA:99977,Adenocarcinoma of the oesophagus and oesophagogastric junction,Squamous cell carcinoma of the esophagus,ORPHA:99976,ORPHA:99977,,,B_phenotype_twins_diff_genes,0.64,0,rare,rare
+ORPHA:280365|ORPHA:79083,Autosomal semi-dominant severe lipodystrophic laminopathy,PPARG-related familial partial lipodystrophy,ORPHA:280365,ORPHA:79083,,,B_phenotype_twins_diff_genes,0.41,0,rare,rare
+ORPHA:177926|ORPHA:35909,Bleeding disorder in hemophilia A carriers,Combined deficiency of factor V and factor VIII,ORPHA:177926,ORPHA:35909,,,B_phenotype_twins_diff_genes,0.36,0,rare,rare
+ORPHA:353281|ORPHA:353284,Rubinstein-Taybi syndrome due to 16p13.3 microdeletion,Rubinstein-Taybi syndrome due to EP300 haploinsufficiency,ORPHA:353281,ORPHA:353284,,,B_phenotype_twins_diff_genes,0.64,0,rare,rare
+ORPHA:276575|ORPHA:276580,Autosomal dominant hyperinsulinism due to SUR1 deficiency,Autosomal dominant hyperinsulinism due to Kir6.2 deficiency,ORPHA:276575,ORPHA:276580,,,B_phenotype_twins_diff_genes,0.87,0,rare,rare
+ORPHA:100989|ORPHA:444099,Autosomal dominant spastic paraplegia type 8,Autosomal dominant spastic paraplegia type 73,ORPHA:100989,ORPHA:444099,,,B_phenotype_twins_diff_genes,0.46,0,rare,rare
+ORPHA:171612|ORPHA:444099,Autosomal dominant spastic paraplegia type 37,Autosomal dominant spastic paraplegia type 73,ORPHA:171612,ORPHA:444099,,,B_phenotype_twins_diff_genes,0.45,0,rare,rare
+ORPHA:326|ORPHA:328,Congenital factor V deficiency,Congenital factor X deficiency,ORPHA:326,ORPHA:328,,,B_phenotype_twins_diff_genes,0.46,0,rare,rare
+ORPHA:144|ORPHA:440437,Lynch syndrome,Familial colorectal cancer Type X,ORPHA:144,ORPHA:440437,,,B_phenotype_twins_diff_genes,0.72,0,rare,rare
+ORPHA:90674|ORPHA:95716,Isolated thyroid-stimulating hormone deficiency,Familial thyroid dyshormonogenesis,ORPHA:90674,ORPHA:95716,,,B_phenotype_twins_diff_genes,0.47,0,rare,rare
+ORPHA:693661|ORPHA:693681,Activated PI3K-delta syndrome 1,Activated PI3K-delta syndrome 2,ORPHA:693661,ORPHA:693681,,,B_phenotype_twins_diff_genes,0.59,0,rare,rare
+ORPHA:603|ORPHA:609,"Distal myopathy, Welander type",Tibial muscular dystrophy,ORPHA:603,ORPHA:609,,,B_phenotype_twins_diff_genes,0.47,0,rare,rare
+ORPHA:100994|ORPHA:171612,Autosomal dominant spastic paraplegia type 13,Autosomal dominant spastic paraplegia type 37,ORPHA:100994,ORPHA:171612,,,B_phenotype_twins_diff_genes,0.39,0,rare,rare
+ORPHA:90153|ORPHA:90154,Mandibuloacral dysplasia with type A lipodystrophy,Mandibuloacral dysplasia with type B lipodystrophy,ORPHA:90153,ORPHA:90154,,,B_phenotype_twins_diff_genes,0.41,0,rare,rare
+ORPHA:134|ORPHA:20,Beta-ketothiolase deficiency,3-hydroxy-3-methylglutaric aciduria,ORPHA:134,ORPHA:20,,,B_phenotype_twins_diff_genes,0.37,0,rare,rare
+ORPHA:93324|ORPHA:93325,Autosomal recessive Kenny-Caffey syndrome,Autosomal dominant Kenny-Caffey syndrome,ORPHA:93324,ORPHA:93325,,,B_phenotype_twins_diff_genes,0.41,0,rare,rare
+ORPHA:90673|ORPHA:95716,Hypothyroidism due to TSH receptor mutations,Familial thyroid dyshormonogenesis,ORPHA:90673,ORPHA:95716,,,B_phenotype_twins_diff_genes,0.54,0,rare,rare
+ORPHA:79434|ORPHA:79435,Oculocutaneous albinism type 1B,Oculocutaneous albinism type 4,ORPHA:79434,ORPHA:79435,,,B_phenotype_twins_diff_genes,0.39,0,rare,rare
+ORPHA:101108|ORPHA:276193,Spinocerebellar ataxia type 23,Spinocerebellar ataxia type 35,ORPHA:101108,ORPHA:276193,,,B_phenotype_twins_diff_genes,0.39,0,rare,rare
+ORPHA:101075|ORPHA:101078,X-linked Charcot-Marie-Tooth disease type 1,X-linked Charcot-Marie-Tooth disease type 4,ORPHA:101075,ORPHA:101078,,,B_phenotype_twins_diff_genes,0.45,0,rare,rare
+ORPHA:284289|ORPHA:352403,Adult-onset autosomal recessive cerebellar ataxia,Spectrin-associated autosomal recessive cerebellar ataxia,ORPHA:284289,ORPHA:352403,,,B_phenotype_twins_diff_genes,0.37,0,rare,rare
+ORPHA:263458|ORPHA:79299,Hyperinsulinism due to INSR deficiency,Congenital glucokinase-related hyperinsulinism,ORPHA:263458,ORPHA:79299,,,B_phenotype_twins_diff_genes,0.47,0,rare,rare
+ORPHA:226307|ORPHA:90674,Hypothyroidism due to deficient transcription factors involved in pituitary development or function,Isolated thyroid-stimulating hormone deficiency,ORPHA:226307,ORPHA:90674,,,B_phenotype_twins_diff_genes,0.37,0,rare,rare
+ORPHA:398069|ORPHA:398079,Schaaf-Yang syndrome,SIM1-related Prader-Willi-like syndrome,ORPHA:398069,ORPHA:398079,,,B_phenotype_twins_diff_genes,0.72,0,rare,rare
+ORPHA:221008|ORPHA:221016,Rothmund-Thomson syndrome type 1,Rothmund-Thomson syndrome type 2,ORPHA:221008,ORPHA:221016,,,B_phenotype_twins_diff_genes,0.76,0,rare,rare
+ORPHA:370921|ORPHA:370924,STT3A-CDG,STT3B-CDG,ORPHA:370921,ORPHA:370924,,,B_phenotype_twins_diff_genes,0.67,0,rare,rare
+ORPHA:177901|ORPHA:398079,Prader-Willi syndrome due to paternal deletion of 15q11q13 type 1,SIM1-related Prader-Willi-like syndrome,ORPHA:177901,ORPHA:398079,,,B_phenotype_twins_diff_genes,0.41,0,rare,rare
+ORPHA:276556|ORPHA:276580,Hyperinsulinism due to UCP2 deficiency,Autosomal dominant hyperinsulinism due to Kir6.2 deficiency,ORPHA:276556,ORPHA:276580,,,B_phenotype_twins_diff_genes,0.74,0,rare,rare
+ORPHA:401835|ORPHA:401840,Autosomal recessive spastic paraplegia type 70,Autosomal recessive spastic paraplegia type 71,ORPHA:401835,ORPHA:401840,,,B_phenotype_twins_diff_genes,0.57,0,rare,rare
+ORPHA:2138|ORPHA:753,"46,XX ovotesticular difference of sex development","46,XY difference of sex development due to 5-alpha-reductase 2 deficiency",ORPHA:2138,ORPHA:753,,,B_phenotype_twins_diff_genes,0.41,0,rare,rare
+ORPHA:2348|ORPHA:79083,"Familial partial lipodystrophy, Dunnigan type",PPARG-related familial partial lipodystrophy,ORPHA:2348,ORPHA:79083,,,B_phenotype_twins_diff_genes,0.60,0,rare,rare
+ORPHA:90673|ORPHA:90674,Hypothyroidism due to TSH receptor mutations,Isolated thyroid-stimulating hormone deficiency,ORPHA:90673,ORPHA:90674,,,B_phenotype_twins_diff_genes,0.35,0,rare,rare
+ORPHA:276575|ORPHA:324575,Autosomal dominant hyperinsulinism due to SUR1 deficiency,Hyperinsulinism due to HNF1A deficiency,ORPHA:276575,ORPHA:324575,,,B_phenotype_twins_diff_genes,0.68,0,rare,rare
+ORPHA:276556|ORPHA:276575,Hyperinsulinism due to UCP2 deficiency,Autosomal dominant hyperinsulinism due to SUR1 deficiency,ORPHA:276556,ORPHA:276575,,,B_phenotype_twins_diff_genes,0.80,0,rare,rare
+ORPHA:715|ORPHA:98895,Glycogen storage disease due to muscle phosphorylase kinase deficiency,Becker muscular dystrophy,ORPHA:715,ORPHA:98895,,,B_phenotype_twins_diff_genes,0.39,0,rare,rare
+ORPHA:79277|ORPHA:95159,Congenital erythropoietic porphyria,Hepatoerythropoietic porphyria,ORPHA:79277,ORPHA:95159,,,B_phenotype_twins_diff_genes,0.64,0,rare,rare
+ORPHA:398079|ORPHA:98754,SIM1-related Prader-Willi-like syndrome,Prader-Willi syndrome due to maternal uniparental disomy of chromosome 15,ORPHA:398079,ORPHA:98754,,,B_phenotype_twins_diff_genes,0.41,0,rare,rare
+ORPHA:276556|ORPHA:324575,Hyperinsulinism due to UCP2 deficiency,Hyperinsulinism due to HNF1A deficiency,ORPHA:276556,ORPHA:324575,,,B_phenotype_twins_diff_genes,0.67,0,rare,rare
+ORPHA:435651|ORPHA:435660,CIDEC-related familial partial lipodystrophy,LIPE-related familial partial lipodystrophy,ORPHA:435651,ORPHA:435660,,,B_phenotype_twins_diff_genes,0.59,0,rare,rare
+ORPHA:171863|ORPHA:444099,Autosomal dominant spastic paraplegia type 42,Autosomal dominant spastic paraplegia type 73,ORPHA:171863,ORPHA:444099,,,B_phenotype_twins_diff_genes,0.38,0,rare,rare
+ORPHA:177904|ORPHA:398079,Prader-Willi syndrome due to paternal deletion of 15q11q13 type 2,SIM1-related Prader-Willi-like syndrome,ORPHA:177904,ORPHA:398079,,,B_phenotype_twins_diff_genes,0.41,0,rare,rare
+ORPHA:100989|ORPHA:171612,Autosomal dominant spastic paraplegia type 8,Autosomal dominant spastic paraplegia type 37,ORPHA:100989,ORPHA:171612,,,B_phenotype_twins_diff_genes,0.67,0,rare,rare
+ORPHA:401830|ORPHA:401840,Autosomal recessive spastic paraplegia type 69,Autosomal recessive spastic paraplegia type 71,ORPHA:401830,ORPHA:401840,,,B_phenotype_twins_diff_genes,0.39,0,rare,rare
+ORPHA:251510|ORPHA:90796,"46,XY partial gonadal dysgenesis","46,XY difference of sex development due to isolated 17,20-lyase deficiency",ORPHA:251510,ORPHA:90796,,,B_phenotype_twins_diff_genes,0.39,0,rare,rare
+ORPHA:353277|ORPHA:353284,Rubinstein-Taybi syndrome due to CREBBP mutations,Rubinstein-Taybi syndrome due to EP300 haploinsufficiency,ORPHA:353277,ORPHA:353284,,,B_phenotype_twins_diff_genes,0.99,0,rare,rare
+ORPHA:139466|ORPHA:2578,SERKAL syndrome,Mayer-Rokitansky-Küster-Hauser syndrome type 2,ORPHA:139466,ORPHA:2578,,,C_genetic_cousins,0.04,1,rare,rare
+ORPHA:208441|ORPHA:3472,Bilateral parasagittal parieto-occipital polymicrogyria,Yunis-Varon syndrome,ORPHA:208441,ORPHA:3472,,,C_genetic_cousins,0.02,1,rare,rare
+ORPHA:656|ORPHA:83469,Hereditary steroid-resistant nephrotic syndrome,Desmoplastic small round cell tumor,ORPHA:656,ORPHA:83469,,,C_genetic_cousins,0.03,1,rare,rare
+ORPHA:466650|ORPHA:597,Exercise-induced malignant hyperthermia,Central core disease,ORPHA:466650,ORPHA:597,,,C_genetic_cousins,0.03,1,rare,rare
+ORPHA:1942|ORPHA:53583,Epilepsy with myoclonic-atonic seizures,Paroxysmal dystonic choreathetosis with episodic ataxia and spasticity,ORPHA:1942,ORPHA:53583,,,C_genetic_cousins,0.04,1,rare,rare
+ORPHA:178377|ORPHA:3416,Osteosclerosis-developmental delay-craniosynostosis syndrome,Hyperostosis corticalis generalisata,ORPHA:178377,ORPHA:3416,,,C_genetic_cousins,0.04,1,rare,rare
+ORPHA:220386|ORPHA:280195,Semilobar holoprosencephaly,Septopreoptic holoprosencephaly,ORPHA:220386,ORPHA:280195,,,C_genetic_cousins,0.05,15,rare,rare
+ORPHA:552|ORPHA:79134,MODY,DEND syndrome,ORPHA:552,ORPHA:79134,,,C_genetic_cousins,0.05,2,rare,rare
+ORPHA:199302|ORPHA:2228,Isolated cleft lip,Hypodontia-dysplasia of nails syndrome,ORPHA:199302,ORPHA:2228,,,C_genetic_cousins,0.03,1,rare,rare
+ORPHA:353327|ORPHA:79326,Congenital myasthenic syndrome with glycosylation defect,ALG2-CDG,ORPHA:353327,ORPHA:79326,,,C_genetic_cousins,0.00,1,rare,rare
+ORPHA:280195|ORPHA:280200,Septopreoptic holoprosencephaly,Microform holoprosencephaly,ORPHA:280195,ORPHA:280200,,,C_genetic_cousins,0.04,14,rare,rare
+ORPHA:3250|ORPHA:93388,Proximal symphalangism,Brachydactyly type A1,ORPHA:3250,ORPHA:93388,,,C_genetic_cousins,0.04,1,rare,rare
+ORPHA:144|ORPHA:583097,Lynch syndrome,Congenital infiltrating lipomatosis of the face,ORPHA:144,ORPHA:583097,,,C_genetic_cousins,0.00,1,rare,rare
+ORPHA:600|ORPHA:803,Vocal cord and pharyngeal distal myopathy,Amyotrophic lateral sclerosis,ORPHA:600,ORPHA:803,,,C_genetic_cousins,0.06,1,rare,rare
+ORPHA:221061|ORPHA:276280,Familial cerebral cavernous malformation,Hemihyperplasia-multiple lipomatosis syndrome,ORPHA:221061,ORPHA:276280,,,C_genetic_cousins,0.02,1,rare,rare
+ORPHA:380|ORPHA:93322,Greig cephalopolysyndactyly syndrome,Isolated tibial hemimelia,ORPHA:380,ORPHA:93322,,,C_genetic_cousins,0.00,1,rare,rare
+ORPHA:649|ORPHA:90050,Norrie disease,Retinopathy of prematurity,ORPHA:649,ORPHA:90050,,,C_genetic_cousins,0.05,1,rare,rare
+ORPHA:93946|ORPHA:93947,Hamel cerebro-palato-cardiac syndrome,"X-linked intellectual disability, Golabi-Ito-Hall type",ORPHA:93946,ORPHA:93947,,,C_genetic_cousins,0.19,1,rare,rare
+ORPHA:1486|ORPHA:803,Lethal congenital contracture syndrome type 1,Amyotrophic lateral sclerosis,ORPHA:1486,ORPHA:803,,,C_genetic_cousins,0.02,1,rare,rare
+ORPHA:1052|ORPHA:654,Mosaic variegated aneuploidy syndrome,Nephroblastoma,ORPHA:1052,ORPHA:654,,,C_genetic_cousins,0.02,1,rare,rare
+ORPHA:440437|ORPHA:52416,Familial colorectal cancer Type X,Mantle cell lymphoma,ORPHA:440437,ORPHA:52416,,,C_genetic_cousins,0.04,1,rare,rare
+ORPHA:93387|ORPHA:93406,Brachydactyly type E,Syndactyly type 5,ORPHA:93387,ORPHA:93406,,,C_genetic_cousins,0.06,1,rare,rare
+ORPHA:618891|ORPHA:77292,Chronic neurovisceral acid sphingomyelinase deficiency,Infantile neurovisceral acid sphingomyelinase deficiency,ORPHA:618891,ORPHA:77292,,,C_genetic_cousins,0.18,1,rare,rare
+ORPHA:2133|ORPHA:90039,Hemoglobin E disease,Hemoglobin D disease,ORPHA:2133,ORPHA:90039,,,C_genetic_cousins,0.18,1,rare,rare
+ORPHA:220465|ORPHA:520,Laron syndrome with immunodeficiency,Acute promyelocytic leukemia,ORPHA:220465,ORPHA:520,,,C_genetic_cousins,0.00,1,rare,rare
+ORPHA:417|ORPHA:676,Neonatal severe primary hyperparathyroidism,Autosomal dominant hereditary chronic pancreatitis,ORPHA:417,ORPHA:676,,,C_genetic_cousins,0.00,2,rare,rare
+ORPHA:110|ORPHA:2318,Bardet-Biedl syndrome,Joubert syndrome with oculorenal defect,ORPHA:110,ORPHA:2318,,,C_genetic_cousins,0.09,1,rare,rare
+ORPHA:276621|ORPHA:892,Sporadic pheochromocytoma/secreting paraganglioma,Von Hippel-Lindau disease,ORPHA:276621,ORPHA:892,,,C_genetic_cousins,0.10,1,rare,rare
+ORPHA:652|ORPHA:97279,Multiple endocrine neoplasia type 1,Insulinoma,ORPHA:652,ORPHA:97279,,,C_genetic_cousins,0.05,1,rare,rare
+ORPHA:1775|ORPHA:618,Dyskeratosis congenita,Familial melanoma,ORPHA:1775,ORPHA:618,,,C_genetic_cousins,0.01,2,rare,rare
+ORPHA:684|ORPHA:99736,Paramyotonia congenita of Von Eulenburg,Acetazolamide-responsive myotonia,ORPHA:684,ORPHA:99736,,,C_genetic_cousins,0.11,1,rare,rare
+ORPHA:110|ORPHA:791,Bardet-Biedl syndrome,Retinitis pigmentosa,ORPHA:110,ORPHA:791,,,C_genetic_cousins,0.06,7,rare,rare
+ORPHA:1540|ORPHA:87,Jackson-Weiss syndrome,Apert syndrome,ORPHA:1540,ORPHA:87,,,C_genetic_cousins,0.13,1,rare,rare
+ORPHA:79410|ORPHA:89843,"Localized dystrophic epidermolysis bullosa, pretibial form",Dystrophic epidermolysis bullosa pruriginosa,ORPHA:79410,ORPHA:89843,,,C_genetic_cousins,0.19,1,rare,rare
+ORPHA:280210|ORPHA:280229,"Pelizaeus-Merzbacher disease, connatal form",Pelizaeus-Merzbacher disease in female carriers,ORPHA:280210,ORPHA:280229,,,C_genetic_cousins,0.10,1,rare,rare
+ORPHA:206546|ORPHA:98895,Symptomatic form of muscular dystrophy of Duchenne and Becker in female carriers,Becker muscular dystrophy,ORPHA:206546,ORPHA:98895,,,C_genetic_cousins,0.10,1,rare,rare
+ORPHA:1065|ORPHA:250923,Aniridia-cerebellar ataxia-intellectual disability syndrome,Isolated aniridia,ORPHA:1065,ORPHA:250923,,,C_genetic_cousins,0.03,1,rare,rare
+ORPHA:171439|ORPHA:171881,Childhood-onset nemaline myopathy,Cap myopathy,ORPHA:171439,ORPHA:171881,,,C_genetic_cousins,0.07,3,rare,rare
+ORPHA:98976|ORPHA:98977,Congenital glaucoma,Juvenile glaucoma,ORPHA:98976,ORPHA:98977,,,C_genetic_cousins,0.03,2,rare,rare
+ORPHA:2965|ORPHA:963,Prolactinoma,Acromegaly,ORPHA:2965,ORPHA:963,,,C_genetic_cousins,0.08,1,rare,rare
+ORPHA:1010|ORPHA:317,Autosomal dominant palmoplantar keratoderma and congenital alopecia,Erythrokeratodermia variabilis,ORPHA:1010,ORPHA:317,,,C_genetic_cousins,0.04,1,rare,rare
+ORPHA:276621|ORPHA:3208,Sporadic pheochromocytoma/secreting paraganglioma,Isolated succinate-CoQ reductase deficiency,ORPHA:276621,ORPHA:3208,,,C_genetic_cousins,0.01,2,rare,rare
+ORPHA:3162|ORPHA:536,Sézary syndrome,Systemic lupus erythematosus,ORPHA:3162,ORPHA:536,,,C_genetic_cousins,0.03,1,rare,rare
+ORPHA:3338|ORPHA:457260,Toriello-Carey syndrome,X-linked intellectual disability-hypotonia-movement disorder syndrome,ORPHA:3338,ORPHA:457260,,,C_genetic_cousins,0.10,1,rare,rare
+ORPHA:477|ORPHA:494,KID syndrome,Keratoderma hereditarium mutilans,ORPHA:477,ORPHA:494,,,C_genetic_cousins,0.00,1,rare,rare
+ORPHA:2073|ORPHA:797,Narcolepsy type 1,Sarcoidosis,ORPHA:2073,ORPHA:797,,,C_genetic_cousins,0.00,1,rare,rare
+ORPHA:364055|ORPHA:64,Severe early-childhood-onset retinal dystrophy,Alström syndrome,ORPHA:364055,ORPHA:64,,,C_genetic_cousins,0.03,1,rare,rare
+ORPHA:207|ORPHA:93259,Crouzon syndrome,Pfeiffer syndrome type 2,ORPHA:207,ORPHA:93259,,,C_genetic_cousins,0.11,1,rare,rare
+ORPHA:199302|ORPHA:888,Isolated cleft lip,Van der Woude syndrome,ORPHA:199302,ORPHA:888,,,C_genetic_cousins,0.04,1,rare,rare
+ORPHA:391372|ORPHA:52417,FOXP1 Syndrome,MALT lymphoma,ORPHA:391372,ORPHA:52417,,,C_genetic_cousins,0.01,1,rare,rare
+ORPHA:158676|ORPHA:79411,"Localized dystrophic epidermolysis bullosa, nails only",Self-improving dystrophic epidermolysis bullosa,ORPHA:158676,ORPHA:79411,,,C_genetic_cousins,0.05,1,rare,rare
+ORPHA:29072|ORPHA:523,Hereditary pheochromocytoma-paraganglioma,Hereditary leiomyomatosis and renal cell cancer,ORPHA:29072,ORPHA:523,,,C_genetic_cousins,0.00,1,rare,rare
+ORPHA:1662|ORPHA:280365,Restrictive dermopathy,Autosomal semi-dominant severe lipodystrophic laminopathy,ORPHA:1662,ORPHA:280365,,,C_genetic_cousins,0.01,1,rare,rare
+ORPHA:2645|ORPHA:432,Osteoglosphonic dysplasia,Normosmic congenital hypogonadotropic hypogonadism,ORPHA:2645,ORPHA:432,,,C_genetic_cousins,0.05,1,rare,rare
+ORPHA:1945|ORPHA:64280,Self-limited epilepsy with centrotemporal spikes,Childhood absence epilepsy,ORPHA:1945,ORPHA:64280,,,C_genetic_cousins,0.14,1,rare,rare
+ORPHA:334|ORPHA:51083,Hereditary atrial fibrillation,Congenital short QT syndrome,ORPHA:334,ORPHA:51083,,,C_genetic_cousins,0.18,2,rare,rare
+ORPHA:313855|ORPHA:794,FGFR2-related bent bone dysplasia,Saethre-Chotzen syndrome,ORPHA:313855,ORPHA:794,,,C_genetic_cousins,0.05,1,rare,rare
+ORPHA:79474|ORPHA:90153,Atypical Werner syndrome,Mandibuloacral dysplasia with type A lipodystrophy,ORPHA:79474,ORPHA:90153,,,C_genetic_cousins,0.06,1,rare,rare
+ORPHA:79084|ORPHA:98856,"Familial partial lipodystrophy, Köbberling type",Charcot-Marie-Tooth disease type 2B1,ORPHA:79084,ORPHA:98856,,,C_genetic_cousins,0.00,1,rare,rare
+ORPHA:475|ORPHA:564,Isolated Joubert syndrome,Meckel syndrome,ORPHA:475,ORPHA:564,,,C_genetic_cousins,0.06,9,rare,rare
+ORPHA:456328|ORPHA:95706,X-linked myotubular myopathy-abnormal genitalia syndrome,Non-syndromic posterior hypospadias,ORPHA:456328,ORPHA:95706,,,C_genetic_cousins,0.11,1,rare,rare
+ORPHA:364055|ORPHA:98784,Severe early-childhood-onset retinal dystrophy,Sleep-related hypermotor epilepsy,ORPHA:364055,ORPHA:98784,,,C_genetic_cousins,0.00,1,rare,rare
+ORPHA:228302|ORPHA:228308,"Carnitine palmitoyl transferase II deficiency, myopathic form","Carnitine palmitoyl transferase II deficiency, neonatal form",ORPHA:228302,ORPHA:228308,,,C_genetic_cousins,0.14,1,rare,rare
+ORPHA:154|ORPHA:98856,Familial isolated dilated cardiomyopathy,Charcot-Marie-Tooth disease type 2B1,ORPHA:154,ORPHA:98856,,,C_genetic_cousins,0.00,1,rare,rare
+ORPHA:1333|ORPHA:2588,Familial pancreatic carcinoma,Myhre syndrome,ORPHA:1333,ORPHA:2588,,,C_genetic_cousins,0.00,1,rare,rare
+ORPHA:275872|ORPHA:435387,Frontotemporal dementia with motor neuron disease,Autosomal dominant Charcot-Marie-Tooth disease type 2Y,ORPHA:275872,ORPHA:435387,,,C_genetic_cousins,0.05,1,rare,rare
+ORPHA:154|ORPHA:44890,Familial isolated dilated cardiomyopathy,Gastrointestinal stromal tumor,ORPHA:154,ORPHA:44890,,,C_genetic_cousins,0.03,1,rare,rare
+ORPHA:130|ORPHA:90026,Brugada syndrome,Primary erythromelalgia,ORPHA:130,ORPHA:90026,,,C_genetic_cousins,0.00,1,rare,rare
+ORPHA:33067|ORPHA:79106,"Metaphyseal chondrodysplasia, Jansen type",Eiken syndrome,ORPHA:33067,ORPHA:79106,,,C_genetic_cousins,0.02,1,rare,rare
+ORPHA:254361|ORPHA:257,Plectin-related limb-girdle muscular dystrophy R17,Epidermolysis bullosa simplex with muscular dystrophy,ORPHA:254361,ORPHA:257,,,C_genetic_cousins,0.00,1,rare,rare
+ORPHA:189427|ORPHA:477993,Cushing syndrome due to bilateral macronodular adrenocortical disease,Palatal anomalies-widely spaced teeth-facial dysmorphism-developmental delay syndrome,ORPHA:189427,ORPHA:477993,,,C_genetic_cousins,0.00,1,rare,rare
+ORPHA:93946|ORPHA:93950,Hamel cerebro-palato-cardiac syndrome,"X-linked intellectual disability, Sutherland-Haan type",ORPHA:93946,ORPHA:93950,,,C_genetic_cousins,0.11,1,rare,rare
+ORPHA:251992|ORPHA:626,Ganglioneuroma,Large/giant congenital melanocytic nevus,ORPHA:251992,ORPHA:626,,,C_genetic_cousins,0.00,1,rare,rare
+ORPHA:177901|ORPHA:411515,Prader-Willi syndrome due to paternal deletion of 15q11q13 type 1,Angelman syndrome due to imprinting defect in 15q11-q13,ORPHA:177901,ORPHA:411515,,,C_genetic_cousins,0.09,1,rare,rare
+ORPHA:231401|ORPHA:847,Alpha-thalassemia-myelodysplastic syndrome,X-linked alpha-thalassemia-intellectual disability syndrome,ORPHA:231401,ORPHA:847,,,C_genetic_cousins,0.00,1,rare,rare
+ORPHA:280200|ORPHA:93924,Microform holoprosencephaly,Lobar holoprosencephaly,ORPHA:280200,ORPHA:93924,,,C_genetic_cousins,0.12,15,rare,rare
+ORPHA:436274|ORPHA:98434,Pseudoxanthoma elasticum-like skin manifestations with retinitis pigmentosa,Hereditary combined deficiency of vitamin K-dependent clotting factors,ORPHA:436274,ORPHA:98434,,,C_genetic_cousins,0.02,1,rare,rare
+ORPHA:2348|ORPHA:300751,"Familial partial lipodystrophy, Dunnigan type",Familial dilated cardiomyopathy with conduction defect due to LMNA mutation,ORPHA:2348,ORPHA:300751,,,C_genetic_cousins,0.04,1,rare,rare
+ORPHA:464440|ORPHA:610,"Primary dystonia, DYT27 type",Bethlem muscular dystrophy,ORPHA:464440,ORPHA:610,,,C_genetic_cousins,0.00,1,rare,rare
+ORPHA:1934|ORPHA:972,Early infantile developmental and epileptic encephalopathy,Hereditary continuous muscle fiber activity,ORPHA:1934,ORPHA:972,,,C_genetic_cousins,0.01,1,rare,rare
