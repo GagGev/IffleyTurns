@@ -18,7 +18,7 @@ import { exportCsv } from './lib/export'
 import { evaluateLiterature, usePaperEvaluation } from './lib/usePaper'
 import {
   inputFromResult,
-  mockExtractPaper,
+  extractPaper,
   paperEntryFor,
   parsePaperResult,
   placementFromResult,
@@ -333,7 +333,7 @@ function Explorer({ graph, onNavigate }: { graph: GraphData; onNavigate: (view: 
         const parsed = parsePaperResult(await file.text())
         if (typeof parsed !== 'string') result = parsed
       }
-      result ??= await mockExtractPaper(file, { graph, edgesByNode: graphEdgesByNode }, setUploadStage)
+      result ??= await extractPaper(file, setUploadStage)
       const { input, labels } = inputFromResult(result)
       const created = user.addPaper(input, labels, (id) => ({
         placement: placementFromResult(result, id),

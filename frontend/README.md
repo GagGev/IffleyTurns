@@ -83,9 +83,14 @@ until the service is running.
 - **Papers**: upload a paper (PDF, text, XML) or a v2_5 result file
   (`python -m v2_5.place_paper --output result.json`). A paper's focal disease is
   placed in the graph, and its claims are drawn over the graph and checked (see
-  below). Uploading a PDF or text file currently runs a **mock** extractor
-  (`src/lib/paperService.ts`), which builds a v2_5-shaped result from the graph;
-  swap `mockExtractPaper` for a call to the real pipeline. The **Curated
+  below). A PDF, text or XML paper goes through the v2_5 pipeline on this
+  machine (`api/papers.py`): MedGemma extracts the focal disease's phenotypes,
+  genes, onset and inheritance, each with a verbatim quote that v2_5 checks
+  against the paper and maps to v2's vocabulary, and v2 places the result. With
+  the 4B model on an M4 MacBook this takes about 4 minutes per paper (repeat
+  uploads are cached in `.data/v2_5/medgemma_cache`). If MedGemma is not running,
+  v2_5's rule-based extractor is used and the paper panel says so. PDFs need
+  `pip install pypdf`; scanned PDFs need OCR first. The **Curated
   literature** panel lists 508 papers from `literature_review/additional_runs` with 539
   paper-stated disease pairs.
 - **Find a paper** searches, by title or PMID, the uploads, the curated literature,
@@ -176,7 +181,7 @@ names and the "who to talk to" advice come from a fixed table in
 
 ### Running MedGemma
 
-The patient view uses a text-only MedGemma checkpoint through any
+The patient view and paper upload use a text-only MedGemma checkpoint through any
 OpenAI-compatible endpoint on this machine. The included server loads it with
 transformers (Apple GPU, CUDA or CPU):
 
@@ -186,9 +191,10 @@ python frontend/api/medgemma_server.py --model /path/to/medgemma-4b-text   # htt
 ```
 
 On an M4 MacBook the 4B model loads in about 10 seconds, uses about 8 GB of
-memory, and answers in 3–10 seconds. llama-server or vLLM can be used instead;
-set `MEDGEMMA_BASE_URL` (it must be a local address, so symptoms never leave
-the machine). Without MedGemma, the patient view still works: symptoms are
+memory, and answers in 3–10 seconds; reading a paper takes about 4 minutes
+(a quantised GGUF build under llama-server is several times faster).
+llama-server or vLLM can be used instead; set `MEDGEMMA_BASE_URL` (it must be a
+local address, so symptoms and papers never leave the machine). Without MedGemma, the patient view still works: symptoms are
 chosen from a list and the fixed group descriptions are shown.
 
 ## API
@@ -206,7 +212,8 @@ for the model.
 | `POST /api/patient/explain-disease` | `{"id", "name"}` → Orphanet's description in plain words (`text` is null if there is none) |
 | `POST /api/patient/explain-group` | `{"category", "examples", "shared"}` → a group in plain words |
 | `GET /api/patient/papers?id=ORPHA:x` | up to two most-cited papers about a disease, plus a Europe PMC search link |
+| `POST /api/papers/place` | `{"filename", "content" (base64), "disease_name"?, "top"?}` → the v2_5 result (`place_paper --output` shape) for an uploaded paper |
 
 ```sh
-npm run test:api   # request handling and patient helpers, with stubs in place of v2 and MedGemma
+npm run test:api   # request handling, patient helpers and paper upload, with stubs in place of v2 and MedGemma
 ```

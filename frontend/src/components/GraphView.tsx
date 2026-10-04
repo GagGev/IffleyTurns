@@ -119,6 +119,8 @@ class NodeStore {
 }
 
 const nodeRadius = (degree: number) => 2 + Math.sqrt(degree) * 0.6
+/** Pixels either side of an edge that still count as pointing at it. */
+const LINK_HOVER_PRECISION = 4
 const endId = (end: L['source']) => (typeof end === 'object' ? (end as N).id : String(end))
 
 function diamond(ctx: CanvasRenderingContext2D, x: number, y: number, d: number) {
@@ -256,6 +258,24 @@ export function GraphView(props: Props) {
     centerPending.current = !centerOnSelection() || engineRunning.current
   }, [centerOnSelection])
 
+  // Clearing the selection goes back to the whole view: zoom out now, and again once the details sidebar
+  // has closed and the canvas has widened.
+  const hadFrame = useRef(false)
+  const zoomOutPending = useRef(false)
+  useEffect(() => {
+    if (frameKey) {
+      hadFrame.current = true
+      zoomOutPending.current = false
+      return
+    }
+    if (!hadFrame.current) return
+    hadFrame.current = false
+    zoomOutPending.current = true
+    graph.current?.zoomToFit(600, 30)
+    const timer = setTimeout(() => (zoomOutPending.current = false), 1500)
+    return () => clearTimeout(timer)
+  }, [frameKey])
+
   // Selecting opens the details sidebar, which narrows the canvas after the
   // camera has moved: re-frame once the new size is known.
   const centerRef = useRef(centerOnSelection)
@@ -264,7 +284,11 @@ export function GraphView(props: Props) {
   }, [centerOnSelection])
   useEffect(() => {
     if (!size.width) return
-    const timer = setTimeout(() => centerRef.current(), 50)
+    const timer = setTimeout(() => {
+      if (centerRef.current() || !zoomOutPending.current) return
+      zoomOutPending.current = false
+      graph.current?.zoomToFit(600, 30)
+    }, 50)
     return () => clearTimeout(timer)
   }, [size.width, size.height])
 
@@ -366,13 +390,15 @@ export function GraphView(props: Props) {
 
   const paintNodeArea = useCallback(
     (node: N, colour: string, ctx: CanvasRenderingContext2D, scale: number) => {
+      // Around a selection the dimmed dots are background: clicking them clears the selection.
+      if (selection && highlightNodes !== null && !highlightNodes.has(node.id)) return
       // Hit target larger than the dot so small nodes are easy to click.
       ctx.fillStyle = colour
       ctx.beginPath()
       ctx.arc(node.x!, node.y!, Math.max(nodeRadius(node.degree), sparse ? 3.5 / scale : 0) + 4 / scale, 0, 2 * Math.PI)
       ctx.fill()
     },
-    [sparse],
+    [sparse, selection, highlightNodes],
   )
 
   const linkColour = useCallback(
@@ -398,6 +424,24 @@ export function GraphView(props: Props) {
       return emphasised ? (highlightEdges && highlightEdges.size > 200 ? 1 : 2.2) : 0.7
     },
     [highlightEdges, hover, edgeTint],
+  )
+
+  // While something is highlighted, the dimmed edges are nearly invisible but cover most of the canvas: they
+  // take no clicks or hovers, so clicking what looks like empty space clears the selection (or does nothing).
+  const paintLinkArea = useCallback(
+    (link: L, colour: string, ctx: CanvasRenderingContext2D, scale: number) => {
+      if (highlightEdges !== null && !highlightEdges.has(link.edge.id) && !edgeTint?.has(link.edge.id)) return
+      const source = link.source as N
+      const target = link.target as N
+      if (typeof source !== 'object' || typeof target !== 'object' || source.x === undefined || target.x === undefined) return
+      ctx.strokeStyle = colour
+      ctx.lineWidth = (linkWidth(link) + LINK_HOVER_PRECISION) / scale
+      ctx.beginPath()
+      ctx.moveTo(source.x, source.y!)
+      ctx.lineTo(target.x, target.y!)
+      ctx.stroke()
+    },
+    [highlightEdges, edgeTint, linkWidth],
   )
 
   const tooltip = hover && renderTooltip(hover, nodes, clusters, colourOf)
@@ -433,7 +477,7 @@ export function GraphView(props: Props) {
           linkColor={linkColour}
           linkWidth={linkWidth}
           linkLineDash={(link) => (isClaimOnly(link.edge) ? [5, 4] : link.edge.origin === 'user' ? [2, 2] : null)}
-          linkHoverPrecision={4}
+          linkPointerAreaPaint={paintLinkArea}
           maxZoom={6}
           minZoom={0.05}
           cooldownTicks={fixedLayout ? 0 : 80}

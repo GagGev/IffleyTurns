@@ -234,6 +234,8 @@ export interface PaperEvidenceItem {
   confidence: number
   extraction_method: string
   verification_status: string
+  /** Set by the placement service: false when the quote does not contain the feature's name (check it by hand). */
+  quote_names_feature?: boolean
 }
 
 /** The output of `python -m v2_5.place_paper --output ...`, plus the optional `claims` list. */

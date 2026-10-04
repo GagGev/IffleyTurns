@@ -286,6 +286,9 @@ function Coverage({
                 “{item.quote}” · {item.locator}
                 {item.verification_status !== 'unverified' ? ` · ${item.verification_status}` : ''}
               </p>
+              {item.quote_names_feature === false && (
+                <p className="small quote-check">The quote does not name this feature; check it against the paper.</p>
+              )}
               {mode && (
                 <button type="button" className="link-button small" onClick={() => onColourBy(mode, item.identifier)}>
                   Colour the graph by this {item.feature_type === 'phenotype' ? 'symptom' : item.feature_type}
@@ -345,6 +348,15 @@ export function PaperPanel(props: Props) {
           <p className="callout small">
             <strong>Mock extraction.</strong> The profile, quotes and comparisons below are generated from the graph, not read
             from the paper. They show what the v2_5 output will look like once it is connected.
+          </p>
+        )}
+        {paper.kind === 'upload' && !paper.mock && result && (
+          <p className="muted small">
+            {result.status === 'hybrid_success'
+              ? `Read by ${result.model || 'MedGemma'}: `
+              : 'MedGemma could not be used, so v2_5’s rule-based extractor read the paper: '}
+            {plural(result.accepted_evidence.length, 'feature')} quoted from the paper and matched to the model’s vocabulary
+            {result.rejected_features.length > 0 && `, ${result.rejected_features.length} left out`}.
           </p>
         )}
         {result?.warnings.filter((w) => !paper.mock || !w.startsWith('Mock output')).map((w) => (

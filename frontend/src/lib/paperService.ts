@@ -1,44 +1,13 @@
 // Turning an uploaded paper into a v2_5 result.
 //
-// The real pipeline is `python -m v2_5.place_paper --input paper.pdf --output result.json` (MedGemma
-// extraction, then v2 placement).  Until it is served to the browser, `mockExtractPaper` stands in: it
-// returns a result in exactly the shape v2_5 writes, built from the graph itself, and marks it `mock`.
-// A result file written by v2_5 can be uploaded directly and is used as is (`parsePaperResult`).
-//
-// To connect the real pipeline, replace `mockExtractPaper` with a call to an endpoint that runs v2_5
-// and returns its JSON; nothing else in the UI changes.
+// `extractPaper` runs the real pipeline through the placement service (api/papers.py): the same steps as
+// `python -m v2_5.place_paper --input paper.pdf --output result.json`, MedGemma extraction then v2 placement.
+// A result file written by v2_5 can also be uploaded directly and is used as is (`parsePaperResult`).
 
-import { loadAnnotations, type LoadedAnnotations } from '../data/annotations'
-import { loadEdgeDetail } from '../data/source'
-import type {
-  DiseaseInput,
-  GraphData,
-  GraphEdge,
-  GraphNode,
-  PaperClaim,
-  PaperEntry,
-  PaperEvidenceItem,
-  PaperResult,
-  Placement,
-  PlacementNeighbour,
-} from '../data/types'
-import { DIMENSION_MODALITIES } from './paperEval'
-import { displayName } from './format'
-import { otherEnd } from './graph'
-
-const MODALITY_DIMENSION: Record<string, string> = Object.fromEntries(
-  Object.entries(DIMENSION_MODALITIES).flatMap(([dimension, modalities]) => modalities.map((m) => [m, dimension])),
-)
+import { api } from '../data/source'
+import type { DiseaseInput, PaperEntry, PaperResult, Placement } from '../data/types'
 
 export const ACCEPTED_FILES = '.pdf,.txt,.md,.xml,.nxml,.json'
-
-export interface PaperContext {
-  graph: GraphData
-  /** Edges of the v2 graph per disease (not the added ones). */
-  edgesByNode: Map<string, GraphEdge[]>
-}
-
-const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
 function hash(text: string): number {
   let h = 5381
@@ -76,200 +45,43 @@ export function parsePaperResult(text: string): PaperResult | string {
   }
 }
 
-// --- The mock --------------------------------------------------------------------------------
+// --- The v2_5 pipeline ------------------------------------------------------------------------
 
-async function headOf(file: File): Promise<{ text: string; title: string }> {
-  const stem = file.name.replace(/\.[^.]+$/, '').replace(/[_-]+/g, ' ').trim()
-  if (/\.(pdf)$/i.test(file.name)) return { text: '', title: stem }
-  const text = (await file.text()).slice(0, 60_000)
-  if (/\.json$/i.test(file.name)) {
-    try {
-      const json = JSON.parse(text.length < 60_000 ? text : '{}')
-      return { text: `${json.title ?? ''} ${json.abstract ?? ''} ${json.body ?? json.text ?? ''}`, title: json.title || stem }
-    } catch {
-      return { text, title: stem }
-    }
-  }
-  const firstLine = text.split(/\r?\n/).map((l) => l.trim()).find((l) => l.length > 12 && l.length < 200)
-  return { text, title: firstLine?.replace(/<[^>]+>/g, '') || stem }
+function base64Of(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(String(reader.result).split(',')[1] ?? '')
+    reader.onerror = () => reject(new Error('The file could not be read.'))
+    reader.readAsDataURL(file)
+  })
 }
 
-/** The catalogue disease the paper most plausibly concerns: its name appears in the file, else a stable pick. */
-function chooseBase(graph: GraphData, haystack: string, seed: number): GraphNode {
-  const hay = haystack.toLowerCase()
-  let best: GraphNode | null = null
-  for (const n of graph.nodes) {
-    if (n.degree < 3 || n.name.length < 7) continue
-    if (hay.includes(n.name.toLowerCase()) && (!best || n.name.length > best.name.length)) best = n
-  }
-  if (best) return best
-  const pool = graph.nodes.filter((n) => n.degree >= 8)
-  return pool[seed % pool.length]
-}
-
-const has = (sorted: number[], value: number) => {
-  let lo = 0
-  let hi = sorted.length - 1
-  while (lo <= hi) {
-    const mid = (lo + hi) >> 1
-    if (sorted[mid] === value) return true
-    if (sorted[mid] < value) lo = mid + 1
-    else hi = mid - 1
-  }
-  return false
-}
-
-function profileOf(ann: LoadedAnnotations, index: number, seed: number) {
-  const genes = Object.entries(ann.raw.genes)
-    .filter(([, n]) => has(n, index))
-    .map(([g]) => g)
-    .slice(0, 3)
-  const phenotypes = Object.entries(ann.raw.phenotypes)
-    .map(([id, p]) => ({ id, label: p.l, count: p.n.length, k: p.n.indexOf(index) >= 0 ? p.n.indexOf(index) : -1, f: p.f }))
-    // Specific terms (carried by a few dozen diseases) read as extracted findings; very common ones as noise.
-    .filter((p) => p.k >= 0 && p.count >= 3 && p.count <= 400 && p.f[p.k] >= 5)
-    .sort((a, b) => hash(a.id + seed) - hash(b.id + seed))
-    .slice(0, 8)
-    .map((p) => ({ id: p.id, label: p.label, weight: p.f[p.k] / 10 }))
-  const first = (source: Record<string, number[]>) =>
-    Object.entries(source).find(([, n]) => has(n, index))?.[0] ?? null
-  return { genes, phenotypes, onset: first(ann.raw.onset), inheritance: first(ann.raw.inheritance) }
-}
-
-const stagesMs = 450
-
-export async function mockExtractPaper(
-  file: File,
-  ctx: PaperContext,
-  onStage: (stage: string) => void,
-): Promise<PaperResult> {
-  const { graph, edgesByNode } = ctx
+/**
+ * Runs v2_5 on the paper through the placement service: MedGemma extracts an evidence-grounded disease profile
+ * (every feature quoted from the paper and checked against v2's vocabulary), then v2 places it in the graph.
+ * MedGemma runs on this computer and takes a few minutes; `onStage` gets a running timer meanwhile.
+ */
+export async function extractPaper(file: File, onStage: (stage: string) => void): Promise<PaperResult> {
   onStage('Reading the paper')
-  const [{ text, title }, ann] = await Promise.all([headOf(file), loadAnnotations().catch(() => null)])
-  const seed = hash(`${file.name}:${file.size}`)
-  const base = chooseBase(graph, `${file.name} ${text}`, seed)
-  await sleep(stagesMs)
-  onStage('Selecting passages (mock)')
-  await sleep(stagesMs)
-  onStage('Extracting a disease profile (mock MedGemma)')
-
-  const index = ann?.index.get(base.id)
-  const profile = ann && index !== undefined ? profileOf(ann, index, seed) : { genes: [], phenotypes: [], onset: null, inheritance: null }
-  await sleep(stagesMs)
-  onStage('Placing it in the v2 graph (mock)')
-
-  const ranked = (edgesByNode.get(base.id) ?? []).slice().sort((a, b) => b.score - a.score).slice(0, 12)
-  const neighbours: PlacementNeighbour[] = []
-  for (const [rank, edge] of ranked.entries()) {
-    const detail = await loadEdgeDetail(graph, edge.id)
-    const other = graph.nodes.find((n) => n.id === otherEnd(edge, base.id))
-    if (!detail || !other) continue
-    neighbours.push({
-      rank: rank + 1,
-      id: other.id,
-      name: other.name,
-      category: other.category,
-      score: edge.score,
-      percentile: edge.percentile,
-      explanation: detail.evidence.map((e) => ({
-        modality: e.modality,
-        similarity: detail.similarities[e.modality] ?? 0,
-        contribution: e.contribution,
-        shared: e.shared,
-      })),
-      known_relations: detail.relations as Record<string, string>,
-      similarities: Object.fromEntries(Object.entries(detail.similarities).filter(([, v]) => v !== null)) as Record<string, number>,
-      contributions: detail.contributions,
-      annotation_adjustment: detail.annotationAdjustment,
-      support: edge.support,
-    })
+  const content = await base64Of(file)
+  const started = Date.now()
+  const tick = () => {
+    const s = Math.round((Date.now() - started) / 1000)
+    onStage(`MedGemma is reading the paper and extracting the disease profile… ${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')} (usually 2–5 minutes)`)
   }
-  const details = new Map(neighbours.map((n) => [n.id, n]))
-
-  // The paper's own comparisons: what it says, and for some of them something the graph does not carry.
-  const claims: PaperClaim[] = []
-  const mainDimension = (n: PlacementNeighbour) => MODALITY_DIMENSION[n.explanation[0]?.modality ?? ''] ?? 'phenotype'
-  const weakDimension = (n: PlacementNeighbour) =>
-    ['pathways', 'treatment', 'genes', 'phenotype'].find((d) =>
-      (DIMENSION_MODALITIES[d] ?? []).every((m) => (n.contributions[m] ?? 0) < 0.25),
-    ) ?? 'pathways'
-  const quote = (a: string, b: string, how: string) => `${a} and ${b} ${how} [mock quote]`
-  const add = (n: PlacementNeighbour, dimensions: string[], relationship: string, how: string, feature?: string) => {
-    const section = ['Results', 'Discussion', 'Introduction'][claims.length % 3]
-    claims.push({
-      a: '@focal',
-      b: n.id,
-      dimensions,
-      relationship,
-      stated: relationship === 'similar' ? 0.75 : 0.5,
-      finding: quote(displayName(base.name), displayName(n.name), how),
-      feature,
-      quote: quote(displayName(base.name), displayName(n.name), how),
-      locator: `${section}:p${2 + claims.length * 3}`,
+  tick()
+  const timer = setInterval(tick, 1000)
+  try {
+    const result = await api<unknown>('papers/place', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ filename: file.name, content, top: 20 }),
     })
-  }
-  const pick = (i: number) => neighbours[i]
-  if (pick(0)) add(pick(0), [mainDimension(pick(0))], 'similar', `share ${mainDimension(pick(0))} features`, pick(0).explanation[0]?.shared[0])
-  if (pick(1)) add(pick(1), [mainDimension(pick(1))], 'similar', `have overlapping ${mainDimension(pick(1))}`, pick(1).explanation[0]?.shared[0])
-  if (pick(3)) add(pick(3), [mainDimension(pick(3)), weakDimension(pick(3))], 'related but distinct', `are related through ${mainDimension(pick(3))} and ${weakDimension(pick(3))}`)
-  if (pick(5)) add(pick(5), [weakDimension(pick(5))], 'related but distinct', `are linked by ${weakDimension(pick(5))}`)
-  const comparator = graph.nodes.find(
-    (n) => n.category === base.category && n.id !== base.id && n.degree >= 6 && !details.has(n.id) && hash(n.id + seed) % 40 === 0,
-  )
-  if (comparator) {
-    claims.push({
-      a: '@focal',
-      b: comparator.id,
-      dimensions: ['phenotype'],
-      relationship: 'similar',
-      stated: 0.65,
-      finding: quote(displayName(base.name), displayName(comparator.name), 'present with a similar clinical picture'),
-      quote: quote(displayName(base.name), displayName(comparator.name), 'present with a similar clinical picture'),
-      locator: 'Discussion:p9',
-    })
-  }
-
-  const evidence: PaperEvidenceItem[] = []
-  const item = (feature_type: string, identifier: string, label: string, snippet: string, confidence = 3) =>
-    evidence.push({
-      feature_type,
-      identifier,
-      label,
-      locator: `${['Results', 'Abstract', 'Case report'][evidence.length % 3]}:p${1 + (evidence.length % 5)}`,
-      quote: `${snippet} [mock quote]`,
-      confidence,
-      extraction_method: 'mock',
-      verification_status: 'mock',
-    })
-  for (const gene of profile.genes) item('gene', gene, gene, `Pathogenic variants in ${gene} were identified in the proband`)
-  for (const p of profile.phenotypes) item('phenotype', p.id, p.label, `The patient presented with ${p.label.toLowerCase()}`, p.weight >= 0.8 ? 3 : 2)
-  if (profile.onset) item('onset', profile.onset, profile.onset, `Symptoms began in the ${profile.onset.toLowerCase()} period`, 2)
-  if (profile.inheritance) item('inheritance', profile.inheritance, profile.inheritance, `The pedigree is consistent with ${profile.inheritance.toLowerCase()} transmission`, 2)
-
-  const display = title.length > 70 ? `${title.slice(0, 67)}…` : title
-  return {
-    query_id: `USER:mock-${hash(file.name).toString(36)}`,
-    display_name: display,
-    focal_disease_label: `${base.name} (inferred)`,
-    status: 'mock',
-    model: 'mock extractor (no model was run)',
-    warnings: [
-      'Mock output: features, quotes and comparisons are generated from the graph, not read from the paper. Replace mockExtractPaper with the v2_5 pipeline.',
-    ],
-    provenance: { title, input_path: file.name },
-    record: {
-      name: '',
-      description: `Mock profile for ${display}`,
-      phenotypes: Object.fromEntries(profile.phenotypes.map((p) => [p.id, p.weight])),
-      genes: profile.genes,
-      onset: profile.onset ? [profile.onset] : [],
-      inheritance: profile.inheritance ? [profile.inheritance] : [],
-    },
-    accepted_evidence: evidence,
-    rejected_features: [],
-    neighbors: neighbours,
-    claims,
-    mock: true,
+    const parsed = parsePaperResult(JSON.stringify(result))
+    if (typeof parsed === 'string') throw new Error('The placement service returned an unexpected result.')
+    return parsed
+  } finally {
+    clearInterval(timer)
   }
 }
 

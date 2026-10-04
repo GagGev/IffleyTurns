@@ -100,6 +100,18 @@ function SupportKey({ edge }: { edge: GraphEdge }) {
   return <span className={`line-key support-${edge.support}${edge.origin === 'user' ? ' is-user' : ''}`} aria-hidden />
 }
 
+/** Column names for a pair-list; the rows share its grid, so the columns line up. */
+function PairListHead() {
+  return (
+    <li className="pair-list-head" aria-hidden>
+      <span />
+      <span>Disease</span>
+      <span className="num">Score</span>
+      <span>Main evidence</span>
+    </li>
+  )
+}
+
 function EdgeRow({ edge, other, nodes, filtered, onClick }: {
   edge: GraphEdge
   other: string
@@ -203,6 +215,7 @@ function DiseaseDetail({
           {hidden > 0 && ` ${hidden} hidden from the graph by the current filters.`}
         </p>
         <ul className="pair-list">
+          <PairListHead />
           {incident.map((e) => (
             <EdgeRow
               key={e.id}
@@ -313,6 +326,7 @@ function UserDiseaseDetail({ disease, graph, nodes, edgesByNode, user, onSelectP
               {placement.present.map((m) => MODALITY_LABELS[m] ?? m).join(', ') || 'no modalities'}.
             </p>
             <ul className="pair-list">
+              <PairListHead />
               {incident.map((e) => (
                 <EdgeRow
                   key={e.id}
