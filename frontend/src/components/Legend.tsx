@@ -4,6 +4,7 @@ import type { ClusterInfo, GraphNode } from '../data/types'
 import { COLOUR_MODES, type NodeColouring } from '../lib/colouring'
 import { plural } from '../lib/format'
 import { TermPicker } from './TermPicker'
+import { InfoTip } from './InfoTip'
 
 interface Props {
   colouring: NodeColouring
@@ -41,7 +42,10 @@ export function Legend({
   return (
     <div className="legend">
       <label className="field">
-        <span className="section-label">Node colour</span>
+        <span className="label-row">
+          <span className="section-label">Node colour</span>
+          <InfoTip topic="nodeColour" />
+        </span>
         <select value={mode} onChange={(e) => colouring.setMode(e.target.value as typeof mode)}>
           {modes.map((m) => (
             <option key={m.value} value={m.value}>
@@ -167,7 +171,10 @@ export function Legend({
         <p className="muted small">Choose a {mode === 'gene' ? 'gene' : 'symptom'} to colour the diseases that have it.</p>
       )}
 
-      <span className="section-label legend-subhead">Reading the graph</span>
+      <span className="label-row legend-subhead">
+        <span className="section-label">Reading the graph</span>
+        <InfoTip topic="readingGraph" />
+      </span>
       <ul>
         <li>
           <span className="line-key support-curated" aria-hidden /> Curated relation backs the edge

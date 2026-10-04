@@ -50,7 +50,7 @@ interface Props {
 
 export function DetailPanel(props: Props) {
   const { selection } = props
-  if (!selection) return <Overview {...props} />
+  if (!selection) return null
   if (selection.kind === 'disease') {
     const added = props.user.diseases.get(selection.id)
     if (added) return <UserDiseaseDetail {...props} disease={added} />
@@ -111,67 +111,6 @@ function EdgeRow({ edge, other, nodes, filtered, onClick }: {
         <span className="muted">{modalityLabel(edge.mainModality)}</span>
       </button>
     </li>
-  )
-}
-
-// --- Overview ----------------------------------------------------------------------
-
-function Overview({ graph, visible, nodes, onSelectPair }: Props) {
-  const novel = useMemo(
-    () => visible.filter((e) => e.support === 'novel' && e.origin === 'graph').sort((a, b) => b.score - a.score).slice(0, 8),
-    [visible],
-  )
-  const s = graph.stats
-  return (
-    <div className="panel-body">
-      <section className="panel-section">
-        <h2>Rare disease similarity graph</h2>
-        <p>
-          The v2 model compares diseases across {graph.modalities.length} modalities, including phenotypes, genes,
-          pathways, drugs, classification and clinical text. Each disease links to its {graph.k ?? 10} most similar
-          diseases. Select a disease or an edge to see why they are similar.
-        </p>
-        <p>
-          Use <strong>Add a disease</strong> to place a new disease in the graph from a form or a v2 JSON file.
-        </p>
-        <div className="stats">
-          <div className="stat">
-            <span className="stat-value">{s.nodes.toLocaleString()}</span>
-            <span className="stat-label">Diseases</span>
-          </div>
-          <div className="stat">
-            <span className="stat-value">{s.edges.toLocaleString()}</span>
-            <span className="stat-label">Edges</span>
-          </div>
-          <div className="stat">
-            <span className="stat-value">{(s.support.novel ?? 0).toLocaleString()}</span>
-            <span className="stat-label">Novel hypotheses</span>
-          </div>
-        </div>
-      </section>
-      <section className="panel-section">
-        <h3>Strongest novel hypotheses in view</h3>
-        <p className="muted small">{SUPPORT_MEANING.novel}</p>
-        {novel.length === 0 ? (
-          <p className="muted">None match the current filters.</p>
-        ) : (
-          <ul className="pair-list">
-            {novel.map((e) => (
-              <li key={e.id}>
-                <button type="button" onClick={() => onSelectPair(e.source, e.target)}>
-                  <SupportKey edge={e} />
-                  <span className="pair-names">
-                    {displayName(nodes.get(e.source)?.name ?? e.source)} – {displayName(nodes.get(e.target)?.name ?? e.target)}
-                  </span>
-                  <span className="num">{percentile(e.percentile)}</span>
-                  <span className="muted">{modalityLabel(e.mainModality)}</span>
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
-    </div>
   )
 }
 

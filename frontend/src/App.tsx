@@ -465,24 +465,19 @@ function Explorer({ graph }: { graph: GraphData }) {
     },
   }
 
-  const apiLabel = { ready: 'ready', loading: 'loading model', error: 'error', offline: 'not running' }[api.status]
+  // The details sidebar only opens for a selected disease, pair or paper.
+  const showDetails = Boolean(selection || activePaper)
 
   return (
-    <div className="app">
+    <div className={`app${showDetails ? ' has-details' : ''}`}>
       <header className="app-header">
         <div>
           <h1>Rare Disease Similarity Explorer</h1>
           <p className="muted small">
-            v2 model · {plural(graph.stats.nodes, 'disease')} · {plural(graph.stats.edges, 'edge')}
+            v2 model · {plural(graph.stats.nodes, 'disease')} · {plural(graph.stats.edges, 'edge')} ·{' '}
+            {plural(graph.stats.support.novel ?? 0, 'novel hypothesis', 'novel hypotheses')}
           </p>
         </div>
-        <span
-          className={`backend-status ${api.status === 'ready' ? 'is-on' : ''}`}
-          title={api.error ?? 'Local service that places new diseases with the v2 model'}
-        >
-          <span className="dot" aria-hidden />
-          Placement service: {apiLabel}
-        </span>
       </header>
 
       <aside className="sidebar" aria-label="Search and filters">
@@ -541,12 +536,12 @@ function Explorer({ graph }: { graph: GraphData }) {
             ))}
           </div>
           <div className="segmented" aria-label="Scope">
-            <button type="button" aria-pressed={scope === 'all'} onClick={() => setScope('all')}>
+            <button type="button" aria-pressed={!focused} onClick={() => setScope('all')}>
               Whole network
             </button>
             <button
               type="button"
-              aria-pressed={scope === 'neighbourhood'}
+              aria-pressed={focused}
               disabled={centres.length === 0}
               title={centres.length === 0 ? 'Select a disease or pair first' : undefined}
               onClick={() => setScope('neighbourhood')}
@@ -589,7 +584,8 @@ function Explorer({ graph }: { graph: GraphData }) {
               selection={selection}
               highlightNodes={highlight.nodes}
               highlightEdges={highlight.edges}
-              fixedLayout={graph.hasLayout}
+              fixedLayout={graph.hasLayout && !focused}
+              fitAll={focused}
               fitKey={fitKey}
               colours={colours}
               colourOf={colouring.colourOf}
@@ -608,6 +604,7 @@ function Explorer({ graph }: { graph: GraphData }) {
         </div>
       </main>
 
+      {showDetails && (
       <aside className="details" aria-label="Details">
         {selection && (
           <button type="button" className="close-button" onClick={() => select(null)} aria-label="Clear selection">
@@ -649,6 +646,7 @@ function Explorer({ graph }: { graph: GraphData }) {
         />
         )}
       </aside>
+      )}
 
       <AddDiseaseDialog
         mode={dialog}

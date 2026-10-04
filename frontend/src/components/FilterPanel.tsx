@@ -2,6 +2,7 @@ import type { GraphData, Support } from '../data/types'
 import { SUPPORT_LEVELS, SUPPORT_MEANING } from '../data/types'
 import { DEFAULT_FILTERS, type Filters, PERCENTILE_STEPS } from '../lib/graph'
 import { capitalise, modalityLabel, percentile } from '../lib/format'
+import { InfoTip } from './InfoTip'
 
 interface Props {
   graph: GraphData
@@ -18,14 +19,19 @@ export function FilterPanel({ graph, filters, onChange }: Props) {
   return (
     <div className="filters">
       <div className="filters-header">
-        <span className="section-label">Filters</span>
+        <span className="label-row">
+          <span className="section-label">Filters</span>
+          <InfoTip topic="filters" />
+        </span>
         <button type="button" className="link-button" disabled={isDefault} onClick={() => onChange(DEFAULT_FILTERS)}>
           Reset
         </button>
       </div>
 
       <fieldset className="field">
-        <legend>Edge support</legend>
+        <legend className="label-row">
+          Edge support <InfoTip topic="support" />
+        </legend>
         {SUPPORT_LEVELS.map((s) => (
           <label key={s} className="check" title={SUPPORT_MEANING[s]}>
             <input type="checkbox" checked={filters.support.includes(s)} onChange={() => toggleSupport(s)} />
@@ -34,20 +40,20 @@ export function FilterPanel({ graph, filters, onChange }: Props) {
             <span className="muted small">{(graph.stats.support[s] ?? 0).toLocaleString()}</span>
           </label>
         ))}
-        <small>Novel edges are hypotheses with no curated or shared-annotation backing.</small>
       </fieldset>
 
-      <label className="check">
-        <input type="checkbox" checked={filters.mutualOnly} onChange={(e) => set('mutualOnly', e.target.checked)} />
-        Mutual neighbours only
-      </label>
-      <small className="muted filter-note">
-        Both diseases list each other among their top {graph.k ?? 10}. Turn off to see all{' '}
-        {graph.stats.edges.toLocaleString()} edges.
-      </small>
+      <div className="label-row">
+        <label className="check">
+          <input type="checkbox" checked={filters.mutualOnly} onChange={(e) => set('mutualOnly', e.target.checked)} />
+          Mutual neighbours only
+        </label>
+        <InfoTip topic="mutual" />
+      </div>
 
       <label className="field">
-        <span>Minimum percentile</span>
+        <span className="label-row">
+          Minimum percentile <InfoTip topic="percentile" />
+        </span>
         <select value={filters.minPercentile} onChange={(e) => set('minPercentile', Number(e.target.value))}>
           {PERCENTILE_STEPS.map((p) => (
             <option key={p} value={p}>
@@ -58,7 +64,9 @@ export function FilterPanel({ graph, filters, onChange }: Props) {
       </label>
 
       <label className="field">
-        <span>Main evidence</span>
+        <span className="label-row">
+          Main evidence <InfoTip topic="mainEvidence" />
+        </span>
         <select value={filters.mainModality ?? ''} onChange={(e) => set('mainModality', e.target.value || null)}>
           <option value="">Any modality</option>
           {graph.modalities.map((m) => (
@@ -67,12 +75,13 @@ export function FilterPanel({ graph, filters, onChange }: Props) {
             </option>
           ))}
         </select>
-        <small>The modality contributing most to the score. Try Drugs or Drug targets for repurposing leads.</small>
       </label>
 
       {graph.clusters.length > 0 && (
         <label className="field">
-          <span>Cluster</span>
+          <span className="label-row">
+            Cluster <InfoTip topic="cluster" />
+          </span>
           <select
             value={filters.cluster ?? ''}
             onChange={(e) => set('cluster', e.target.value === '' ? null : Number(e.target.value))}
@@ -84,12 +93,13 @@ export function FilterPanel({ graph, filters, onChange }: Props) {
               </option>
             ))}
           </select>
-          <small>Shows edges with both diseases in this cluster.</small>
         </label>
       )}
 
       <label className="field">
-        <span>Orphanet category</span>
+        <span className="label-row">
+          Orphanet category <InfoTip topic="category" />
+        </span>
         <select value={filters.category ?? ''} onChange={(e) => set('category', e.target.value || null)}>
           <option value="">All categories</option>
           {graph.categories.map((c) => (
@@ -98,7 +108,6 @@ export function FilterPanel({ graph, filters, onChange }: Props) {
             </option>
           ))}
         </select>
-        <small>Shows edges with both diseases in this category.</small>
       </label>
     </div>
   )

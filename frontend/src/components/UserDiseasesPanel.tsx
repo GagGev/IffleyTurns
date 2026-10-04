@@ -1,5 +1,6 @@
 import type { ApiHealth } from '../data/types'
 import type { UserDisease } from '../lib/userDiseases'
+import { InfoTip } from './InfoTip'
 
 interface Props {
   diseases: UserDisease[]
@@ -22,7 +23,10 @@ export function UserDiseasesPanel(props: Props) {
   return (
     <div className="user-panel">
       <div className="filters-header">
-        <span className="section-label">Your diseases</span>
+        <span className="label-row">
+          <span className="section-label">Your diseases</span>
+          <InfoTip topic="yourDiseases" />
+        </span>
         {diseases.length > 0 && (
           <button type="button" className="link-button small" onClick={props.onExport}>
             Export JSON
@@ -65,7 +69,9 @@ export function UserDiseasesPanel(props: Props) {
             ))}
           </ul>
           <label className="field">
-            <span>Links shown per added disease</span>
+            <span className="label-row">
+              Links shown per added disease <InfoTip topic="linksPerDisease" />
+            </span>
             <select value={props.linksPerDisease} onChange={(e) => props.onLinksChange(Number(e.target.value))}>
               {[3, 5, 10, 20].map((n) => (
                 <option key={n} value={n}>

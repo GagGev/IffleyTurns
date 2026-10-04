@@ -2,6 +2,7 @@ import { useId, useMemo, useState } from 'react'
 import type { GraphNode } from '../data/types'
 import { clusterId, displayName, plural } from '../lib/format'
 import { searchKey } from '../lib/graph'
+import { InfoTip } from './InfoTip'
 
 interface Props {
   diseases: GraphNode[]
@@ -54,9 +55,12 @@ export function SearchBox({ diseases, onSelect }: Props) {
 
   return (
     <div className="search">
-      <label htmlFor={`${listId}-input`} className="section-label">
-        Find a disease
-      </label>
+      <div className="label-row">
+        <label htmlFor={`${listId}-input`} className="section-label">
+          Find a disease
+        </label>
+        <InfoTip topic="search" />
+      </div>
       <input
         id={`${listId}-input`}
         type="search"

@@ -5,6 +5,7 @@ import { type ClaimEvaluation, countVerdicts, recall, VERDICT_ORDER } from '../l
 import { verdictColour } from '../lib/theme'
 import { plural } from '../lib/format'
 import type { UserDisease } from '../lib/userDiseases'
+import { InfoTip } from './InfoTip'
 
 interface Props {
   uploads: UserDisease[]
@@ -65,7 +66,10 @@ export function PapersPanel(props: Props) {
   return (
     <div className="papers-panel">
       <div className="filters-header">
-        <span className="section-label">Papers</span>
+        <span className="label-row">
+          <span className="section-label">Papers</span>
+          <InfoTip topic="papers" />
+        </span>
         {activeId && (
           <button type="button" className="link-button small" onClick={() => props.onActivate(null)}>
             Hide paper edges
@@ -118,10 +122,13 @@ export function PapersPanel(props: Props) {
         </ul>
       )}
 
-      <button type="button" className="disclosure" aria-expanded={open} onClick={() => setOpen(!open)}>
-        <span aria-hidden>{open ? '▾' : '▸'}</span> Literature set
-        {summary && <span className="muted small"> · {plural(summary.papers, 'paper')}</span>}
-      </button>
+      <div className="label-row">
+        <button type="button" className="disclosure" aria-expanded={open} onClick={() => setOpen(!open)}>
+          <span aria-hidden>{open ? '▾' : '▸'}</span> Literature set
+          {summary && <span className="muted small"> · {plural(summary.papers, 'paper')}</span>}
+        </button>
+        <InfoTip topic="literatureSet" />
+      </div>
       {open && (
         <>
           {props.literatureError && <p className="callout small">{props.literatureError}</p>}

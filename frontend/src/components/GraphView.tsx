@@ -30,6 +30,8 @@ interface Props {
   highlightEdges: Set<string> | null
   /** Use the precomputed layout instead of simulating one. */
   fixedLayout: boolean
+  /** Frame every drawn node rather than the selection (the graph is already a neighbourhood). */
+  fitAll?: boolean
   /** Changes whenever the graph should re-fit to the viewport. */
   fitKey: string
   colours: CanvasColours
@@ -90,6 +92,30 @@ class NodeStore {
   get(id: string): N | undefined {
     return this.nodes.get(id)
   }
+
+  private fixed: boolean | undefined
+
+  /**
+   * Pin every node to the precomputed map layout, or release them so a small
+   * subgraph (neighbourhood mode) can be laid out on its own and spread out.
+   */
+  setFixed(fixed: boolean) {
+    if (fixed === this.fixed) return
+    this.fixed = fixed
+    for (const node of this.nodes.values()) {
+      const { x, y } = node.disease
+      if (fixed && x !== undefined && y !== undefined) {
+        node.x = node.fx = x
+        node.y = node.fy = y
+      } else {
+        // Added diseases get their map position recomputed from their matches.
+        node.fx = undefined
+        node.fy = undefined
+      }
+      node.vx = 0
+      node.vy = 0
+    }
+  }
 }
 
 const nodeRadius = (degree: number) => 2 + Math.sqrt(degree) * 0.6
@@ -104,7 +130,7 @@ function diamond(ctx: CanvasRenderingContext2D, x: number, y: number, d: number)
 }
 
 export function GraphView(props: Props) {
-  const { nodes, edges, pinnedIds, selection, highlightNodes, highlightEdges, colours, fixedLayout, colourOf, clusters, edgeAlpha, edgeTint, frameIds } = props
+  const { nodes, edges, pinnedIds, selection, highlightNodes, highlightEdges, colours, fixedLayout, fitAll, colourOf, clusters, edgeAlpha, edgeTint, frameIds } = props
   const wrapper = useRef<HTMLDivElement>(null)
   const graph = useRef<ForceGraphMethods<N, L>>(undefined)
   const [store] = useState(() => new NodeStore())
@@ -136,6 +162,7 @@ export function GraphView(props: Props) {
 
   store.sync(nodes)
   const data = useMemo(() => {
+    store.setFixed(fixedLayout)
     const degree = new Map<string, number>()
     for (const { source, target } of edges) {
       degree.set(source, (degree.get(source) ?? 0) + 1)
@@ -184,9 +211,10 @@ export function GraphView(props: Props) {
     const fg = graph.current
     if (!fg || fixedLayout) return
     const charge = fg.d3Force('charge') as unknown as { strength: (s: number) => { distanceMax: (d: number) => void } }
-    charge?.strength(-20).distanceMax(200)
+    // Spread a local layout out enough for names to be readable.
+    charge?.strength(-90).distanceMax(400)
     const link = fg.d3Force('link') as unknown as { distance: (d: number) => void }
-    link?.distance(24)
+    link?.distance(45)
   }, [fixedLayout, size.width])
 
   // Bring the selection into view with its neighbours around it, so a close
@@ -213,17 +241,30 @@ export function GraphView(props: Props) {
     if (!fg || !frameKey) return false
     const placed = [...frameRef.current].filter((id) => store.get(id)?.x !== undefined)
     if (placed.length === 0) return false
-    fg.zoomToFit(600, frameRef.current.size <= 4 ? 220 : 60, (n) => frameRef.current.has(n.id))
+    if (fitAll) fg.zoomToFit(600, 50)
+    else fg.zoomToFit(600, frameRef.current.size <= 4 ? 220 : 60, (n) => frameRef.current.has(n.id))
     // A handful of close diseases would otherwise be blown up until their dots overlap.
     setTimeout(() => {
       if (fg.zoom() > 3) fg.zoom(3, 300)
     }, 700)
     return true
-  }, [frameKey, store])
+  }, [frameKey, store, fitAll])
 
   useEffect(() => {
     centerPending.current = !centerOnSelection() || engineRunning.current
   }, [centerOnSelection])
+
+  // Selecting opens the details sidebar, which narrows the canvas after the
+  // camera has moved: re-frame once the new size is known.
+  const centerRef = useRef(centerOnSelection)
+  useEffect(() => {
+    centerRef.current = centerOnSelection
+  }, [centerOnSelection])
+  useEffect(() => {
+    if (!size.width) return
+    const timer = setTimeout(() => centerRef.current(), 50)
+    return () => clearTimeout(timer)
+  }, [size.width, size.height])
 
   const selectedIds = useMemo(() => {
     if (!selection) return new Set<string>()
@@ -380,8 +421,8 @@ export function GraphView(props: Props) {
           linkHoverPrecision={4}
           maxZoom={6}
           minZoom={0.05}
-          cooldownTicks={fixedLayout ? 0 : 150}
-          warmupTicks={fixedLayout ? 0 : 30}
+          cooldownTicks={fixedLayout ? 0 : 80}
+          warmupTicks={fixedLayout ? 0 : 120}
           onEngineStop={() => {
             engineRunning.current = false
             if (centerPending.current && centerOnSelection()) {
