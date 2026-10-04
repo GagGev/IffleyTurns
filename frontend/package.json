@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "data": "python3 scripts/build_graph_data.py",
+    "data:annotations": "python3 scripts/build_annotations.py",
     "api": "python3 api/server.py",
     "test:api": "python3 -m unittest api/test_server.py",
     "dev": "vite",

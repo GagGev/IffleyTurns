@@ -10,6 +10,7 @@ import type {
   GraphNode,
   Placement,
   PlacementNeighbour,
+  RawEdgeDetail,
   Support,
 } from './types'
 import { SUPPORT_LEVELS } from './types'
@@ -24,10 +25,12 @@ interface RawGraph {
   modalities: string[]
   modalityDescriptions: Record<string, string>
   categories: string[]
+  clusters?: GraphData['clusters']
+  clustering?: GraphData['clustering']
   hasLayout: boolean
   shards: number
   stats: GraphData['stats']
-  nodes: { id: string; name: string; c: number; t: string; m: number; u?: number; x?: number; y?: number }[]
+  nodes: { id: string; name: string; c: number; k?: number; t: string; m: number; u?: number; x?: number; y?: number }[]
   /** [source, target, score, percentile, support, mutual, main modality] */
   edges: [number, number, number, number, number, number, number][]
 }
@@ -49,6 +52,7 @@ export async function loadGraph(): Promise<GraphData> {
     name: n.name,
     category: raw.categories[n.c] ?? '',
     disorderType: n.t,
+    cluster: n.k ?? -1,
     modalities: raw.modalities.filter((_, b) => n.m & (1 << b)),
     degree: degree[i],
     origin: n.u ? 'shared' : 'catalogue',
@@ -66,7 +70,7 @@ export async function loadGraph(): Promise<GraphData> {
     mainModality: raw.modalities[main] ?? null,
     origin: 'graph',
   }))
-  return { ...raw, nodes, edges }
+  return { ...raw, clusters: raw.clusters ?? [], clustering: raw.clustering ?? null, nodes, edges }
 }
 
 // --- Edge explanations, sharded ---------------------------------------------------
@@ -78,13 +82,18 @@ export function edgeShard(edgeId: string, shards: number): number {
   return h % shards
 }
 
-interface RawDetail {
-  s: (number | null)[]
-  c: number[]
-  e: [number, number, string[]][]
-  r: EdgeDetail['relations']
-  a: number
-  k: [number | null, number | null]
+type RawDetail = RawEdgeDetail
+
+/** Expand the compact form stored in details/NN.json and literature.json. */
+export function expandDetail(modalities: string[], raw: RawDetail): EdgeDetail {
+  return {
+    similarities: Object.fromEntries(modalities.map((name, i) => [name, raw.s[i]])),
+    contributions: Object.fromEntries(modalities.map((name, i) => [name, raw.c[i]])),
+    evidence: raw.e.map(([i, contribution, shared]) => ({ modality: modalities[i], contribution, shared })),
+    relations: raw.r,
+    annotationAdjustment: raw.a,
+    ranks: raw.k,
+  }
 }
 
 const shardCache = new Map<number, Promise<Record<string, RawDetail>>>()
@@ -101,16 +110,7 @@ export async function loadEdgeDetail(graph: GraphData, edgeId: string): Promise<
     shardCache.set(shard, pending)
   }
   const raw = (await pending)[edgeId]
-  if (!raw) return null
-  const m = graph.modalities
-  return {
-    similarities: Object.fromEntries(m.map((name, i) => [name, raw.s[i]])),
-    contributions: Object.fromEntries(m.map((name, i) => [name, raw.c[i]])),
-    evidence: raw.e.map(([i, contribution, shared]) => ({ modality: m[i], contribution, shared })),
-    relations: raw.r,
-    annotationAdjustment: raw.a,
-    ranks: raw.k,
-  }
+  return raw ? expandDetail(graph.modalities, raw) : null
 }
 
 const RELATION_KEYS: Record<string, keyof EdgeDetail['relations']> = {

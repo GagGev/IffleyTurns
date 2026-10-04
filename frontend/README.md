@@ -25,6 +25,14 @@ diseases. The frontend does not compute similarity itself.
    npm run data     # v2/.data/graph -> public/data (graph.json + detail shards)
    ```
 
+   Then write the per-disease annotations and the literature pairs, which the
+   gene, symptom, onset and inheritance colouring and the paper checks use. This
+   needs the v2 Python environment (it reads v2's cached knowledge bundle):
+
+   ```sh
+   npm run data:annotations   # -> public/data/annotations.json + literature.json
+   ```
+
    If pyarrow and scikit-learn are installed, `npm run data` also computes a
    t-SNE layout from v2's fused embedding. That takes about a minute, and the
    browser then shows the 7,500-disease graph without simulating it. Without
@@ -67,6 +75,31 @@ until the service is running.
 - **Pair panel**: the percentile, score and support level, any curated
   relations, the shared features behind the top modalities (phenotypes, genes,
   pathways, drugs and so on), and each modality's contribution to the score.
+- **Node colour**: Louvain cluster (default), Orphanet category, one gene, one
+  symptom (an HPO term and its subtypes, darker where more patients have it),
+  age of onset, mode of inheritance, or similarity to a chosen disease (by ORPHA
+  ID or name). Gene, symptom, onset and inheritance modes dim every disease that
+  does not match. Hover or select a disease for its ORPHA ID and cluster.
+- **Papers**: upload a paper (PDF, text, XML) or a v2_5 result file
+  (`python -m v2_5.place_paper --output result.json`). A paper's focal disease is
+  placed in the graph, and its claims are drawn over the graph and checked (see
+  below). Uploading a PDF or text file currently runs a **mock** extractor
+  (`src/lib/paperService.ts`), which builds a v2_5-shaped result from the graph;
+  swap `mockExtractPaper` for a call to the real pipeline. The **Literature
+  set** lists 508 papers from `literature_review/additional_runs` with 539
+  paper-stated disease pairs.
+- **Does the graph carry the paper's evidence?** Each claim says two diseases
+  are similar in some respects (phenotype, genes, pathways, treatment,
+  epidemiology). It is judged against the graph's edge for that pair: *no edge*
+  if neither disease lists the other among its top 10; otherwise *carried* if
+  every named dimension gets at least 0.25 logit from one of v2's matching
+  modalities, *partly carried* if some do, *edge, other reasons* if none do, and
+  *edge present* when the dimension (diagnostic, comorbidity) has no v2 modality.
+  Verdict colours are drawn on the edges; dashed grey lines are claims with no
+  edge. For an uploaded paper, each extracted gene, phenotype, onset and
+  inheritance value is also checked against the paper disease's closest
+  neighbours. The literature pairs were selected partly by phenotype similarity,
+  so the recovery rate there is optimistic.
 - **Table view**, **CSV export**, **neighbourhood mode**, and shareable links:
   the URL hash records the selection.
 

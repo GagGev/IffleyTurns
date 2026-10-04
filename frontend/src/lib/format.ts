@@ -31,6 +31,9 @@ export function orphanetUrl(orphaId: string): string {
   return `https://www.orpha.net/en/disease/detail/${orphaId.replace(/^ORPHA:/, '')}`
 }
 
+/** Cluster labels follow the build script: C1 is the largest cluster. */
+export const clusterId = (index: number) => (index >= 0 ? `C${index + 1}` : '–')
+
 export const isOrpha = (id: string) => /^ORPHA:\d+$/.test(id)
 
 export const plural = (n: number, word: string, many = `${word}s`) =>

@@ -70,6 +70,24 @@ export function FilterPanel({ graph, filters, onChange }: Props) {
         <small>The modality contributing most to the score. Try Drugs or Drug targets for repurposing leads.</small>
       </label>
 
+      {graph.clusters.length > 0 && (
+        <label className="field">
+          <span>Cluster</span>
+          <select
+            value={filters.cluster ?? ''}
+            onChange={(e) => set('cluster', e.target.value === '' ? null : Number(e.target.value))}
+          >
+            <option value="">All clusters</option>
+            {graph.clusters.map((c, i) => (
+              <option key={c.id} value={i}>
+                {c.id} · {c.label} ({c.size.toLocaleString()})
+              </option>
+            ))}
+          </select>
+          <small>Shows edges with both diseases in this cluster.</small>
+        </label>
+      )}
+
       <label className="field">
         <span>Orphanet category</span>
         <select value={filters.category ?? ''} onChange={(e) => set('category', e.target.value || null)}>
