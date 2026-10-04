@@ -5,6 +5,7 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import core
+import run as orchestrator
 
 
 def test_perfect_ranking_scores_one():
@@ -30,3 +31,16 @@ def test_bootstrap_interval_contains_mean():
     values = np.random.default_rng(1).normal(size=200)
     mean, lo, hi = core.bootstrap(values, reps=500)
     assert lo < mean < hi
+
+
+def test_v2_v4_selection_never_schedules_v3(monkeypatch, tmp_path):
+    monkeypatch.setattr(core, "DATA", tmp_path)
+    launched = []
+
+    def capture(command, check):
+        launched.append(Path(command[-1]).name)
+
+    monkeypatch.setattr(orchestrator.subprocess, "run", capture)
+    orchestrator.score(False, ["v2", "v2_drugfree", "v4_embedding"])
+    assert launched == ["v2_side.py", "v4_side.py"]
+    assert "v3_side.py" not in launched

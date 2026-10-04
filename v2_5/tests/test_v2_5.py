@@ -18,8 +18,9 @@ from v2_5.benchmark_medgemma import extraction_path, load_extraction
 from v2_5.client import (
     ClientConfig,
     Completion,
-    MedGemmaClient,
     EndpointUnavailable,
+    InvalidModelResponse,
+    MedGemmaClient,
     extract_json_document,
 )
 from v2_5.extraction import EXTRACTION_SCHEMA, HybridPaperExtractor, save_extraction
@@ -86,7 +87,7 @@ def empty_document() -> dict:
 
 def evidence(**values):
     return {
-        "locator": "P0001",
+        "locator": "[P0001 | Paper]",
         "quote": values.pop("quote"),
         "confidence": values.pop("confidence", 3),
         "assertion": values.pop("assertion", "present"),
@@ -135,6 +136,17 @@ def test_hybrid_extraction_requires_grounded_verbatim_evidence() -> None:
     assert len(result.accepted_evidence) == 7
     assert len(result.rejected_features) == 2
     assert all(item["verification_status"] == "unverified" for item in result.accepted_evidence)
+
+
+def test_hybrid_extraction_tolerates_null_and_non_array_fields() -> None:
+    document = empty_document()
+    document["prevalence"] = None
+    document["onset"] = {"value": "Infancy"}
+    result = HybridPaperExtractor(FakeKnowledge(), StubClient(document)).extract("A disease paper")
+    assert result.status == "hybrid_success"
+    assert result.record["prevalence"] is None
+    assert result.record["onset"] == []
+    assert result.rejected_features[0]["reason"] == "field is not an array"
 
 
 def test_failed_model_falls_back_unless_strict() -> None:
@@ -226,13 +238,18 @@ def test_transformers_backend_generation_contract_without_gpu(tmp_path: Path) ->
             return self
 
     class FakeProcessor:
-        @staticmethod
-        def apply_chat_template(*args, **kwargs):
+        messages = None
+        template_kwargs = None
+
+        @classmethod
+        def apply_chat_template(cls, messages, **kwargs):
+            cls.messages = messages
+            cls.template_kwargs = kwargs
             return FakeInputs(input_ids=np.zeros((1, 3), dtype=np.int64))
 
         @staticmethod
         def decode(*args, **kwargs):
-            return json.dumps(empty_document())
+            return json.dumps(empty_document())[1:]
 
     class FakeModel:
         device = "cuda:0"
@@ -266,4 +283,14 @@ def test_transformers_backend_generation_contract_without_gpu(tmp_path: Path) ->
     assert result.document == empty_document()
     assert result.usage["prompt_tokens"] == 3
     assert result.usage["completion_tokens"] == 5
+    assert FakeProcessor.messages[-1] == {
+        "role": "assistant",
+        "content": [{"type": "text", "text": "{"}],
+    }
+    assert FakeProcessor.template_kwargs["add_generation_prompt"] is False
+    assert FakeProcessor.template_kwargs["continue_final_message"] is True
+
+    FakeProcessor.decode = staticmethod(lambda *args, **kwargs: '"outer": {"inner": 1}')
+    with pytest.raises(InvalidModelResponse, match="complete top-level JSON"):
+        client.complete_json("system", "user", EXTRACTION_SCHEMA, "v2", use_cache=False)
 

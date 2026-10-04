@@ -15,7 +15,13 @@ import numpy as np
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
-sys.path.insert(0, str(HERE.parent)); sys.path.insert(0, str(ROOT / "v2")); warnings.filterwarnings("ignore")
+sys.path.insert(0, str(HERE.parent))
+sys.path.insert(0, str(ROOT / "v2"))
+# Cached artifacts may have been created with package-qualified ``v2.*``
+# module names, while this scorer imports the same sources as top-level
+# modules. Keep the repository root available so both pickle names resolve.
+sys.path.insert(0, str(ROOT))
+warnings.filterwarnings("ignore")
 
 import core                                    # global_eval/core.py (a unique module name)
 import data_sources                            # v2

@@ -23,6 +23,7 @@ MODELS = {
     "v2_drugfree": ("v2", "v2 fusion, drug-free view"),
     "v3_static": ("v3", "v3 static similarity (neural + fusion)"),
     "v3_forecast": ("v3", "v3 forecast (stacker)"),
+    "v4_embedding": ("v4", "v4 multimodal embedding cosine"),
 }
 DRUG_DERIVED = ("drug", "drug_target", "ot_gene")   # modalities v3 does not have
 

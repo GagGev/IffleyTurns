@@ -20,7 +20,6 @@ from .client import (
     Completion,
     InvalidModelResponse,
     MedGemmaError,
-    extract_json_document,
 )
 
 
@@ -35,7 +34,7 @@ class TransformersConfig:
     quantization: str = "4bit"
     compute_dtype: str = "auto"
     max_input_tokens: int = 8_192
-    max_output_tokens: int = 2_048
+    max_output_tokens: int = 4_096
     model_cache_dir: Path | None = None
     response_cache_dir: Path = DEFAULT_CACHE / "transformers"
     local_files_only: bool = False
@@ -221,16 +220,22 @@ TASK
 Return exactly one JSON object matching this JSON Schema:
 {schema_text}
 """
+        json_prefill = "{"
         messages = [
             {
                 "role": "user",
                 "content": [{"type": "text", "text": combined_prompt}],
-            }
+            },
+            {
+                "role": "assistant",
+                "content": [{"type": "text", "text": json_prefill}],
+            },
         ]
         try:
             inputs = processor.apply_chat_template(
                 messages,
-                add_generation_prompt=True,
+                add_generation_prompt=False,
+                continue_final_message=True,
                 tokenize=True,
                 return_dict=True,
                 return_tensors="pt",
@@ -254,7 +259,7 @@ Return exactly one JSON object matching this JSON Schema:
                     use_cache=True,
                 )
             output_tokens = generated[0][input_tokens:]
-            content = processor.decode(output_tokens, skip_special_tokens=True)
+            content = json_prefill + processor.decode(output_tokens, skip_special_tokens=True)
         except torch.cuda.OutOfMemoryError as error:
             if hasattr(torch.cuda, "empty_cache"):
                 torch.cuda.empty_cache()
@@ -266,9 +271,13 @@ Return exactly one JSON object matching this JSON Schema:
             raise MedGemmaError(f"MedGemma generation failed: {error}") from error
         elapsed = time.perf_counter() - started
         try:
-            document = extract_json_document(content)
-        except InvalidModelResponse:
-            raise
+            document, _ = json.JSONDecoder().raw_decode(content.lstrip())
+        except json.JSONDecodeError as error:
+            raise InvalidModelResponse(
+                "MedGemma did not return a complete top-level JSON object"
+            ) from error
+        if not isinstance(document, dict):
+            raise InvalidModelResponse("MedGemma response was not a JSON object")
         response_hash = hashlib.sha256(content.encode("utf-8")).hexdigest()
         completion = Completion(
             document=document,

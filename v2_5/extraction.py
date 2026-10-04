@@ -25,7 +25,7 @@ from .client import Completion, JsonCompletionClient, MedGemmaError
 from .passages import Passage, SourceUnit, format_passages, select_passages, units_from_text
 
 
-PROMPT_VERSION = "medgemma-paper-extraction-2.5.0"
+PROMPT_VERSION = "medgemma-paper-extraction-2.5.2"
 WEIGHTS = {1: 0.5, 2: 0.75, 3: 1.0}
 ASSERTIONS = {"present", "absent", "uncertain", "comparator"}
 GENE_RELATIONS = {"causal", "associated", "therapeutic_target", "unclear"}
@@ -50,8 +50,12 @@ def _object(properties: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def _array(properties: dict[str, Any]) -> dict[str, Any]:
-    return {"type": "array", "items": _object(properties)}
+def _array(properties: dict[str, Any], max_items: int) -> dict[str, Any]:
+    return {
+        "type": "array",
+        "items": _object(properties),
+        "maxItems": max_items,
+    }
 
 
 EXTRACTION_SCHEMA: dict[str, Any] = {
@@ -64,7 +68,8 @@ EXTRACTION_SCHEMA: dict[str, Any] = {
                 "hpo_id": {"type": ["string", "null"]},
                 "assertion": {"type": "string", "enum": sorted(ASSERTIONS)},
                 **_evidence_properties(),
-            }
+            },
+            10,
         ),
         "genes": _array(
             {
@@ -72,7 +77,8 @@ EXTRACTION_SCHEMA: dict[str, Any] = {
                 "relationship": {"type": "string", "enum": sorted(GENE_RELATIONS)},
                 "assertion": {"type": "string", "enum": sorted(ASSERTIONS)},
                 **_evidence_properties(),
-            }
+            },
+            6,
         ),
         "pathways": _array(
             {
@@ -80,7 +86,8 @@ EXTRACTION_SCHEMA: dict[str, Any] = {
                 "pathway_id": {"type": ["string", "null"]},
                 "assertion": {"type": "string", "enum": sorted(ASSERTIONS)},
                 **_evidence_properties(),
-            }
+            },
+            4,
         ),
         "drugs": _array(
             {
@@ -89,21 +96,24 @@ EXTRACTION_SCHEMA: dict[str, Any] = {
                 "role": {"type": "string", "enum": sorted(DRUG_ROLES)},
                 "assertion": {"type": "string", "enum": sorted(ASSERTIONS)},
                 **_evidence_properties(),
-            }
+            },
+            6,
         ),
         "inheritance": _array(
             {
                 "value": {"type": "string", "enum": sorted(INHERITANCE_MAP)},
                 "assertion": {"type": "string", "enum": sorted(ASSERTIONS)},
                 **_evidence_properties(),
-            }
+            },
+            2,
         ),
         "onset": _array(
             {
                 "value": {"type": "string", "enum": list(ONSET_BINS) + ["All ages"]},
                 "assertion": {"type": "string", "enum": sorted(ASSERTIONS)},
                 **_evidence_properties(),
-            }
+            },
+            2,
         ),
         "prevalence": _array(
             {
@@ -115,7 +125,8 @@ EXTRACTION_SCHEMA: dict[str, Any] = {
                 "population": {"type": "string"},
                 "assertion": {"type": "string", "enum": sorted(ASSERTIONS)},
                 **_evidence_properties(),
-            }
+            },
+            2,
         ),
     },
     "required": [
@@ -139,7 +150,10 @@ Rules:
 - Exclude facts about comparator diseases, family members without the disease, background examples, methods, and cited prior diseases.
 - Do not treat negated, ruled-out, speculative, or uncertain findings as present.
 - Do not infer a gene, phenotype, drug, pathway, onset, inheritance, or prevalence that is not stated.
-- Every item must include one supplied passage locator and a short verbatim quote copied from that passage.
+- Every item must include one supplied passage locator and a verbatim quote of at most 30 words copied from that passage.
+- Return the passage locator alone (for example, P0001), without its section or brackets.
+- Return only the highest-confidence facts: at most 10 phenotypes, 6 genes, 4 pathways, 6 drugs, and 2 items in each other array.
+- Do not repeat a feature or copy a complete passage as evidence.
 - Use confidence 3 for direct unambiguous assertions, 2 for clear but less specific assertions, and 1 for weakly contextual assertions.
 - Return JSON only and obey the schema. Empty arrays are preferred to guesses.
 - Output is automated and will be independently validated."""
@@ -278,6 +292,9 @@ Extract from these passages only:
         feature_type: str,
     ) -> tuple[str, str, int] | RejectedFeature:
         locator = str(item.get("locator", "")).strip()
+        if locator not in passages:
+            match = re.search(r"\b(P\d{4})\b", locator)
+            locator = match.group(1) if match else locator
         quote = str(item.get("quote", "")).strip()
         try:
             confidence = int(item.get("confidence", 0))
@@ -338,7 +355,18 @@ Extract from these passages only:
         rejected: list[RejectedFeature] = []
         passage_map = self._passage_map(passages)
 
-        for item in document.get("phenotypes", [])[:100]:
+        def array_items(field: str, limit: int) -> list[Any]:
+            value = document.get(field, [])
+            if value is None:
+                return []
+            if not isinstance(value, list):
+                rejected.append(
+                    RejectedFeature(field, str(value), "field is not an array")
+                )
+                return []
+            return value[:limit]
+
+        for item in array_items("phenotypes", 100):
             if not isinstance(item, dict):
                 rejected.append(RejectedFeature("phenotype", str(item), "item is not an object"))
                 continue
@@ -361,7 +389,7 @@ Extract from these passages only:
             )
             record["phenotypes"][hpo_id] = max(weight, record["phenotypes"].get(hpo_id, 0.0))
 
-        for item in document.get("genes", [])[:100]:
+        for item in array_items("genes", 100):
             if not isinstance(item, dict):
                 rejected.append(RejectedFeature("gene", str(item), "item is not an object"))
                 continue
@@ -381,7 +409,7 @@ Extract from these passages only:
             field = "ot_genes" if relationship == "therapeutic_target" else "genes"
             record[field][symbol] = max(weight, record[field].get(symbol, 0.0))
 
-        for item in document.get("pathways", [])[:100]:
+        for item in array_items("pathways", 100):
             if not isinstance(item, dict):
                 rejected.append(RejectedFeature("pathway", str(item), "item is not an object"))
                 continue
@@ -404,7 +432,7 @@ Extract from these passages only:
             )
             record["pathways"][pathway_id] = max(weight, record["pathways"].get(pathway_id, 0.0))
 
-        for item in document.get("drugs", [])[:100]:
+        for item in array_items("drugs", 100):
             if not isinstance(item, dict):
                 rejected.append(RejectedFeature("drug", str(item), "item is not an object"))
                 continue
@@ -434,7 +462,7 @@ Extract from these passages only:
             ("inheritance", set(INHERITANCE_MAP)),
             ("onset", set(ONSET_BINS) | {"All ages"}),
         ):
-            for item in document.get(field, [])[:20]:
+            for item in array_items(field, 20):
                 if not isinstance(item, dict):
                     rejected.append(RejectedFeature(field, str(item), "item is not an object"))
                     continue
@@ -453,7 +481,7 @@ Extract from these passages only:
         prevalence_values: list[float] = []
         if record.get("prevalence") is not None:
             prevalence_values.append(float(record["prevalence"]))
-        for item in document.get("prevalence", [])[:20]:
+        for item in array_items("prevalence", 20):
             if not isinstance(item, dict):
                 rejected.append(RejectedFeature("prevalence", str(item), "item is not an object"))
                 continue

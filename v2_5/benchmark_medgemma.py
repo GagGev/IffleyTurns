@@ -232,7 +232,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--model-cache-dir", type=Path, default=None)
     parser.add_argument("--local-files-only", action="store_true")
     parser.add_argument("--timeout", type=float, default=180.0)
-    parser.add_argument("--max-output-tokens", type=int, default=2_048)
+    parser.add_argument("--max-output-tokens", type=int, default=4_096)
     parser.add_argument("--response-mode", choices=["json_schema", "json_object", "prompt_only"], default=None)
     parser.add_argument("--allow-remote", action="store_true")
     parser.add_argument("--cache-dir", type=Path, default=None)

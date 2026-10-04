@@ -1,6 +1,6 @@
 # global_eval
 
-One place to compare every model version (v1, v2, v3) on benchmarks none of them owns. It imports no version
+One place to compare every model version (v1, v2, v3, v4) on benchmarks none of them owns. It imports no version
 directly: each is scored in its own process (their module names collide), and the benchmarks only read the score
 matrices those processes write.
 
@@ -8,12 +8,15 @@ matrices those processes write.
 python global_eval/run.py                 # score (cached) and evaluate everything -> global_eval/results/
 python global_eval/run.py --rescore       # recompute the score matrices (about 5 minutes on a laptop CPU)
 python global_eval/run.py --only paper_pairs relations forward_time
+python global_eval/run.py --rescore --models v2 v2_drugfree v4_embedding \
+  --only paper_pairs relations --output-dir v4/.data/evaluation/global_eval
 python -m pytest global_eval/tests -q
 ```
 
-Needs the v2 and v3 environments (pandas, scikit-learn, scipy, PyTorch for v3) and the built v2 and v3 models
-(`v2/.data/model`, `v3/.data/model` plus `v3/.data/cache`). Score matrices go to `.data/global_eval/` (large,
-untracked); reports and metrics go to `global_eval/results/` (tracked).
+Only requested model versions are launched. The focused v2-v4 command above
+does not import or execute v3. Score matrices go to `.data/global_eval/`
+(large, untracked); reports default to `global_eval/results/` and can be
+redirected with `--output-dir`.
 
 ## Layout
 
@@ -23,6 +26,7 @@ untracked); reports and metrics go to `global_eval/results/` (tracked).
 | `core.py` | Model registry, retrieval metrics (MAP, MRR, Hits@10, P@10, nDCG@10, AUROC), bootstrap CIs |
 | `scorers/v2_side.py` | Defines the tasks; scores v1 and v2 (imports `v2/`) |
 | `scorers/v3_side.py` | Scores v3 production static similarity and forecast (imports `v3/`) |
+| `scorers/v4_side.py` | Scores the v4 embedding cosine (imports `v4/`) |
 | `scorers/paper_pairs_data.py` | Loads the paper-stated pairs from `literature_review/` |
 | `benchmarks/paper_pairs.py` | Benchmark 1 |
 | `benchmarks/relations.py` | Benchmark 2 |
@@ -52,6 +56,7 @@ untracked); reports and metrics go to `global_eval/results/` (tracked).
 | `v2_drugfree` | The same with drug, drug-target and Open Targets modalities hidden (the view v3 works in) |
 | `v3_static` | v3 production neural ensemble + fusion (drug-free); the graph's similarity score |
 | `v3_forecast` | v3 production stacker: the score that a pair will be linked by a future orphan designation |
+| `v4_embedding` | One learned 128-d multimodal embedding, scored only by cosine |
 
 ## Adding a model or benchmark
 
