@@ -1,0 +1,18 @@
+{
+  "checked_at": "2026-10-04T00:41:35.804418+00:00",
+  "unit_tests_passed": 7,
+  "sqlite_integrity": "ok",
+  "raw_source_checksums": "passed",
+  "paper_pair_family_split_integrity": "passed",
+  "sampled_source_locators_verified": 20,
+  "source_locator_sample_seed": 17,
+  "exact_exported_paragraphs_crossing_splits": 0,
+  "database_sha256": "305009bfa4881640c5306e3279905e0668091d1a699a62cbc5b9ec716eace470",
+  "supervised_labels": 0,
+  "expert_review_complete": false,
+  "validation_text_papers": 0,
+  "test_text_papers": 2,
+  "training_text_papers": 105,
+  "text_paragraphs": 4967,
+  "whitespace_delimited_words": 545911
+}

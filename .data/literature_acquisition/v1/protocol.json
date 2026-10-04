@@ -1,0 +1,4590 @@
+{
+  "title": "Rare-disease literature: prospective acquisition and rubric-calibration pilot",
+  "version": "rare-disease-calibration-1.0",
+  "registered_at": "2026-10-04T00:23:10.668946+00:00",
+  "date_range": [
+    "2000-01-01",
+    "2026-10-04"
+  ],
+  "orphanet_release": {
+    "date": "2026-06-23 07:53:50",
+    "version": "1.3.42 / 4.1.8 [2025-03-03]",
+    "sha256": "df8d562a0c6011af36a74eb4000ce81ca7d723e8031010819fb71727c0962bbb",
+    "license": "CC-BY-4.0"
+  },
+  "seed_file_sha256": "f620e6be69724d211feb6e484aad13c2d1c76d25a5b3ee82783465bb898b72ab",
+  "rubric_sha256": "071bcee72d9164cbe467af924d98a40a2bfc0f2b13e933775147ea6bb1f6ad62",
+  "rubric_version": "protocol-section-10-v1",
+  "phase": "1: acquisition for calibration; not a validated benchmark",
+  "selection": "30 exact-name Orphanet pairs; same entity type; SHA256 ordering; degree <=2. Existing CSV contributes names only, never scores, findings, or votes.",
+  "seed_selection_rejections": {
+    "ambiguous_or_unmapped_name": 704,
+    "incompatible_or_broad_granularity": 166
+  },
+  "diseases": [
+    {
+      "orpha_id": "ORPHA:100",
+      "preferred_name": "Ataxia-telangiectasia",
+      "synonyms": [
+        "Louis-Bar syndrome"
+      ],
+      "entity_type": "Disease",
+      "external_identifiers": [
+        {
+          "source": "GARD",
+          "id": "5862",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-10",
+          "id": "G11.3",
+          "relation": "NTBT (ORPHAcode is narrower than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-11",
+          "id": "4A01.31",
+          "relation": "NTBT (ORPHAcode is narrower than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MONDO",
+          "id": "0008840",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MeSH",
+          "id": "D001260",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MedDRA",
+          "id": "10003594",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "208900",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "208910",
+          "relation": "NTBT (ORPHAcode is narrower than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "UMLS",
+          "id": "C0004135",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        }
+      ],
+      "mapping_confidence": "exact_source",
+      "rarity_status": "requires_prevalence_review",
+      "source": "https://www.orphadata.com/data/xml/en_product1.xml",
+      "search_terms": [
+        "Ataxia-telangiectasia",
+        "Louis-Bar syndrome"
+      ],
+      "excluded_search_terms": []
+    },
+    {
+      "orpha_id": "ORPHA:116",
+      "preferred_name": "Beckwith-Wiedemann syndrome",
+      "synonyms": [
+        "BWS",
+        "Exomphalos-macroglossia-gigantism syndrome",
+        "Wiedemann-Beckwith syndrome"
+      ],
+      "entity_type": "Malformation syndrome",
+      "external_identifiers": [
+        {
+          "source": "GARD",
+          "id": "3343",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-10",
+          "id": "Q87.3",
+          "relation": "NTBT (ORPHAcode is narrower than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-11",
+          "id": "LD2C",
+          "relation": "NTBT (ORPHAcode is narrower than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MONDO",
+          "id": "0007534",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MeSH",
+          "id": "D001506",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MedDRA",
+          "id": "10050344",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "130650",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "UMLS",
+          "id": "C0004903",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        }
+      ],
+      "mapping_confidence": "exact_source",
+      "rarity_status": "requires_prevalence_review",
+      "source": "https://www.orphadata.com/data/xml/en_product1.xml",
+      "search_terms": [
+        "Beckwith-Wiedemann syndrome",
+        "Exomphalos-macroglossia-gigantism syndrome",
+        "Wiedemann-Beckwith syndrome"
+      ],
+      "excluded_search_terms": [
+        "BWS"
+      ]
+    },
+    {
+      "orpha_id": "ORPHA:124",
+      "preferred_name": "Diamond-Blackfan anemia",
+      "synonyms": [
+        "DBA",
+        "Congenital PRCA",
+        "Congenital pure red cell aplasia",
+        "Diamond-Blackfan anemia syndrome"
+      ],
+      "entity_type": "Disease",
+      "external_identifiers": [
+        {
+          "source": "GARD",
+          "id": "6274",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-10",
+          "id": "D61.0",
+          "relation": "NTBT (ORPHAcode is narrower than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-11",
+          "id": "3A60.1",
+          "relation": "NTBT (ORPHAcode is narrower than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MONDO",
+          "id": "0015253",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MeSH",
+          "id": "D029503",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MedDRA",
+          "id": "10062989",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "105650",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "300946",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "606129",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "606164",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "610629",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "612527",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "612528",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "612561",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "612562",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "612563",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "613308",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "613309",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "614900",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "615550",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "615909",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "617408",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "617409",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "618310",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "618312",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "618313",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "620072",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "UMLS",
+          "id": "C0265265",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        }
+      ],
+      "mapping_confidence": "exact_source",
+      "rarity_status": "requires_prevalence_review",
+      "source": "https://www.orphadata.com/data/xml/en_product1.xml",
+      "search_terms": [
+        "Diamond-Blackfan anemia",
+        "Congenital PRCA",
+        "Congenital pure red cell aplasia",
+        "Diamond-Blackfan anemia syndrome"
+      ],
+      "excluded_search_terms": [
+        "DBA"
+      ]
+    },
+    {
+      "orpha_id": "ORPHA:125",
+      "preferred_name": "Bloom syndrome",
+      "synonyms": [
+        "BSyn"
+      ],
+      "entity_type": "Disease",
+      "external_identifiers": [
+        {
+          "source": "GARD",
+          "id": "915",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-10",
+          "id": "Q82.8",
+          "relation": "NTBT (ORPHAcode is narrower than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-11",
+          "id": "4A01.31",
+          "relation": "NTBT (ORPHAcode is narrower than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MONDO",
+          "id": "0008876",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MeSH",
+          "id": "D001816",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MedDRA",
+          "id": "10073032",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "210900",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "UMLS",
+          "id": "C0005859",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        }
+      ],
+      "mapping_confidence": "exact_source",
+      "rarity_status": "requires_prevalence_review",
+      "source": "https://www.orphadata.com/data/xml/en_product1.xml",
+      "search_terms": [
+        "Bloom syndrome"
+      ],
+      "excluded_search_terms": [
+        "BSyn"
+      ]
+    },
+    {
+      "orpha_id": "ORPHA:130",
+      "preferred_name": "Brugada syndrome",
+      "synonyms": [
+        "Ventricular fibrillation, Brugada type"
+      ],
+      "entity_type": "Disease",
+      "external_identifiers": [
+        {
+          "source": "GARD",
+          "id": "1030",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-10",
+          "id": "I49.8",
+          "relation": "NTBT (ORPHAcode is narrower than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-11",
+          "id": "BC65.1",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MONDO",
+          "id": "0015263",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MeSH",
+          "id": "D053840",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MedDRA",
+          "id": "10059027",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "601144",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "611777",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "611875",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "611876",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "612838",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "613119",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "613120",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "613123",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "616399",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "UMLS",
+          "id": "C1142166",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        }
+      ],
+      "mapping_confidence": "exact_source",
+      "rarity_status": "requires_prevalence_review",
+      "source": "https://www.orphadata.com/data/xml/en_product1.xml",
+      "search_terms": [
+        "Brugada syndrome",
+        "Ventricular fibrillation, Brugada type"
+      ],
+      "excluded_search_terms": []
+    },
+    {
+      "orpha_id": "ORPHA:199",
+      "preferred_name": "Cornelia de Lange syndrome",
+      "synonyms": [
+        "Brachmann-de Lange syndrome"
+      ],
+      "entity_type": "Malformation syndrome",
+      "external_identifiers": [
+        {
+          "source": "GARD",
+          "id": "10109",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-10",
+          "id": "Q87.1",
+          "relation": "NTBT (ORPHAcode is narrower than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-11",
+          "id": "LD2F.1Y",
+          "relation": "NTBT (ORPHAcode is narrower than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MONDO",
+          "id": "0016033",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MeSH",
+          "id": "D003635",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MedDRA",
+          "id": "10077707",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "122470",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "300590",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "300882",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "610759",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "614701",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "620568",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "621570",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "UMLS",
+          "id": "C0270972",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        }
+      ],
+      "mapping_confidence": "exact_source",
+      "rarity_status": "requires_prevalence_review",
+      "source": "https://www.orphadata.com/data/xml/en_product1.xml",
+      "search_terms": [
+        "Cornelia de Lange syndrome",
+        "Brachmann-de Lange syndrome"
+      ],
+      "excluded_search_terms": []
+    },
+    {
+      "orpha_id": "ORPHA:2032",
+      "preferred_name": "Idiopathic pulmonary fibrosis",
+      "synonyms": [
+        "IPF"
+      ],
+      "entity_type": "Disease",
+      "external_identifiers": [
+        {
+          "source": "GARD",
+          "id": "8609",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-10",
+          "id": "J84.1",
+          "relation": "NTBT (ORPHAcode is narrower than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-11",
+          "id": "CB03.4",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MONDO",
+          "id": "800504",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MeSH",
+          "id": "D054990",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MedDRA",
+          "id": "10021240",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "178500",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "616371",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "616373",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "619611",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "UMLS",
+          "id": "C1800706",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        }
+      ],
+      "mapping_confidence": "exact_source",
+      "rarity_status": "requires_prevalence_review",
+      "source": "https://www.orphadata.com/data/xml/en_product1.xml",
+      "search_terms": [
+        "Idiopathic pulmonary fibrosis"
+      ],
+      "excluded_search_terms": [
+        "IPF"
+      ]
+    },
+    {
+      "orpha_id": "ORPHA:2322",
+      "preferred_name": "Kabuki syndrome",
+      "synonyms": [
+        "Kabuki make-up syndrome",
+        "Niikawa-Kuroki syndrome"
+      ],
+      "entity_type": "Malformation syndrome",
+      "external_identifiers": [
+        {
+          "source": "GARD",
+          "id": "6810",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-10",
+          "id": "Q87.8",
+          "relation": "NTBT (ORPHAcode is narrower than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-11",
+          "id": "LD2F.1Y",
+          "relation": "NTBT (ORPHAcode is narrower than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MONDO",
+          "id": "0016512",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MeSH",
+          "id": "C537705",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MedDRA",
+          "id": "10063935",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "147920",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "300867",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "UMLS",
+          "id": "C0796004",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        }
+      ],
+      "mapping_confidence": "exact_source",
+      "rarity_status": "requires_prevalence_review",
+      "source": "https://www.orphadata.com/data/xml/en_product1.xml",
+      "search_terms": [
+        "Kabuki syndrome",
+        "Kabuki make-up syndrome",
+        "Niikawa-Kuroki syndrome"
+      ],
+      "excluded_search_terms": []
+    },
+    {
+      "orpha_id": "ORPHA:273",
+      "preferred_name": "Steinert myotonic dystrophy",
+      "synonyms": [
+        "Myotonic dystrophy type 1",
+        "Steinert disease"
+      ],
+      "entity_type": "Disease",
+      "external_identifiers": [
+        {
+          "source": "GARD",
+          "id": "8310",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-10",
+          "id": "G71.1",
+          "relation": "NTBT (ORPHAcode is narrower than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-11",
+          "id": "8C71.0",
+          "relation": "NTBT (ORPHAcode is narrower than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MONDO",
+          "id": "0008056",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MeSH",
+          "id": "C538008",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "160900",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "UMLS",
+          "id": "C3250443",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        }
+      ],
+      "mapping_confidence": "exact_source",
+      "rarity_status": "requires_prevalence_review",
+      "source": "https://www.orphadata.com/data/xml/en_product1.xml",
+      "search_terms": [
+        "Steinert myotonic dystrophy",
+        "Myotonic dystrophy type 1",
+        "Steinert disease"
+      ],
+      "excluded_search_terms": []
+    },
+    {
+      "orpha_id": "ORPHA:281",
+      "preferred_name": "Monosomy 5p syndrome",
+      "synonyms": [
+        "Cri du chat syndrome",
+        "Deletion 5p"
+      ],
+      "entity_type": "Malformation syndrome",
+      "external_identifiers": [
+        {
+          "source": "GARD",
+          "id": "6213",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-10",
+          "id": "Q93.4",
+          "relation": "NTBT (ORPHAcode is narrower than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-11",
+          "id": "LD44.51",
+          "relation": "NTBT (ORPHAcode is narrower than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MONDO",
+          "id": "0007404",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MeSH",
+          "id": "D003410",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MedDRA",
+          "id": "10011385",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "123450",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "UMLS",
+          "id": "C0010314",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        }
+      ],
+      "mapping_confidence": "exact_source",
+      "rarity_status": "requires_prevalence_review",
+      "source": "https://www.orphadata.com/data/xml/en_product1.xml",
+      "search_terms": [
+        "Monosomy 5p syndrome",
+        "Cri du chat syndrome",
+        "Deletion 5p"
+      ],
+      "excluded_search_terms": []
+    },
+    {
+      "orpha_id": "ORPHA:2896",
+      "preferred_name": "Pitt-Hopkins syndrome",
+      "synonyms": [],
+      "entity_type": "Malformation syndrome",
+      "external_identifiers": [
+        {
+          "source": "GARD",
+          "id": "4372",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-10",
+          "id": "Q87.0",
+          "relation": "NTBT (ORPHAcode is narrower than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-11",
+          "id": "LD2F.1Y",
+          "relation": "NTBT (ORPHAcode is narrower than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MONDO",
+          "id": "0012589",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MeSH",
+          "id": "C537403",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "610954",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "UMLS",
+          "id": "C1970431",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        }
+      ],
+      "mapping_confidence": "exact_source",
+      "rarity_status": "requires_prevalence_review",
+      "source": "https://www.orphadata.com/data/xml/en_product1.xml",
+      "search_terms": [
+        "Pitt-Hopkins syndrome"
+      ],
+      "excluded_search_terms": []
+    },
+    {
+      "orpha_id": "ORPHA:2905",
+      "preferred_name": "POEMS syndrome",
+      "synonyms": [
+        "Crow-Fukase syndrome",
+        "Osteosclerotic myeloma",
+        "PEP syndrome",
+        "Polyneuropathy-endocrinopathy-plasma cell dyscrasia syndrome",
+        "Takatsuki syndrome"
+      ],
+      "entity_type": "Disease",
+      "external_identifiers": [
+        {
+          "source": "GARD",
+          "id": "7411",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-10",
+          "id": "D47.2",
+          "relation": "NTBT (ORPHAcode is narrower than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-11",
+          "id": "2A83.Y",
+          "relation": "NTBT (ORPHAcode is narrower than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MONDO",
+          "id": "0017364",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MeSH",
+          "id": "D016878",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MedDRA",
+          "id": "10053869",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "UMLS",
+          "id": "C0085404",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        }
+      ],
+      "mapping_confidence": "exact_source",
+      "rarity_status": "requires_prevalence_review",
+      "source": "https://www.orphadata.com/data/xml/en_product1.xml",
+      "search_terms": [
+        "POEMS syndrome",
+        "Crow-Fukase syndrome",
+        "Osteosclerotic myeloma",
+        "PEP syndrome",
+        "Polyneuropathy-endocrinopathy-plasma cell dyscrasia syndrome",
+        "Takatsuki syndrome"
+      ],
+      "excluded_search_terms": []
+    },
+    {
+      "orpha_id": "ORPHA:2932",
+      "preferred_name": "Chronic inflammatory demyelinating polyneuropathy",
+      "synonyms": [
+        "CIDP",
+        "Chronic inflammatory demyelinating polyradiculoneuropathy"
+      ],
+      "entity_type": "Disease",
+      "external_identifiers": [
+        {
+          "source": "GARD",
+          "id": "6102",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-10",
+          "id": "G61.8",
+          "relation": "NTBT (ORPHAcode is narrower than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-11",
+          "id": "8C01.3",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MONDO",
+          "id": "0006702",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MeSH",
+          "id": "D020277",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MedDRA",
+          "id": "10057645",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "UMLS",
+          "id": "C0393819",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        }
+      ],
+      "mapping_confidence": "exact_source",
+      "rarity_status": "requires_prevalence_review",
+      "source": "https://www.orphadata.com/data/xml/en_product1.xml",
+      "search_terms": [
+        "Chronic inflammatory demyelinating polyneuropathy",
+        "Chronic inflammatory demyelinating polyradiculoneuropathy"
+      ],
+      "excluded_search_terms": [
+        "CIDP"
+      ]
+    },
+    {
+      "orpha_id": "ORPHA:308",
+      "preferred_name": "Progressive myoclonic epilepsy type 1",
+      "synonyms": [
+        "EPM1",
+        "Progressive myoclonus epilepsy type 1",
+        "ULD",
+        "Unverricht-Lundborg disease"
+      ],
+      "entity_type": "Disease",
+      "external_identifiers": [
+        {
+          "source": "GARD",
+          "id": "3876",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-10",
+          "id": "G40.3",
+          "relation": "NTBT (ORPHAcode is narrower than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-11",
+          "id": "8A61.41",
+          "relation": "NTBT (ORPHAcode is narrower than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MONDO",
+          "id": "0009698",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MeSH",
+          "id": "D020194",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MedDRA",
+          "id": "10054895",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "254800",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "310370",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "612437",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "UMLS",
+          "id": "C0751785",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        }
+      ],
+      "mapping_confidence": "exact_source",
+      "rarity_status": "requires_prevalence_review",
+      "source": "https://www.orphadata.com/data/xml/en_product1.xml",
+      "search_terms": [
+        "Progressive myoclonic epilepsy type 1",
+        "Progressive myoclonus epilepsy type 1",
+        "Unverricht-Lundborg disease"
+      ],
+      "excluded_search_terms": [
+        "EPM1",
+        "ULD"
+      ]
+    },
+    {
+      "orpha_id": "ORPHA:31150",
+      "preferred_name": "Tangier disease",
+      "synonyms": [
+        "ATP-binding cassette transporter A1 deficiency",
+        "Analphalipoproteinemia"
+      ],
+      "entity_type": "Disease",
+      "external_identifiers": [
+        {
+          "source": "GARD",
+          "id": "7731",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-10",
+          "id": "E78.6",
+          "relation": "NTBT (ORPHAcode is narrower than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-11",
+          "id": "5C81.0",
+          "relation": "NTBT (ORPHAcode is narrower than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MONDO",
+          "id": "0008783",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MeSH",
+          "id": "D013631",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MedDRA",
+          "id": "10051875",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "205400",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "UMLS",
+          "id": "C0039292",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        }
+      ],
+      "mapping_confidence": "exact_source",
+      "rarity_status": "requires_prevalence_review",
+      "source": "https://www.orphadata.com/data/xml/en_product1.xml",
+      "search_terms": [
+        "Tangier disease",
+        "ATP-binding cassette transporter A1 deficiency",
+        "Analphalipoproteinemia"
+      ],
+      "excluded_search_terms": []
+    },
+    {
+      "orpha_id": "ORPHA:313",
+      "preferred_name": "Lamellar ichthyosis",
+      "synonyms": [
+        "LI"
+      ],
+      "entity_type": "Disease",
+      "external_identifiers": [
+        {
+          "source": "GARD",
+          "id": "10803",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-10",
+          "id": "Q80.2",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-11",
+          "id": "EC20.02",
+          "relation": "NTBT (ORPHAcode is narrower than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MONDO",
+          "id": "0017778",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MeSH",
+          "id": "D017490",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MedDRA",
+          "id": "10023686",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "146750",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "242300",
+          "relation": "NTBT (ORPHAcode is narrower than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "601277",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "604777",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "606545",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "612281",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "613943",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "617571",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "617574",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "UMLS",
+          "id": "C5848247",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        }
+      ],
+      "mapping_confidence": "exact_source",
+      "rarity_status": "requires_prevalence_review",
+      "source": "https://www.orphadata.com/data/xml/en_product1.xml",
+      "search_terms": [
+        "Lamellar ichthyosis"
+      ],
+      "excluded_search_terms": [
+        "LI"
+      ]
+    },
+    {
+      "orpha_id": "ORPHA:319182",
+      "preferred_name": "Wiedemann-Steiner syndrome",
+      "synonyms": [
+        "Hypertrichosis-short stature-facial dysmorphism-developmental delay syndrome"
+      ],
+      "entity_type": "Malformation syndrome",
+      "external_identifiers": [
+        {
+          "source": "GARD",
+          "id": "5565",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-10",
+          "id": "Q87.1",
+          "relation": "NTBT (ORPHAcode is narrower than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MONDO",
+          "id": "0011518",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "605130",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "UMLS",
+          "id": "C1854630",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        }
+      ],
+      "mapping_confidence": "exact_source",
+      "rarity_status": "requires_prevalence_review",
+      "source": "https://www.orphadata.com/data/xml/en_product1.xml",
+      "search_terms": [
+        "Wiedemann-Steiner syndrome",
+        "Hypertrichosis-short stature-facial dysmorphism-developmental delay syndrome"
+      ],
+      "excluded_search_terms": []
+    },
+    {
+      "orpha_id": "ORPHA:34145",
+      "preferred_name": "Immunoglobulin A nephropathy",
+      "synonyms": [
+        "Berger disease",
+        "IgA nephropathy"
+      ],
+      "entity_type": "Disease",
+      "external_identifiers": [
+        {
+          "source": "ICD-10",
+          "id": "N02",
+          "relation": "NTBT (ORPHAcode is narrower than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-11",
+          "id": "MF8Y",
+          "relation": "NTBT (ORPHAcode is narrower than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MONDO",
+          "id": "0005342",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MONDO",
+          "id": "5342",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MedDRA",
+          "id": "10021263",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "UMLS",
+          "id": "C0017661",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        }
+      ],
+      "mapping_confidence": "exact_source",
+      "rarity_status": "requires_prevalence_review",
+      "source": "https://www.orphadata.com/data/xml/en_product1.xml",
+      "search_terms": [
+        "Immunoglobulin A nephropathy",
+        "Berger disease",
+        "IgA nephropathy"
+      ],
+      "excluded_search_terms": []
+    },
+    {
+      "orpha_id": "ORPHA:355",
+      "preferred_name": "Gaucher disease",
+      "synonyms": [
+        "Acid beta-glucosidase deficiency",
+        "Glucocerebrosidase deficiency"
+      ],
+      "entity_type": "Disease",
+      "external_identifiers": [
+        {
+          "source": "GARD",
+          "id": "8233",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-10",
+          "id": "E75.2",
+          "relation": "NTBT (ORPHAcode is narrower than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-11",
+          "id": "5C56.0Y",
+          "relation": "NTBT (ORPHAcode is narrower than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MONDO",
+          "id": "0018150",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MeSH",
+          "id": "D005776",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MedDRA",
+          "id": "10018048",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "230800",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "230900",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "231000",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "231005",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "608013",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "610539",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "UMLS",
+          "id": "C0017205",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        }
+      ],
+      "mapping_confidence": "exact_source",
+      "rarity_status": "requires_prevalence_review",
+      "source": "https://www.orphadata.com/data/xml/en_product1.xml",
+      "search_terms": [
+        "Gaucher disease",
+        "Acid beta-glucosidase deficiency",
+        "Glucocerebrosidase deficiency"
+      ],
+      "excluded_search_terms": []
+    },
+    {
+      "orpha_id": "ORPHA:373",
+      "preferred_name": "Simpson-Golabi-Behmel syndrome",
+      "synonyms": [
+        "DGSX",
+        "Golabi-Rosen syndrome",
+        "SDYS",
+        "SGBS",
+        "SGBS1",
+        "Simpson dysmorphia syndrome",
+        "Simpson-Golabi-Behmel syndrome type 1",
+        "X-linked dysplasia gigantism syndrome"
+      ],
+      "entity_type": "Malformation syndrome",
+      "external_identifiers": [
+        {
+          "source": "GARD",
+          "id": "7649",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-10",
+          "id": "Q87.3",
+          "relation": "NTBT (ORPHAcode is narrower than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-11",
+          "id": "LD2C",
+          "relation": "NTBT (ORPHAcode is narrower than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MONDO",
+          "id": "0010731",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MeSH",
+          "id": "C537340",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MedDRA",
+          "id": "10085695",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "312870",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "UMLS",
+          "id": "C4317043",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        }
+      ],
+      "mapping_confidence": "exact_source",
+      "rarity_status": "requires_prevalence_review",
+      "source": "https://www.orphadata.com/data/xml/en_product1.xml",
+      "search_terms": [
+        "Simpson-Golabi-Behmel syndrome",
+        "Golabi-Rosen syndrome",
+        "Simpson dysmorphia syndrome",
+        "Simpson-Golabi-Behmel syndrome type 1",
+        "X-linked dysplasia gigantism syndrome"
+      ],
+      "excluded_search_terms": [
+        "DGSX",
+        "SDYS",
+        "SGBS",
+        "SGBS1"
+      ]
+    },
+    {
+      "orpha_id": "ORPHA:399",
+      "preferred_name": "Huntington disease",
+      "synonyms": [
+        "Huntington chorea"
+      ],
+      "entity_type": "Disease",
+      "external_identifiers": [
+        {
+          "source": "GARD",
+          "id": "6677",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-10",
+          "id": "G10",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-11",
+          "id": "8A01.10",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MONDO",
+          "id": "0007739",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MeSH",
+          "id": "D006816",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MedDRA",
+          "id": "10070668",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "143100",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "UMLS",
+          "id": "C0020179",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        }
+      ],
+      "mapping_confidence": "exact_source",
+      "rarity_status": "requires_prevalence_review",
+      "source": "https://www.orphadata.com/data/xml/en_product1.xml",
+      "search_terms": [
+        "Huntington disease",
+        "Huntington chorea"
+      ],
+      "excluded_search_terms": []
+    },
+    {
+      "orpha_id": "ORPHA:425",
+      "preferred_name": "Apolipoprotein A-I deficiency",
+      "synonyms": [
+        "ApoA-I deficiency",
+        "Familial apoA-I deficiency",
+        "Familial hypoalphalipoproteinemia"
+      ],
+      "entity_type": "Disease",
+      "external_identifiers": [
+        {
+          "source": "GARD",
+          "id": "2872",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-10",
+          "id": "E78.6",
+          "relation": "NTBT (ORPHAcode is narrower than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-11",
+          "id": "5C81.0",
+          "relation": "NTBT (ORPHAcode is narrower than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MONDO",
+          "id": "0100189",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MedDRA",
+          "id": "10065133",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "604091",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "618463",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "UMLS",
+          "id": "C0342898",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        }
+      ],
+      "mapping_confidence": "exact_source",
+      "rarity_status": "requires_prevalence_review",
+      "source": "https://www.orphadata.com/data/xml/en_product1.xml",
+      "search_terms": [
+        "Apolipoprotein A-I deficiency",
+        "ApoA-I deficiency",
+        "Familial apoA-I deficiency",
+        "Familial hypoalphalipoproteinemia"
+      ],
+      "excluded_search_terms": []
+    },
+    {
+      "orpha_id": "ORPHA:436",
+      "preferred_name": "Hypophosphatasia",
+      "synonyms": [
+        "HPP",
+        "Phosphoethanolaminuria",
+        "Rathbun disease"
+      ],
+      "entity_type": "Disease",
+      "external_identifiers": [
+        {
+          "source": "GARD",
+          "id": "6734",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-10",
+          "id": "E83.3",
+          "relation": "NTBT (ORPHAcode is narrower than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-11",
+          "id": "5C64.3",
+          "relation": "NTBT (ORPHAcode is narrower than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MONDO",
+          "id": "0018570",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MeSH",
+          "id": "D007014",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MedDRA",
+          "id": "10049933",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "146300",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "241500",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "241510",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "UMLS",
+          "id": "C0020630",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        }
+      ],
+      "mapping_confidence": "exact_source",
+      "rarity_status": "requires_prevalence_review",
+      "source": "https://www.orphadata.com/data/xml/en_product1.xml",
+      "search_terms": [
+        "Hypophosphatasia",
+        "Phosphoethanolaminuria",
+        "Rathbun disease"
+      ],
+      "excluded_search_terms": [
+        "HPP"
+      ]
+    },
+    {
+      "orpha_id": "ORPHA:457",
+      "preferred_name": "Harlequin ichthyosis",
+      "synonyms": [
+        "Autosomal congenital ichthyosis, Harlequin type",
+        "HI",
+        "Ichthyosis congenita, Harlequin type"
+      ],
+      "entity_type": "Disease",
+      "external_identifiers": [
+        {
+          "source": "GARD",
+          "id": "6568",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-10",
+          "id": "Q80.4",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-11",
+          "id": "EC20.02",
+          "relation": "NTBT (ORPHAcode is narrower than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MONDO",
+          "id": "0009443",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MeSH",
+          "id": "C538424",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MedDRA",
+          "id": "10019163",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "242500",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "UMLS",
+          "id": "C0239849",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        }
+      ],
+      "mapping_confidence": "exact_source",
+      "rarity_status": "requires_prevalence_review",
+      "source": "https://www.orphadata.com/data/xml/en_product1.xml",
+      "search_terms": [
+        "Harlequin ichthyosis",
+        "Autosomal congenital ichthyosis, Harlequin type",
+        "Ichthyosis congenita, Harlequin type"
+      ],
+      "excluded_search_terms": [
+        "HI"
+      ]
+    },
+    {
+      "orpha_id": "ORPHA:48104",
+      "preferred_name": "Pyoderma gangrenosum",
+      "synonyms": [],
+      "entity_type": "Disease",
+      "external_identifiers": [
+        {
+          "source": "GARD",
+          "id": "7510",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-10",
+          "id": "L88",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-11",
+          "id": "EB21",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MONDO",
+          "id": "0018824",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MeSH",
+          "id": "D017511",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MedDRA",
+          "id": "10037635",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "UMLS",
+          "id": "C0085652",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        }
+      ],
+      "mapping_confidence": "exact_source",
+      "rarity_status": "requires_prevalence_review",
+      "source": "https://www.orphadata.com/data/xml/en_product1.xml",
+      "search_terms": [
+        "Pyoderma gangrenosum"
+      ],
+      "excluded_search_terms": []
+    },
+    {
+      "orpha_id": "ORPHA:487",
+      "preferred_name": "Krabbe disease",
+      "synonyms": [
+        "GALC deficiency",
+        "Galactocerebrosidase deficiency",
+        "Galactosylceramidase deficiency",
+        "Globoid cell leukodystrophy"
+      ],
+      "entity_type": "Disease",
+      "external_identifiers": [
+        {
+          "source": "GARD",
+          "id": "6844",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-10",
+          "id": "E75.2",
+          "relation": "NTBT (ORPHAcode is narrower than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-11",
+          "id": "8A44.4",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MONDO",
+          "id": "0009499",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MeSH",
+          "id": "D007965",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MedDRA",
+          "id": "10023492",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "245200",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "611722",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "UMLS",
+          "id": "C0023521",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        }
+      ],
+      "mapping_confidence": "exact_source",
+      "rarity_status": "requires_prevalence_review",
+      "source": "https://www.orphadata.com/data/xml/en_product1.xml",
+      "search_terms": [
+        "Krabbe disease",
+        "GALC deficiency",
+        "Galactocerebrosidase deficiency",
+        "Galactosylceramidase deficiency",
+        "Globoid cell leukodystrophy"
+      ],
+      "excluded_search_terms": []
+    },
+    {
+      "orpha_id": "ORPHA:501",
+      "preferred_name": "Lafora disease",
+      "synonyms": [
+        "EPM2",
+        "PME type 2",
+        "Progressive myoclonic epilepsy type 2",
+        "Progressive myoclonus epilepsy type 2"
+      ],
+      "entity_type": "Disease",
+      "external_identifiers": [
+        {
+          "source": "GARD",
+          "id": "8214",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-10",
+          "id": "G40.3",
+          "relation": "NTBT (ORPHAcode is narrower than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-11",
+          "id": "8A61.41",
+          "relation": "NTBT (ORPHAcode is narrower than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MONDO",
+          "id": "0009697",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MeSH",
+          "id": "D020192",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MedDRA",
+          "id": "10054030",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "254780",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "620681",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "UMLS",
+          "id": "C0751783",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        }
+      ],
+      "mapping_confidence": "exact_source",
+      "rarity_status": "requires_prevalence_review",
+      "source": "https://www.orphadata.com/data/xml/en_product1.xml",
+      "search_terms": [
+        "Lafora disease",
+        "PME type 2",
+        "Progressive myoclonic epilepsy type 2",
+        "Progressive myoclonus epilepsy type 2"
+      ],
+      "excluded_search_terms": [
+        "EPM2"
+      ]
+    },
+    {
+      "orpha_id": "ORPHA:50918",
+      "preferred_name": "Kikuchi-Fujimoto disease",
+      "synonyms": [
+        "Histiocytic necrotizing lymphadenitis",
+        "Kikuchi disease"
+      ],
+      "entity_type": "Disease",
+      "external_identifiers": [
+        {
+          "source": "GARD",
+          "id": "6834",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-10",
+          "id": "I88.1",
+          "relation": "NTBT (ORPHAcode is narrower than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-11",
+          "id": "4B2Y",
+          "relation": "NTBT (ORPHAcode is narrower than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MONDO",
+          "id": "0018864",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MeSH",
+          "id": "D020042",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MedDRA",
+          "id": "10069070",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "UMLS",
+          "id": "C0398367",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        }
+      ],
+      "mapping_confidence": "exact_source",
+      "rarity_status": "requires_prevalence_review",
+      "source": "https://www.orphadata.com/data/xml/en_product1.xml",
+      "search_terms": [
+        "Kikuchi-Fujimoto disease",
+        "Histiocytic necrotizing lymphadenitis",
+        "Kikuchi disease"
+      ],
+      "excluded_search_terms": []
+    },
+    {
+      "orpha_id": "ORPHA:536",
+      "preferred_name": "Systemic lupus erythematosus",
+      "synonyms": [
+        "Disseminated lupus erythematosus",
+        "SLE"
+      ],
+      "entity_type": "Disease",
+      "external_identifiers": [
+        {
+          "source": "ICD-10",
+          "id": "M32.0",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-10",
+          "id": "M32.1",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-10",
+          "id": "M32.8",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-10",
+          "id": "M32.9",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-11",
+          "id": "4A40.0",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MONDO",
+          "id": "0007915",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MeSH",
+          "id": "D008180",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MedDRA",
+          "id": "10042945",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "301080",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "614420",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "UMLS",
+          "id": "C0024141",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        }
+      ],
+      "mapping_confidence": "exact_source",
+      "rarity_status": "requires_prevalence_review",
+      "source": "https://www.orphadata.com/data/xml/en_product1.xml",
+      "search_terms": [
+        "Systemic lupus erythematosus",
+        "Disseminated lupus erythematosus"
+      ],
+      "excluded_search_terms": [
+        "SLE"
+      ]
+    },
+    {
+      "orpha_id": "ORPHA:561854",
+      "preferred_name": "FOXG1 syndrome",
+      "synonyms": [
+        "FOXG1-related epileptic-dyskinetic encephalopathy"
+      ],
+      "entity_type": "Disease",
+      "external_identifiers": [
+        {
+          "source": "GARD",
+          "id": "12825",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-10",
+          "id": "Q04.8",
+          "relation": "NTBT (ORPHAcode is narrower than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MONDO",
+          "id": "0035383",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MONDO",
+          "id": "100040",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MONDO",
+          "id": "35383",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "613454",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "UMLS",
+          "id": "C3150705",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        }
+      ],
+      "mapping_confidence": "exact_source",
+      "rarity_status": "requires_prevalence_review",
+      "source": "https://www.orphadata.com/data/xml/en_product1.xml",
+      "search_terms": [
+        "FOXG1 syndrome",
+        "FOXG1-related epileptic-dyskinetic encephalopathy"
+      ],
+      "excluded_search_terms": []
+    },
+    {
+      "orpha_id": "ORPHA:565",
+      "preferred_name": "Menkes disease",
+      "synonyms": [
+        "MD",
+        "Menkes kinky hair disease",
+        "Menkes syndrome"
+      ],
+      "entity_type": "Disease",
+      "external_identifiers": [
+        {
+          "source": "GARD",
+          "id": "1521",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-10",
+          "id": "E83.0",
+          "relation": "NTBT (ORPHAcode is narrower than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-11",
+          "id": "5C64.0Y",
+          "relation": "NTBT (ORPHAcode is narrower than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MONDO",
+          "id": "0010651",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MeSH",
+          "id": "D007706",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MedDRA",
+          "id": "10027294",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "309400",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "UMLS",
+          "id": "C0022716",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        }
+      ],
+      "mapping_confidence": "exact_source",
+      "rarity_status": "requires_prevalence_review",
+      "source": "https://www.orphadata.com/data/xml/en_product1.xml",
+      "search_terms": [
+        "Menkes disease",
+        "Menkes kinky hair disease",
+        "Menkes syndrome"
+      ],
+      "excluded_search_terms": [
+        "MD"
+      ]
+    },
+    {
+      "orpha_id": "ORPHA:589",
+      "preferred_name": "Myasthenia gravis",
+      "synonyms": [
+        "Acquired myasthenia",
+        "Autoimmune myasthenia gravis"
+      ],
+      "entity_type": "Disease",
+      "external_identifiers": [
+        {
+          "source": "GARD",
+          "id": "7122",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-10",
+          "id": "G70.0",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-11",
+          "id": "8C60",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MONDO",
+          "id": "0009688",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MeSH",
+          "id": "D009157",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MedDRA",
+          "id": "10028417",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "159400",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "254200",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "607085",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "UMLS",
+          "id": "C0026896",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        }
+      ],
+      "mapping_confidence": "exact_source",
+      "rarity_status": "requires_prevalence_review",
+      "source": "https://www.orphadata.com/data/xml/en_product1.xml",
+      "search_terms": [
+        "Myasthenia gravis",
+        "Acquired myasthenia",
+        "Autoimmune myasthenia gravis"
+      ],
+      "excluded_search_terms": []
+    },
+    {
+      "orpha_id": "ORPHA:646",
+      "preferred_name": "Niemann-Pick disease type C",
+      "synonyms": [],
+      "entity_type": "Disease",
+      "external_identifiers": [
+        {
+          "source": "GARD",
+          "id": "7207",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-10",
+          "id": "E75.2",
+          "relation": "NTBT (ORPHAcode is narrower than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-11",
+          "id": "5C56.0Y",
+          "relation": "NTBT (ORPHAcode is narrower than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MONDO",
+          "id": "0018982",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MeSH",
+          "id": "D052556",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "257220",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "607625",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "UMLS",
+          "id": "C0220756",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        }
+      ],
+      "mapping_confidence": "exact_source",
+      "rarity_status": "requires_prevalence_review",
+      "source": "https://www.orphadata.com/data/xml/en_product1.xml",
+      "search_terms": [
+        "Niemann-Pick disease type C"
+      ],
+      "excluded_search_terms": []
+    },
+    {
+      "orpha_id": "ORPHA:652",
+      "preferred_name": "Multiple endocrine neoplasia type 1",
+      "synonyms": [
+        "MEN1",
+        "Wermer syndrome"
+      ],
+      "entity_type": "Disease",
+      "external_identifiers": [
+        {
+          "source": "GARD",
+          "id": "3829",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-10",
+          "id": "D44.8",
+          "relation": "NTBT (ORPHAcode is narrower than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-11",
+          "id": "2F7A.0",
+          "relation": "NTBT (ORPHAcode is narrower than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MONDO",
+          "id": "0007540",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MeSH",
+          "id": "D018761",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MedDRA",
+          "id": "10073150",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "131100",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "UMLS",
+          "id": "C0025267",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        }
+      ],
+      "mapping_confidence": "exact_source",
+      "rarity_status": "requires_prevalence_review",
+      "source": "https://www.orphadata.com/data/xml/en_product1.xml",
+      "search_terms": [
+        "Multiple endocrine neoplasia type 1",
+        "Wermer syndrome"
+      ],
+      "excluded_search_terms": [
+        "MEN1"
+      ]
+    },
+    {
+      "orpha_id": "ORPHA:653",
+      "preferred_name": "Multiple endocrine neoplasia type 2",
+      "synonyms": [
+        "MEN2"
+      ],
+      "entity_type": "Disease",
+      "external_identifiers": [
+        {
+          "source": "GARD",
+          "id": "3830",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-10",
+          "id": "D44.8",
+          "relation": "NTBT (ORPHAcode is narrower than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-11",
+          "id": "2F7A.0",
+          "relation": "NTBT (ORPHAcode is narrower than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MONDO",
+          "id": "0019003",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MedDRA",
+          "id": "10073149",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "155240",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "162300",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "171400",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "UMLS",
+          "id": "C4048306",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        }
+      ],
+      "mapping_confidence": "exact_source",
+      "rarity_status": "requires_prevalence_review",
+      "source": "https://www.orphadata.com/data/xml/en_product1.xml",
+      "search_terms": [
+        "Multiple endocrine neoplasia type 2"
+      ],
+      "excluded_search_terms": [
+        "MEN2"
+      ]
+    },
+    {
+      "orpha_id": "ORPHA:666",
+      "preferred_name": "Osteogenesis imperfecta",
+      "synonyms": [
+        "OI",
+        "Brittle bone disease",
+        "Glass bone disease",
+        "Lobstein disease"
+      ],
+      "entity_type": "Disease",
+      "external_identifiers": [
+        {
+          "source": "GARD",
+          "id": "1017",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-10",
+          "id": "Q78.0",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-11",
+          "id": "LD24.K0",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MONDO",
+          "id": "0019019",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MeSH",
+          "id": "D010013",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MedDRA",
+          "id": "10031243",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "166200",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "166210",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "166220",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "166230",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "259420",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "259440",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "301014",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "610682",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "610915",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "610967",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "610968",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "613848",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "613849",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "613982",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "614856",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "615066",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "615220",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "616229",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "616507",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "619131",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "619795",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "UMLS",
+          "id": "C0029434",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        }
+      ],
+      "mapping_confidence": "exact_source",
+      "rarity_status": "requires_prevalence_review",
+      "source": "https://www.orphadata.com/data/xml/en_product1.xml",
+      "search_terms": [
+        "Osteogenesis imperfecta",
+        "Brittle bone disease",
+        "Glass bone disease",
+        "Lobstein disease"
+      ],
+      "excluded_search_terms": [
+        "OI"
+      ]
+    },
+    {
+      "orpha_id": "ORPHA:69126",
+      "preferred_name": "PAPA syndrome",
+      "synonyms": [
+        "FRA",
+        "Familial recurrent arthritis",
+        "Pyogenic arthritis-pyoderma gangrenosum-acne syndrome"
+      ],
+      "entity_type": "Disease",
+      "external_identifiers": [
+        {
+          "source": "GARD",
+          "id": "9176",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-10",
+          "id": "D89.8",
+          "relation": "NTBT (ORPHAcode is narrower than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-11",
+          "id": "4A60.Y",
+          "relation": "NTBT (ORPHAcode is narrower than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MONDO",
+          "id": "0011462",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MeSH",
+          "id": "C536253",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MedDRA",
+          "id": "10072222",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "604416",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "UMLS",
+          "id": "C1858361",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        }
+      ],
+      "mapping_confidence": "exact_source",
+      "rarity_status": "requires_prevalence_review",
+      "source": "https://www.orphadata.com/data/xml/en_product1.xml",
+      "search_terms": [
+        "PAPA syndrome",
+        "Familial recurrent arthritis",
+        "Pyogenic arthritis-pyoderma gangrenosum-acne syndrome"
+      ],
+      "excluded_search_terms": [
+        "FRA"
+      ]
+    },
+    {
+      "orpha_id": "ORPHA:699",
+      "preferred_name": "Pearson syndrome",
+      "synonyms": [
+        "PMPS",
+        "Pearson marrow-pancreas syndrome"
+      ],
+      "entity_type": "Disease",
+      "external_identifiers": [
+        {
+          "source": "GARD",
+          "id": "7343",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-10",
+          "id": "D64.0",
+          "relation": "NTBT (ORPHAcode is narrower than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-11",
+          "id": "3A72.01",
+          "relation": "NTBT (ORPHAcode is narrower than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MONDO",
+          "id": "0010797",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MedDRA",
+          "id": "10062941",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "557000",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "UMLS",
+          "id": "C0342784",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        }
+      ],
+      "mapping_confidence": "exact_source",
+      "rarity_status": "requires_prevalence_review",
+      "source": "https://www.orphadata.com/data/xml/en_product1.xml",
+      "search_terms": [
+        "Pearson syndrome",
+        "Pearson marrow-pancreas syndrome"
+      ],
+      "excluded_search_terms": [
+        "PMPS"
+      ]
+    },
+    {
+      "orpha_id": "ORPHA:72",
+      "preferred_name": "Angelman syndrome",
+      "synonyms": [],
+      "entity_type": "Malformation syndrome",
+      "external_identifiers": [
+        {
+          "source": "GARD",
+          "id": "5810",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-10",
+          "id": "Q93.5",
+          "relation": "NTBT (ORPHAcode is narrower than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-11",
+          "id": "LD90.0",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MONDO",
+          "id": "0007113",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MeSH",
+          "id": "D017204",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MedDRA",
+          "id": "10049004",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "105830",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "UMLS",
+          "id": "C0162635",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        }
+      ],
+      "mapping_confidence": "exact_source",
+      "rarity_status": "requires_prevalence_review",
+      "source": "https://www.orphadata.com/data/xml/en_product1.xml",
+      "search_terms": [
+        "Angelman syndrome"
+      ],
+      "excluded_search_terms": []
+    },
+    {
+      "orpha_id": "ORPHA:761",
+      "preferred_name": "Immunoglobulin A vasculitis",
+      "synonyms": [
+        "Anaphylactoid purpura",
+        "Henoch-Schönlein purpura",
+        "IgA vasculitis",
+        "Purpura rheumatica",
+        "Rheumatoid purpura"
+      ],
+      "entity_type": "Disease",
+      "external_identifiers": [
+        {
+          "source": "GARD",
+          "id": "8204",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-10",
+          "id": "D69.0",
+          "relation": "NTBT (ORPHAcode is narrower than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-11",
+          "id": "4A44.92",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MONDO",
+          "id": "0019167",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MeSH",
+          "id": "D011695",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MedDRA",
+          "id": "10082960",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "UMLS",
+          "id": "C0034152",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        }
+      ],
+      "mapping_confidence": "exact_source",
+      "rarity_status": "requires_prevalence_review",
+      "source": "https://www.orphadata.com/data/xml/en_product1.xml",
+      "search_terms": [
+        "Immunoglobulin A vasculitis",
+        "Anaphylactoid purpura",
+        "Henoch-Schönlein purpura",
+        "IgA vasculitis",
+        "Purpura rheumatica",
+        "Rheumatoid purpura"
+      ],
+      "excluded_search_terms": []
+    },
+    {
+      "orpha_id": "ORPHA:767",
+      "preferred_name": "Polyarteritis nodosa",
+      "synonyms": [
+        "Küssmaul-Maier disease",
+        "PAN",
+        "Periarteritis nodosa"
+      ],
+      "entity_type": "Disease",
+      "external_identifiers": [
+        {
+          "source": "GARD",
+          "id": "7360",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-10",
+          "id": "M30.0",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-11",
+          "id": "4A44.4",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MONDO",
+          "id": "0019170",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MeSH",
+          "id": "D010488",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MedDRA",
+          "id": "10036024",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "UMLS",
+          "id": "C0031036",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        }
+      ],
+      "mapping_confidence": "exact_source",
+      "rarity_status": "requires_prevalence_review",
+      "source": "https://www.orphadata.com/data/xml/en_product1.xml",
+      "search_terms": [
+        "Polyarteritis nodosa",
+        "Küssmaul-Maier disease",
+        "Periarteritis nodosa"
+      ],
+      "excluded_search_terms": [
+        "PAN"
+      ]
+    },
+    {
+      "orpha_id": "ORPHA:778",
+      "preferred_name": "Rett syndrome",
+      "synonyms": [],
+      "entity_type": "Disease",
+      "external_identifiers": [
+        {
+          "source": "GARD",
+          "id": "5696",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-10",
+          "id": "F84.2",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-11",
+          "id": "LD90.4",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MONDO",
+          "id": "0010726",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MeSH",
+          "id": "D015518",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MedDRA",
+          "id": "10077709",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "312750",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "UMLS",
+          "id": "C0035372",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        }
+      ],
+      "mapping_confidence": "exact_source",
+      "rarity_status": "requires_prevalence_review",
+      "source": "https://www.orphadata.com/data/xml/en_product1.xml",
+      "search_terms": [
+        "Rett syndrome"
+      ],
+      "excluded_search_terms": []
+    },
+    {
+      "orpha_id": "ORPHA:797",
+      "preferred_name": "Sarcoidosis",
+      "synonyms": [
+        "Besnier-Boeck-Schaumann disease",
+        "Boeck sarcoid"
+      ],
+      "entity_type": "Disease",
+      "external_identifiers": [
+        {
+          "source": "GARD",
+          "id": "7607",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-10",
+          "id": "D86.0",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-10",
+          "id": "D86.1",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-10",
+          "id": "D86.2",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-10",
+          "id": "D86.3",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-10",
+          "id": "D86.8",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-10",
+          "id": "D86.9",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-11",
+          "id": "4B20",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-11",
+          "id": "4B20.0",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-11",
+          "id": "4B20.1",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-11",
+          "id": "4B20.2",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-11",
+          "id": "4B20.3",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-11",
+          "id": "4B20.4",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-11",
+          "id": "4B20.5",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MONDO",
+          "id": "0019338",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MeSH",
+          "id": "D012507",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MedDRA",
+          "id": "10039486",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "181000",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "612387",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "612388",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "UMLS",
+          "id": "C0036202",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        }
+      ],
+      "mapping_confidence": "exact_source",
+      "rarity_status": "requires_prevalence_review",
+      "source": "https://www.orphadata.com/data/xml/en_product1.xml",
+      "search_terms": [
+        "Sarcoidosis",
+        "Besnier-Boeck-Schaumann disease",
+        "Boeck sarcoid"
+      ],
+      "excluded_search_terms": []
+    },
+    {
+      "orpha_id": "ORPHA:803",
+      "preferred_name": "Amyotrophic lateral sclerosis",
+      "synonyms": [
+        "ALS",
+        "Charcot disease",
+        "Lou Gehrig disease"
+      ],
+      "entity_type": "Disease",
+      "external_identifiers": [
+        {
+          "source": "GARD",
+          "id": "5786",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-10",
+          "id": "G12.2",
+          "relation": "NTBT (ORPHAcode is narrower than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-11",
+          "id": "8B60.0",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MONDO",
+          "id": "0004976",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MeSH",
+          "id": "D000690",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MedDRA",
+          "id": "10002026",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "105400",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "205250",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "300857",
+          "relation": "NTBT (ORPHAcode is narrower than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "600795",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "606070",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "606640",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "608030",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "608031",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "608627",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "611895",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "612069",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "612577",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "613435",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "613954",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "614808",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "615426",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "615515",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "616208",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "616437",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "617839",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "617892",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "617921",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "619133",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "619141",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "620452",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "UMLS",
+          "id": "C0002736",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        }
+      ],
+      "mapping_confidence": "exact_source",
+      "rarity_status": "requires_prevalence_review",
+      "source": "https://www.orphadata.com/data/xml/en_product1.xml",
+      "search_terms": [
+        "Amyotrophic lateral sclerosis",
+        "Charcot disease",
+        "Lou Gehrig disease"
+      ],
+      "excluded_search_terms": [
+        "ALS"
+      ]
+    },
+    {
+      "orpha_id": "ORPHA:805",
+      "preferred_name": "Tuberous sclerosis complex",
+      "synonyms": [
+        "Bourneville syndrome",
+        "Tuberous sclerosis"
+      ],
+      "entity_type": "Disease",
+      "external_identifiers": [
+        {
+          "source": "GARD",
+          "id": "7830",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-10",
+          "id": "Q85.1",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-11",
+          "id": "LD2D.2",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MONDO",
+          "id": "0001734",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MeSH",
+          "id": "D014402",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MedDRA",
+          "id": "10080584",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "191100",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "613254",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "UMLS",
+          "id": "C0041341",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        }
+      ],
+      "mapping_confidence": "exact_source",
+      "rarity_status": "requires_prevalence_review",
+      "source": "https://www.orphadata.com/data/xml/en_product1.xml",
+      "search_terms": [
+        "Tuberous sclerosis complex",
+        "Bourneville syndrome",
+        "Tuberous sclerosis"
+      ],
+      "excluded_search_terms": []
+    },
+    {
+      "orpha_id": "ORPHA:819",
+      "preferred_name": "Smith-Magenis syndrome",
+      "synonyms": [
+        "17p11.2 microdeletion syndrome"
+      ],
+      "entity_type": "Malformation syndrome",
+      "external_identifiers": [
+        {
+          "source": "GARD",
+          "id": "8197",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-10",
+          "id": "Q93.5",
+          "relation": "NTBT (ORPHAcode is narrower than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-11",
+          "id": "LD44.H1",
+          "relation": "NTBT (ORPHAcode is narrower than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MONDO",
+          "id": "0008434",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MeSH",
+          "id": "D058496",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MedDRA",
+          "id": "10081680",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "182290",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "UMLS",
+          "id": "C0795864",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        }
+      ],
+      "mapping_confidence": "exact_source",
+      "rarity_status": "requires_prevalence_review",
+      "source": "https://www.orphadata.com/data/xml/en_product1.xml",
+      "search_terms": [
+        "Smith-Magenis syndrome",
+        "17p11.2 microdeletion syndrome"
+      ],
+      "excluded_search_terms": []
+    },
+    {
+      "orpha_id": "ORPHA:83467",
+      "preferred_name": "Morvan syndrome",
+      "synonyms": [
+        "Limbic encephalitis-neuromyotonia-hyperhidrosis-polyneuropathy syndrome",
+        "Morvan fibrillary chorea"
+      ],
+      "entity_type": "Disease",
+      "external_identifiers": [
+        {
+          "source": "GARD",
+          "id": "9766",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-10",
+          "id": "G60.8",
+          "relation": "NTBT (ORPHAcode is narrower than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-11",
+          "id": "8E4A.3",
+          "relation": "NTBT (ORPHAcode is narrower than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MONDO",
+          "id": "0008718",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MedDRA",
+          "id": "10075006",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "UMLS",
+          "id": "C3854373",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        }
+      ],
+      "mapping_confidence": "exact_source",
+      "rarity_status": "requires_prevalence_review",
+      "source": "https://www.orphadata.com/data/xml/en_product1.xml",
+      "search_terms": [
+        "Morvan syndrome",
+        "Limbic encephalitis-neuromyotonia-hyperhidrosis-polyneuropathy syndrome",
+        "Morvan fibrillary chorea"
+      ],
+      "excluded_search_terms": []
+    },
+    {
+      "orpha_id": "ORPHA:892",
+      "preferred_name": "Von Hippel-Lindau disease",
+      "synonyms": [
+        "Familial cerebelloretinal angiomatosis",
+        "Lindau disease",
+        "VHL",
+        "Von Hippel-Lindau syndrome"
+      ],
+      "entity_type": "Disease",
+      "external_identifiers": [
+        {
+          "source": "GARD",
+          "id": "7855",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-10",
+          "id": "Q85.8",
+          "relation": "NTBT (ORPHAcode is narrower than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-11",
+          "id": "5A75",
+          "relation": "NTBT (ORPHAcode is narrower than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MONDO",
+          "id": "0008667",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MeSH",
+          "id": "D006623",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MedDRA",
+          "id": "10047716",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "193300",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "UMLS",
+          "id": "C0019562",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        }
+      ],
+      "mapping_confidence": "exact_source",
+      "rarity_status": "requires_prevalence_review",
+      "source": "https://www.orphadata.com/data/xml/en_product1.xml",
+      "search_terms": [
+        "Von Hippel-Lindau disease",
+        "Familial cerebelloretinal angiomatosis",
+        "Lindau disease",
+        "Von Hippel-Lindau syndrome"
+      ],
+      "excluded_search_terms": [
+        "VHL"
+      ]
+    },
+    {
+      "orpha_id": "ORPHA:89936",
+      "preferred_name": "X-linked hypophosphatemia",
+      "synonyms": [
+        "X-linked hypophosphatemic rickets",
+        "XLH"
+      ],
+      "entity_type": "Disease",
+      "external_identifiers": [
+        {
+          "source": "GARD",
+          "id": "12943",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-10",
+          "id": "E83.3",
+          "relation": "NTBT (ORPHAcode is narrower than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-11",
+          "id": "5C63.22",
+          "relation": "NTBT (ORPHAcode is narrower than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MONDO",
+          "id": "0010619",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MONDO",
+          "id": "10619",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "307800",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "UMLS",
+          "id": "C3540852",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        }
+      ],
+      "mapping_confidence": "exact_source",
+      "rarity_status": "requires_prevalence_review",
+      "source": "https://www.orphadata.com/data/xml/en_product1.xml",
+      "search_terms": [
+        "X-linked hypophosphatemia",
+        "X-linked hypophosphatemic rickets"
+      ],
+      "excluded_search_terms": [
+        "XLH"
+      ]
+    },
+    {
+      "orpha_id": "ORPHA:90291",
+      "preferred_name": "Systemic sclerosis",
+      "synonyms": [
+        "Systemic scleroderma"
+      ],
+      "entity_type": "Disease",
+      "external_identifiers": [
+        {
+          "source": "GARD",
+          "id": "9748",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-10",
+          "id": "M34.0",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-10",
+          "id": "M34.1",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-10",
+          "id": "M34.2",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-10",
+          "id": "M34.8",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-10",
+          "id": "M34.9",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-11",
+          "id": "4A42",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MONDO",
+          "id": "0005100",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MeSH",
+          "id": "D012595",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MedDRA",
+          "id": "10042953",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "181750",
+          "relation": "BTNT (ORPHAcode is broader than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "UMLS",
+          "id": "C0036421",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        }
+      ],
+      "mapping_confidence": "exact_source",
+      "rarity_status": "requires_prevalence_review",
+      "source": "https://www.orphadata.com/data/xml/en_product1.xml",
+      "search_terms": [
+        "Systemic sclerosis",
+        "Systemic scleroderma"
+      ],
+      "excluded_search_terms": []
+    },
+    {
+      "orpha_id": "ORPHA:905",
+      "preferred_name": "Wilson disease",
+      "synonyms": [
+        "Hepatolenticular degeneration"
+      ],
+      "entity_type": "Disease",
+      "external_identifiers": [
+        {
+          "source": "GARD",
+          "id": "7893",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-10",
+          "id": "E83.0",
+          "relation": "NTBT (ORPHAcode is narrower than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-11",
+          "id": "5C64.00",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MONDO",
+          "id": "0010200",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MeSH",
+          "id": "D006527",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MedDRA",
+          "id": "10019819",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "277900",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "UMLS",
+          "id": "C0019202",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        }
+      ],
+      "mapping_confidence": "exact_source",
+      "rarity_status": "requires_prevalence_review",
+      "source": "https://www.orphadata.com/data/xml/en_product1.xml",
+      "search_terms": [
+        "Wilson disease",
+        "Hepatolenticular degeneration"
+      ],
+      "excluded_search_terms": []
+    },
+    {
+      "orpha_id": "ORPHA:908",
+      "preferred_name": "Fragile X syndrome",
+      "synonyms": [
+        "FRAXA syndrome",
+        "FXS",
+        "FraX syndrome",
+        "Martin-Bell syndrome"
+      ],
+      "entity_type": "Malformation syndrome",
+      "external_identifiers": [
+        {
+          "source": "GARD",
+          "id": "6464",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-10",
+          "id": "Q99.2",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-11",
+          "id": "LD55",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MONDO",
+          "id": "0010383",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MeSH",
+          "id": "D005600",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MedDRA",
+          "id": "10017324",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "300624",
+          "relation": "NTBT (ORPHAcode is narrower than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "311360",
+          "relation": "NTBT (ORPHAcode is narrower than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "UMLS",
+          "id": "C0016667",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        }
+      ],
+      "mapping_confidence": "exact_source",
+      "rarity_status": "requires_prevalence_review",
+      "source": "https://www.orphadata.com/data/xml/en_product1.xml",
+      "search_terms": [
+        "Fragile X syndrome",
+        "FRAXA syndrome",
+        "FraX syndrome",
+        "Martin-Bell syndrome"
+      ],
+      "excluded_search_terms": [
+        "FXS"
+      ]
+    },
+    {
+      "orpha_id": "ORPHA:91138",
+      "preferred_name": "Cryoglobulinemic vasculitis",
+      "synonyms": [
+        "Essential cryoglobulinemia",
+        "Essential mixed cryoglobulinemia",
+        "Mixed cryoglobulinemia",
+        "Primary cryoglobulinemia"
+      ],
+      "entity_type": "Disease",
+      "external_identifiers": [
+        {
+          "source": "GARD",
+          "id": "6386",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-10",
+          "id": "D89.1",
+          "relation": "NTBT (ORPHAcode is narrower than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-11",
+          "id": "4A44.90",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MONDO",
+          "id": "0007407",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MedDRA",
+          "id": "10027756",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "123550",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "UMLS",
+          "id": "C0340992",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        }
+      ],
+      "mapping_confidence": "exact_source",
+      "rarity_status": "requires_prevalence_review",
+      "source": "https://www.orphadata.com/data/xml/en_product1.xml",
+      "search_terms": [
+        "Cryoglobulinemic vasculitis",
+        "Essential cryoglobulinemia",
+        "Essential mixed cryoglobulinemia",
+        "Mixed cryoglobulinemia",
+        "Primary cryoglobulinemia"
+      ],
+      "excluded_search_terms": []
+    },
+    {
+      "orpha_id": "ORPHA:98934",
+      "preferred_name": "Huntington disease-like 2",
+      "synonyms": [
+        "HDL2"
+      ],
+      "entity_type": "Disease",
+      "external_identifiers": [
+        {
+          "source": "ICD-10",
+          "id": "G10",
+          "relation": "NTBT (ORPHAcode is narrower than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "ICD-11",
+          "id": "8A01.11",
+          "relation": "NTBT (ORPHAcode is narrower than the targeted code used to represent it)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MONDO",
+          "id": "0011671",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "MeSH",
+          "id": "C564708",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "OMIM",
+          "id": "606438",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        },
+        {
+          "source": "UMLS",
+          "id": "C1847987",
+          "relation": "E (Exact mapping: the two concepts are equivalent)",
+          "validation": "Validated"
+        }
+      ],
+      "mapping_confidence": "exact_source",
+      "rarity_status": "requires_prevalence_review",
+      "source": "https://www.orphadata.com/data/xml/en_product1.xml",
+      "search_terms": [
+        "Huntington disease-like 2"
+      ],
+      "excluded_search_terms": [
+        "HDL2"
+      ]
+    }
+  ],
+  "pairs": [
+    [
+      "ORPHA:487",
+      "ORPHA:778"
+    ],
+    [
+      "ORPHA:124",
+      "ORPHA:699"
+    ],
+    [
+      "ORPHA:31150",
+      "ORPHA:425"
+    ],
+    [
+      "ORPHA:308",
+      "ORPHA:501"
+    ],
+    [
+      "ORPHA:797",
+      "ORPHA:90291"
+    ],
+    [
+      "ORPHA:2032",
+      "ORPHA:90291"
+    ],
+    [
+      "ORPHA:48104",
+      "ORPHA:69126"
+    ],
+    [
+      "ORPHA:436",
+      "ORPHA:666"
+    ],
+    [
+      "ORPHA:565",
+      "ORPHA:905"
+    ],
+    [
+      "ORPHA:652",
+      "ORPHA:653"
+    ],
+    [
+      "ORPHA:767",
+      "ORPHA:91138"
+    ],
+    [
+      "ORPHA:805",
+      "ORPHA:892"
+    ],
+    [
+      "ORPHA:436",
+      "ORPHA:89936"
+    ],
+    [
+      "ORPHA:355",
+      "ORPHA:646"
+    ],
+    [
+      "ORPHA:313",
+      "ORPHA:457"
+    ],
+    [
+      "ORPHA:281",
+      "ORPHA:819"
+    ],
+    [
+      "ORPHA:72",
+      "ORPHA:819"
+    ],
+    [
+      "ORPHA:399",
+      "ORPHA:98934"
+    ],
+    [
+      "ORPHA:116",
+      "ORPHA:373"
+    ],
+    [
+      "ORPHA:34145",
+      "ORPHA:761"
+    ],
+    [
+      "ORPHA:589",
+      "ORPHA:83467"
+    ],
+    [
+      "ORPHA:561854",
+      "ORPHA:778"
+    ],
+    [
+      "ORPHA:2322",
+      "ORPHA:319182"
+    ],
+    [
+      "ORPHA:50918",
+      "ORPHA:536"
+    ],
+    [
+      "ORPHA:199",
+      "ORPHA:908"
+    ],
+    [
+      "ORPHA:2896",
+      "ORPHA:72"
+    ],
+    [
+      "ORPHA:100",
+      "ORPHA:125"
+    ],
+    [
+      "ORPHA:130",
+      "ORPHA:273"
+    ],
+    [
+      "ORPHA:803",
+      "ORPHA:83467"
+    ],
+    [
+      "ORPHA:2905",
+      "ORPHA:2932"
+    ]
+  ],
+  "sources": [
+    {
+      "name": "Europe PMC REST",
+      "api_version": "6.9",
+      "base_url": "https://www.ebi.ac.uk/europepmc/webservices/rest"
+    }
+  ],
+  "source_scope": "Europe PMC includes PubMed records. Independent E-utilities, Crossref and Unpaywall searches are deferred to benchmark expansion; no fabricated contact email.",
+  "query_templates": {
+    "A": "pair unqualified, then each of seven dimensions",
+    "B": "each disease AND union of dimension terms",
+    "C": "pair AND control terms"
+  },
+  "dimension_terms": {
+    "phenotype": "phenotyp* OR \"clinical features\" OR manifestation* OR symptom*",
+    "genetic": "gene* OR variant* OR inherit* OR genotype*",
+    "mechanism": "pathway* OR mechanis* OR molecular OR pathogenesis",
+    "therapeutic": "treatment* OR therap* OR drug* OR intervention*",
+    "natural_history": "\"natural history\" OR progression OR onset OR survival",
+    "diagnostic_confusability": "\"differential diagnosis\" OR mimic* OR misdiagnos* OR distinguish*",
+    "comorbidity": "comorbid* OR \"co-occur\" OR association OR \"risk of\""
+  },
+  "control_terms": "distinguish* OR \"differential diagnosis\" OR unrelated OR distinct OR \"no association\" OR \"negative association\" OR reclassification OR \"non-replication\" OR \"different mechanisms\"",
+  "limits": {
+    "results_per_query": 20,
+    "full_text_attempts": 180,
+    "citation_seeds": 8,
+    "citation_rounds": 2,
+    "citation_page_size": 25
+  },
+  "stopping": "All templates run. Capped queries/citation pages are explicitly incomplete; budget exhaustion is NOT evidence saturation or a systematic-review stopping claim.",
+  "inclusion": "Both exact canonical entities; substantive dimension evidence; identifiable population and model; compatible granularity. Human screening is required.",
+  "exclusions": [
+    "ambiguous_mapping",
+    "granularity_mismatch",
+    "cooccurrence_only",
+    "healthy_comparator",
+    "duplicate_family",
+    "retracted",
+    "no_direct_evidence",
+    "animal_as_clinical",
+    "case_report_as_population_comorbidity"
+  ],
+  "license_policy": "Only explicit CC-BY or CC0 full-text body enters reusable text exports. NC, ND, SA, unspecified licenses require separate review. Metadata/abstracts never automatically imply permission for text training.",
+  "score_definitions": "Exact section 10 of frozen rubric; ordinal 0..4, missing is null. No automated cooccurrence-to-score conversion.",
+  "primary_outcome": "Audited dimension-specific ordinal evidence; no primary model claims in pilot.",
+  "secondary_outcome": "Licensed document corpus and locator-based review queue.",
+  "controls": "Search for explicit unrelated and related-but-distinct evidence; no absence-based negatives. No unobserved control sampling until body system/prevalence/coverage matching is available.",
+  "review": {
+    "independent_reviewers": 2,
+    "minimum_screening_pilot": 100,
+    "kappa_threshold": 0.7,
+    "within_one_level_threshold": 0.9,
+    "test_extraction": "two independent domain-informed reviewers",
+    "training_extraction": "one extractor plus audit only after reliability threshold is met"
+  },
+  "aggregation": {
+    "method": "within-family median then weighted median",
+    "quality_weights": {
+      "high": 4,
+      "moderate": 3,
+      "low": 2,
+      "very_low": 1
+    },
+    "weight": "quality_weight * extraction_confidence; cap each family at 12",
+    "sensitivity": "unweighted family median; range and MAD"
+  },
+  "splits": {
+    "paper_pair_family": "connected components; deterministic 80/10/10 hash allocation",
+    "disease_held_out": "20% diseases hash-selected; mixed pairs quarantined; shared papers quarantined",
+    "time": "train <=2022; validation 2023; test >=2024; crossing study families quarantined",
+    "status": "provisional until family review and benchmark freeze"
+  },
+  "minimum_evidence": "No primary claims below 100 held-out pairs/dimension and 50 examples/required group. Primary labels need reviewed families, verified mapping and controls.",
+  "sensitivity_analyses": [
+    "full_text_only",
+    "high_moderate_quality",
+    "multiple_study_families",
+    "paper_pair_family_blocked",
+    "disease_held_out",
+    "rare_rare_only",
+    "compatible_granularity",
+    "unweighted_median",
+    "remove_each_hub"
+  ],
+  "known_limitations": [
+    "Pairs seeded from prior literature induce selection bias.",
+    "Orphanet membership does not establish prevalence <1/2000 in every population.",
+    "Candidate passages are retrieval aids, not screening decisions or evidence labels.",
+    "Study-family assignments begin unresolved; no primary supervised export until reviewed."
+  ]
+}

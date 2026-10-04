@@ -108,8 +108,11 @@ The default release directory is `.data/literature_acquisition/v1/`:
   independent review, adjudication and release gates have been implemented and met.
 - `release_manifest.json`: counts, coverage, failures, checksums and limitations.
 
-These data files are under the project's existing `.data/` ignore rule. Back up
-the release directory along with the code if the acquired corpus must be retained.
+The curated exports, protocol, rubric, manifest, and QA report for `v1` are
+force-tracked under `.data/literature_acquisition/v1/`. The SQLite database and
+raw response cache remain ignored: they include abstracts or license-restricted
+material and must not be redistributed as training text. Back up the complete
+local release separately if the acquisition provenance must be retained.
 
 ## Reproduce or resume
 

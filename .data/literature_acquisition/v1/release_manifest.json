@@ -1,0 +1,89 @@
+{
+  "protocol_version": "rare-disease-calibration-1.0",
+  "generated_at": "2026-10-04T00:39:05.919514+00:00",
+  "protocol_sha256": "98ae1cf8673894e92f3d4b6ab5725d9b25b9a024cef7221301e221b5c59e2c71",
+  "release_type": "calibration_acquisition_corpus",
+  "supervised_release_approved": false,
+  "primary_benchmark_approved": false,
+  "row_counts": {
+    "diseases": 54,
+    "pairs": 55,
+    "papers": 1973,
+    "requests": 560,
+    "request_history": 0,
+    "search_log": 370,
+    "document_sections": 6938,
+    "candidates": 166,
+    "screening_votes": 0,
+    "paper_screening_votes": 0,
+    "disease_pair_observations": 0,
+    "adjudications": 0,
+    "pair_consensus": 0
+  },
+  "access_classes": {
+    "abstract_only": 1722,
+    "metadata_only": 70,
+    "open_full_text_xml": 180,
+    "retracted_or_removed": 1
+  },
+  "text_training_papers": 107,
+  "text_training_paragraphs_by_split": {
+    "train": 4893,
+    "test": 74
+  },
+  "query_status": {
+    "complete": 370
+  },
+  "historical_request_failures": 10,
+  "query_stopping_reasons": {
+    "endpoint_exhausted": 12,
+    "pilot_page_cap": 347,
+    "query_exhausted": 11
+  },
+  "control_distribution": {
+    "unknown": 55
+  },
+  "dimension_coverage": {
+    "phenotype": 0,
+    "genetic": 0,
+    "mechanism": 0,
+    "therapeutic": 0,
+    "natural_history": 0,
+    "diagnostic_confusability": 0,
+    "comorbidity": 0
+  },
+  "score_distribution": {},
+  "reviewer_agreement": {
+    "status": "not_measured",
+    "reviewers": 0,
+    "kappa": null
+  },
+  "mapping_coverage": {
+    "dictionary_entities": 54,
+    "paper_mappings_adjudicated": 0
+  },
+  "split_integrity": {
+    "mechanical_checks_passed": true,
+    "errors": [],
+    "family_independence_verified": false,
+    "all_splits_provisional": true
+  },
+  "rejections": {
+    "ambiguous_or_unmapped_name": 704,
+    "incompatible_or_broad_granularity": 166
+  },
+  "blocked_supervised_release_reasons": [
+    "No independent screening or calibrated extraction.",
+    "No reviewed study families, adjudicated mappings, controls, or labels.",
+    "Search and full-text budgets are capped; systematic stopping criteria not met.",
+    "Minimum held-out evidence and control balance not met."
+  ],
+  "file_checksums": {
+    "pair_search_coverage.csv": "3ac2582162426c878959f95b4d19736e3bdb88e8c6278d8d9c5cb0ce271a9b0a",
+    "review_queue.jsonl": "4b8e423a5f4ff29741e34984200c8e626edeafbecdd27bde8422cbca6ee4ac0f",
+    "screening_queue.csv": "4529175eecd39e4a577b5d16502aa0c65bb3db2f7d04b0fed4ef1d475d47a38e",
+    "supervised_training.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "text_training.jsonl": "872bf2cb5bc23eb3af3a209fb87d6754499680c28f018c18983852a7955e0777"
+  },
+  "collector_sha256": "84620f455dff985cb91fd989829ca05628df8c76485516ddabfabe52e5220d76"
+}
