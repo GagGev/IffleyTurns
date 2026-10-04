@@ -9,6 +9,7 @@ import { SearchBox } from './components/SearchBox'
 import { PaperPanel } from './components/PaperPanel'
 import { PaperSearch } from './components/PaperSearch'
 import { PapersPanel } from './components/PapersPanel'
+import { ThemeToggle } from './components/ThemeToggle'
 import { UserDiseasesPanel } from './components/UserDiseasesPanel'
 import { type Literature, type LoadedAnnotations, loadAnnotations, loadLiterature } from './data/annotations'
 import { apiHealth, detailFromPlacement, GraphNotBuiltError, loadGraph, placeDisease } from './data/source'
@@ -548,11 +549,12 @@ function Explorer({ graph, onNavigate }: { graph: GraphData; onNavigate: (view: 
   return (
     <div className={`app${showDetails ? ' has-details' : ''}`}>
       <header className="app-header">
-        <div>
+        <div className="app-title">
           <h1>Rare Disease Similarity Explorer</h1>
-          <p className="muted small">
-            v2 model · {plural(graph.stats.nodes, 'disease')} · {plural(graph.stats.edges, 'edge')} ·{' '}
-            {plural(graph.stats.support.novel ?? 0, 'novel hypothesis', 'novel hypotheses')}
+          <p>
+            v2 model · <strong>{graph.stats.nodes.toLocaleString('en-GB')}</strong> diseases ·{' '}
+            <strong>{graph.stats.edges.toLocaleString('en-GB')}</strong> edges ·{' '}
+            <strong className="accent">{(graph.stats.support.novel ?? 0).toLocaleString('en-GB')}</strong> novel hypotheses
           </p>
         </div>
         <nav className="header-nav" aria-label="Views">
@@ -562,6 +564,7 @@ function Explorer({ graph, onNavigate }: { graph: GraphData; onNavigate: (view: 
           <button type="button" className="link-button" onClick={() => onNavigate('patient')}>
             Patient view
           </button>
+          <ThemeToggle />
         </nav>
       </header>
 

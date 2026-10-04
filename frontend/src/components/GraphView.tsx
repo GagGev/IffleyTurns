@@ -354,7 +354,7 @@ export function GraphView(props: Props) {
         (!dimmed && ((scale > 3 && node.degree >= 25) || scale > 7))
       if (!showLabel) return
       const fontSize = (selected ? 13 : 11) / scale
-      ctx.font = `${selected ? 600 : 400} ${fontSize}px system-ui, -apple-system, "Segoe UI", sans-serif`
+      ctx.font = `${selected ? 600 : 400} ${fontSize}px "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif`
       ctx.textAlign = 'center'
       // The two ends of a selected pair can sit close together: label the upper one above it.
       const partnerId =
@@ -375,7 +375,7 @@ export function GraphView(props: Props) {
       if (selected || hovered || (inFocus && scale > 1.5)) {
         const detail = `${node.disease.id}${node.disease.cluster >= 0 ? ` · ${clusterId(node.disease.cluster)}` : ''}`
         const small = (selected ? 10.5 : 9.5) / scale
-        ctx.font = `400 ${small}px system-ui, -apple-system, "Segoe UI", sans-serif`
+        ctx.font = `400 ${small}px "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif`
         const dy = fontSize * 1.15
         const y2 = above ? ly - dy : ly + dy
         ctx.lineWidth = 3 / scale
