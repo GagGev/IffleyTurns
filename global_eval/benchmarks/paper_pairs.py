@@ -89,6 +89,29 @@ def run(tasks: dict) -> tuple[dict, str]:
                 + core.md_table(["Model", "Spearman with stated similarity [95% CI]", "AUROC similar vs related-but-distinct [95% CI]"], rows)
                 + f"\n\n{int(similar.sum())} pairs are “similar”, {int((~similar).sum())} “related but distinct”.\n")
 
+    # Disease level: share of diseases with at least one paper-stated partner within their top k.
+    def disease_hits(selector):
+        best = {m: {} for m in models}
+        for k in np.where(selector)[0]:
+            for d, key in enumerate(("a", "b")):
+                for m in models:
+                    disease = pairs[k][key]
+                    best[m][disease] = min(best[m].get(disease, np.inf), ranks[m][k, d])
+        return {m: {f"top{t}": float(np.mean([r <= t for r in best[m].values()])) for t in (1, 5, 10, 20)} | {"n_diseases": len(best[m])}
+                for m in models}
+
+    rows, disease_level = [], {}
+    for key, label in (("all", "all pairs"), ("no_curated_relation", "pairs with no curated relation")):
+        disease_level[key] = disease_hits(strata[key])
+        for m in models:
+            e = disease_level[key][m]
+            rows.append([label, core.MODELS[m][1], str(e["n_diseases"]), *(f"{100 * e[f'top{t}']:.1f}%" for t in (1, 5, 10, 20))])
+    metrics["disease_level_hits"] = disease_level
+    text.append("### Diseases with a paper-stated partner in their top k\n\n"
+                "Each disease counts once; it is a hit when at least one of the diseases papers link it to ranks within the top k of the "
+                "7,493-disease catalogue.\n\n"
+                + core.md_table(["Pairs", "Model", "Diseases", "top 1", "top 5", "top 10", "top 20"], rows) + "\n")
+
     comparisons = [("v2", "v1"), ("v3_static", "v2_drugfree"), ("v3_static", "v2"), ("v3_forecast", "v3_static")]
     lines, diffs = [], {}
     for a, b in comparisons:

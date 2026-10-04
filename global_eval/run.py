@@ -48,21 +48,23 @@ def headline(metrics: dict) -> str:
     out = []
     for label, pm, rm, fm in rows:
         cells = [label]
+        dl = metrics.get("paper_pairs", {}).get("disease_level_hits", {})
         for stratum in ("all", "no_curated_relation"):
-            e = pp.get(stratum, {}).get("models", {}).get(pm)
-            cells.append(f"{e['hits@10']:.2f} / {e['mean_percentile']:.3f}" if e else "–")
+            e = dl.get(stratum, {}).get(pm)
+            cells.append(f"{100 * e['top10']:.0f}%" if e else "–")
         for kind in ("orphanet_siblings", "shared_causal_gene", "shared_drug"):
             e = rel.get(kind, {}).get("models", {}).get(rm) if rm else None
-            cells.append(f"{e['map']['mean']:.3f}" if e else "–")
+            cells.append(f"{100 * e['hits@10']['mean']:.0f}%" if e else "–")
         e = fwd.get(fm)
-        cells.append(f"{e['map']['mean']:.3f}" if e else "–")
+        cells.append(f"{100 * e['hits@10']['mean']:.0f}%" if e else "–")
         out.append(cells)
-    header = ["Model", "Paper pairs, all: Hits@10 / mean pctl", "Paper pairs, no curated relation", "Siblings MAP*",
-              "Shared gene MAP*", "Shared drug MAP*", "Forward-time MAP"]
-    return ("## Headline\n\n" + core.md_table(header, out)
-            + "\n\n\\* In-sample for v2 and v3 (see the relations benchmark). Forward-time MAP is the test fold, all 9,525 nodes as"
-              " candidates; v2 there is the v2 architecture retrained on pre-cutoff relations. Paper-pair columns are Hits@10 and the"
-              " mean percentile of the partner among 7,493 diseases.\n")
+    header = ["Model", "Paper pairs, all", "Paper pairs, no curated relation", "Siblings*", "Shared gene*", "Shared drug*",
+              "Forward in time"]
+    return ("## Headline: share of diseases with a valid partner in their top 10\n\n" + core.md_table(header, out)
+            + "\n\nEach cell is the percentage of query diseases with at least one valid partner among their 10 highest-scored diseases"
+              " (paper-stated partner, curated relation, or a relation formed after the 2018 cutoff). \\* In-sample for v2 and v3 (see"
+              " the relations benchmark). Forward in time is the test fold over 9,525 nodes; v2 there is the v2 architecture retrained"
+              " on pre-cutoff relations. MAP, MRR and AUROC are in the sections below.\n")
 
 
 def main() -> None:
