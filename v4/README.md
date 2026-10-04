@@ -1,29 +1,32 @@
 # Rare-disease similarity, v4
 
-v4 deliberately has one architecture and one score:
+v4 scores a pair with a leakage-safe hybrid of two drug-free views:
 
 ```text
 9 drug-free sparse modalities
-  -> learned 64-d projection per modality
-  -> availability-aware attention pooling
-  -> normalized 128-d disease embedding
-  -> cosine similarity
+  -> learned 128-d embedding cosine
+  +  v2-style non-negative fusion of the nine cosines
+  -> scaled and mixed on validation MAP
 ```
 
-There is no pair classifier, linear fusion, ensemble, forecast stacker, or
-regulatory-history path. The nine inputs are phenotype, gene, pathway,
-ontology, name, clinical text, inheritance, onset, and prevalence. Known drug
-words are removed from clinical text.
+The embedding path is unchanged. The fusion path is v2's logistic over
+per-modality cosines, refit on v4's train/train pairs with the same task
+masks. There is no forecast stacker and v4 does not import v2. The nine
+inputs are phenotype, gene, pathway, ontology, name, clinical text,
+inheritance, onset, and prevalence. Known drug words are removed from
+clinical text.
 
 ## Leakage control
 
-The embedding is trained with sibling and shared-causal-gene auxiliary
-relations. Sibling batches hide ontology and name; gene batches hide gene and
-pathway. A disease uses the same deterministic train/validation/test split as
-v2:
+The embedding and the fusion are both trained with sibling,
+shared-causal-gene, and HPO-neighbour auxiliary relations. Sibling batches
+hide ontology and name; gene batches hide gene and pathway; HPO-neighbour
+batches hide phenotype. A sampled-softmax objective uses uniform and online
+hard negatives while excluding positives from every task. A disease uses the
+same deterministic train/validation/test split as v2:
 
 - training pairs have two train endpoints;
-- validation relations select the epoch;
+- full-gallery validation MAP selects the embedding epoch and the fusion mix;
 - every pair containing a test disease is untouched until the final
   diagnostic evaluation.
 

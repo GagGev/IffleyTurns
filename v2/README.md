@@ -4,6 +4,8 @@ v2 learns how similar two rare diseases are from the downloaded databases, check
 relations far better than chance on diseases it has never seen, builds an explained similarity graph of 7,493 Orphanet
 diseases, and places new diseases into that graph.
 
+![How v2 works](docs/model_schematic.png)
+
 It uses only `.data/features/` (built by `generate_features.py`) and `.data/databases/`. It does not read
 `literature_review/` or the literature-derived `.data/literature_acquisition/`, `.data/splits/` and `.data/models/`.
 
@@ -15,6 +17,7 @@ python v2/build_graph.py       # ~1.5 min: fit on all diseases, write the graph 
 python v2/place_disease.py --json v2/examples/new_disease_example.json        # place a new disease
 python v2/place_disease.py --json v2/examples/new_disease_example.json --add  # ... and insert it into the graph
 python v2/place_disease.py --orpha ORPHA:558 --hide ontology,name             # re-place a known disease as if unclassified
+python v2/make_schematic.py      # redraw docs/model_schematic.png (needs run_evaluation.py and build_graph.py)
 python -m pytest v2/tests -q
 ```
 

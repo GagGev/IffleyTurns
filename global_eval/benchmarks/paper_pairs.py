@@ -15,7 +15,7 @@ INTRO = """Disease pairs that published papers describe as related or similar.
 Nothing about them was used to train any model, except where a pair is also a curated relation (reported separately).
 For each pair, the partner's rank among the 7,493 catalogue diseases, in both directions."""
 TITLE = "Paper-stated disease pairs"
-MODEL_ORDER = ["v1", "v1_drugfree", "v2", "v2_drugfree", "v3_static", "v3_forecast"]
+MODEL_ORDER = ["v1", "v1_drugfree", "v2", "v2_drugfree", "v3_static", "v3_forecast", "v4_embedding"]
 
 
 def _auc(score, label):
@@ -26,12 +26,13 @@ def _auc(score, label):
     return float((r[label].sum() - n1 * (n1 + 1) / 2) / (n1 * n0))
 
 
-def run(tasks: dict) -> tuple[dict, str]:
+def run(tasks: dict, model_ids=None) -> tuple[dict, str]:
     pairs = tasks["paper_pairs"]
     ids = tasks["catalogue"]; col = {d: i for i, d in enumerate(ids)}; n = len(ids)
     queries = sorted({p[k] for p in pairs for k in ("a", "b")}); row = {q: i for i, q in enumerate(queries)}
     folder = core.DATA / "scores" / "paper_pairs"
-    models = [m for m in MODEL_ORDER if (folder / f"{m}.npy").is_file()]
+    selected = set(MODEL_ORDER if model_ids is None else model_ids)
+    models = [m for m in MODEL_ORDER if m in selected and (folder / f"{m}.npy").is_file()]
     ranks, sym = {}, {}
     for m in models:
         M = np.load(folder / f"{m}.npy")
@@ -124,8 +125,8 @@ def run(tasks: dict) -> tuple[dict, str]:
     # Where does the graph fail? Disease-level top-10 hit rate by how well annotated the disease is and by Orphanet category.
     best = best_ranks(strata["all"])
     nmod, category = tasks.get("n_modalities", {}), tasks.get("category", {})
-    focus = [m for m in ("v1", "v2_drugfree", "v3_static") if m in models]
-    diseases = sorted(best[focus[0]])
+    focus = [m for m in ("v1", "v2_drugfree", "v3_static", "v4_embedding") if m in models]
+    diseases = sorted(best[focus[0]]) if focus else []
     if nmod and diseases:
         cuts = np.percentile([nmod[d] for d in diseases], [33, 67])
         def richness(d):
@@ -153,7 +154,14 @@ def run(tasks: dict) -> tuple[dict, str]:
                     f"≤{cuts[0]:.0f} / {cuts[0]:.0f}–{cuts[1]:.0f} / >{cuts[1]:.0f}); categories with at least 25 diseases are listed.\n\n"
                     + core.md_table(["Stratum", "Group", "Diseases", *[core.MODELS[m][1] for m in focus]], rows) + "\n")
 
-    comparisons = [("v2", "v1"), ("v3_static", "v2_drugfree"), ("v3_static", "v2"), ("v3_forecast", "v3_static")]
+    comparisons = [
+        ("v2", "v1"),
+        ("v3_static", "v2_drugfree"),
+        ("v3_static", "v2"),
+        ("v3_forecast", "v3_static"),
+        ("v4_embedding", "v2_drugfree"),
+        ("v4_embedding", "v2"),
+    ]
     lines, diffs = [], {}
     for a, b in comparisons:
         if a not in percentile or b not in percentile:

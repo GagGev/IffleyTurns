@@ -8,7 +8,7 @@ matrices; this focused run does not execute v3.
 |---|---|
 | v2 | Non-negative logistic fusion of per-modality cosine similarities |
 | v2 drug-free | The same production fusion with drug-derived modalities hidden |
-| v4 | Cosine between one learned 128-dimensional multimodal disease embedding |
+| v4 | Embedding cosine mixed with a v2-style fusion of the nine drug-free cosines |
 
 The primary like-for-like comparison is v4 against v2's drug-free view.
 
@@ -18,9 +18,9 @@ The primary like-for-like comparison is v4 against v2's drug-free view.
   comparison because neither model directly trained on those pair labels.
 - v2's production model was fitted on all curated-relation labels, including
   diseases assigned to its nominal test split.
-- v4 trained only on sibling and causal-gene pairs whose two endpoints are in
-  the train split. Its `MAP, v2-test-split queries` result is held out with
-  respect to v4 relation labels; the all-query sibling/gene rows mix train,
-  validation, and test queries.
+- v4 trained only on sibling, causal-gene, and HPO-neighbour pairs whose two
+  endpoints are in the train split. Its `MAP, v2-test-split queries` result is
+  held out with respect to v4 relation labels; the all-query sibling/gene rows
+  mix train, validation, and test queries.
 - Shared-drug relations are never v4 training labels. All defining modalities
   are hidden in each curated-relation task.

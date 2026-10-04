@@ -19,6 +19,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import threading
 import time
 from http import HTTPStatus
@@ -51,7 +52,7 @@ def with_response_format(messages: list[dict[str, str]], response_format: Any) -
 
 
 class MedGemma:
-    def __init__(self, path: str, device: str):
+    def __init__(self, path: str, device: str, quantization: str = "none"):
         import torch
         from transformers import AutoModelForCausalLM, AutoTokenizer
 
@@ -60,17 +61,38 @@ class MedGemma:
         dtype = torch.float32 if device == "cpu" else torch.bfloat16
         started = time.time()
         self.tokenizer = AutoTokenizer.from_pretrained(path)
-        self.model = AutoModelForCausalLM.from_pretrained(path, dtype=dtype).to(device).eval()
+        if quantization != "none":
+            if device != "cuda":
+                raise ValueError("4-bit and 8-bit loading require an NVIDIA CUDA device.")
+            from transformers import BitsAndBytesConfig
+
+            config = BitsAndBytesConfig(
+                load_in_4bit=quantization == "4bit",
+                load_in_8bit=quantization == "8bit",
+                bnb_4bit_compute_dtype=dtype,
+                bnb_4bit_quant_type="nf4",
+                bnb_4bit_use_double_quant=True,
+            )
+            self.model = AutoModelForCausalLM.from_pretrained(
+                path, dtype=dtype, quantization_config=config, device_map={"": 0}
+            ).eval()
+        else:
+            self.model = AutoModelForCausalLM.from_pretrained(path, dtype=dtype).to(device).eval()
         self.device = device
         self.name = os.path.basename(os.path.normpath(path))
         self.lock = threading.Lock()
         self.torch = torch
-        print(f"Loaded {self.name} on {device} in {time.time() - started:.0f}s", flush=True)
+        precision = quantization if quantization != "none" else str(dtype).removeprefix("torch.")
+        print(f"Loaded {self.name} on {device} ({precision}) in {time.time() - started:.0f}s", flush=True)
 
     def chat(self, messages: list[dict[str, str]], max_tokens: int, temperature: float) -> tuple[str, int, int]:
-        inputs = self.tokenizer.apply_chat_template(
-            messages, add_generation_prompt=True, return_tensors="pt", return_dict=True
-        ).to(self.device)
+        prompt = self.tokenizer.apply_chat_template(messages, add_generation_prompt=True, tokenize=False)
+        # MedGemma 1.5 separates private reasoning from its final answer with this reserved token.
+        # Starting in the final-answer channel avoids spending the client's token budget on hidden reasoning.
+        final_token = "<unused95>"
+        if self.tokenizer.convert_tokens_to_ids(final_token) != self.tokenizer.unk_token_id:
+            prompt += final_token
+        inputs = self.tokenizer(prompt, return_tensors="pt", return_dict=True).to(self.device)
         prompt_tokens = int(inputs["input_ids"].shape[1])
         options: dict[str, Any] = {"max_new_tokens": max_tokens, "do_sample": temperature > 0}
         if temperature > 0:
@@ -78,7 +100,15 @@ class MedGemma:
         with self.lock, self.torch.inference_mode():
             output = self.model.generate(**inputs, **options)
         new = output[0, prompt_tokens:]
-        return self.tokenizer.decode(new, skip_special_tokens=True).strip(), prompt_tokens, int(new.shape[0])
+        text = self.tokenizer.decode(new, skip_special_tokens=True).strip()
+        # MedGemma 1.5 may expose its reasoning between reserved tokens.  Clients need only the final
+        # answer; leaving both JSON drafts in the response also makes structured-output parsing ambiguous.
+        if "<unused95>" in text:
+            text = text.rsplit("<unused95>", 1)[1].strip()
+        if "</think>" in text:
+            text = text.rsplit("</think>", 1)[1].strip()
+        text = re.sub(r"^<unused94>thought\s*", "", text).strip()
+        return text, prompt_tokens, int(new.shape[0])
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -131,10 +161,16 @@ def main() -> int:
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=8766)
     parser.add_argument("--device", default="auto", choices=["auto", "mps", "cuda", "cpu"])
+    parser.add_argument(
+        "--quantization",
+        default=os.environ.get("MEDGEMMA_QUANTIZATION", "none"),
+        choices=["none", "4bit", "8bit"],
+        help="Reduce CUDA memory use with bitsandbytes (recommended: 4bit on an 8 GB GPU).",
+    )
     args = parser.parse_args()
     if not args.model:
         parser.error("give --model or set MEDGEMMA_MODEL_PATH")
-    Handler.model = MedGemma(args.model, args.device)
+    Handler.model = MedGemma(args.model, args.device, args.quantization)
     server = ThreadingHTTPServer((args.host, args.port), Handler)
     print(f"MedGemma ready at http://{args.host}:{args.port}/v1", flush=True)
     try:

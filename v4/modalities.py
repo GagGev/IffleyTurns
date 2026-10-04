@@ -26,7 +26,11 @@ MODALITY_DESCRIPTIONS = {
     "prevalence": "Prevalence estimate (log-scale kernel)",
 }
 MODALITIES = tuple(MODALITY_DESCRIPTIONS)
-TASK_MASKS = {"sibling": ("ontology", "name"), "gene": ("gene", "pathway")}
+TASK_MASKS = {
+    "sibling": ("ontology", "name"),
+    "gene": ("gene", "pathway"),
+    "phenotype": ("phenotype",),
+}
 
 INHERITANCE_MAP = {
     "autosomal recessive": ("AR",),

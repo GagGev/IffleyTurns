@@ -30,11 +30,17 @@ DEFAULT_CONFIG: dict[str, Any] = {
     "weight_decay": 1e-4,
     "epochs": 80,
     "patience": 10,
-    "margin": 0.15,
-    "temperature": 0.12,
-    "negatives": 4,
-    "max_pairs_per_task": 20_000,
+    "temperature": 0.10,
+    "random_negatives": 48,
+    "hard_negatives": 16,
+    "hard_candidate_buffer": 64,
+    "max_pairs_per_task": 4_096,
     "validation_negatives": 20,
+    "phenotype_neighbours": 3,
+    "phenotype_min_similarity": 0.35,
+    "fusion_C": 0.03,
+    "fusion_negatives": 8,
+    "fusion_mixes": (0.0, 0.25, 0.5, 0.75, 1.0),
     "seed": 0,
 }
 MAX_SIBLING_GROUP = 40
@@ -117,12 +123,48 @@ class EmbeddingNet(nn.Module):
 class RelationPairs:
     sibling: np.ndarray
     gene: np.ndarray
+    phenotype: np.ndarray
 
     def by_task(self) -> dict[str, np.ndarray]:
-        return {"sibling": self.sibling, "gene": self.gene}
+        return {
+            "sibling": self.sibling,
+            "gene": self.gene,
+            "phenotype": self.phenotype,
+        }
 
 
-def build_relation_pairs(bundle: Bundle, ids: Sequence[str]) -> RelationPairs:
+def phenotype_pairs(
+    matrix: sp.csr_matrix,
+    neighbours: int = 3,
+    min_similarity: float = 0.35,
+    block_size: int = 256,
+) -> np.ndarray:
+    """Top HPO-cosine neighbours used only as an auxiliary relation label."""
+
+    matrix = matrix.tocsr()
+    pairs: set[tuple[int, int]] = set()
+    if neighbours <= 0:
+        return np.empty((0, 2), dtype=np.int64)
+    for start in range(0, matrix.shape[0], block_size):
+        scores = (matrix[start : start + block_size] @ matrix.T).toarray()
+        for local, row in enumerate(scores):
+            anchor = start + local
+            row[anchor] = -np.inf
+            count = min(neighbours, len(row) - 1)
+            selected = np.argpartition(row, -count)[-count:]
+            for partner in selected:
+                if row[partner] >= min_similarity:
+                    pairs.add((min(anchor, int(partner)), max(anchor, int(partner))))
+    return np.asarray(sorted(pairs), dtype=np.int64).reshape(-1, 2)
+
+
+def build_relation_pairs(
+    bundle: Bundle,
+    ids: Sequence[str],
+    phenotype_matrix: Optional[sp.csr_matrix] = None,
+    phenotype_neighbours: int = 3,
+    phenotype_min_similarity: float = 0.35,
+) -> RelationPairs:
     index = {disease: i for i, disease in enumerate(ids)}
     children: dict[str, list[int]] = defaultdict(list)
     for parent, child in bundle.orphanet_edges:
@@ -156,7 +198,12 @@ def build_relation_pairs(bundle: Bundle, ids: Sequence[str]) -> RelationPairs:
     def array(values: set[tuple[int, int]]) -> np.ndarray:
         return np.asarray(sorted(values), dtype=np.int64).reshape(-1, 2)
 
-    return RelationPairs(sibling=array(sibling), gene=array(gene_pairs))
+    phenotype = (
+        phenotype_pairs(phenotype_matrix, phenotype_neighbours, phenotype_min_similarity)
+        if phenotype_matrix is not None
+        else np.empty((0, 2), dtype=np.int64)
+    )
+    return RelationPairs(sibling=array(sibling), gene=array(gene_pairs), phenotype=phenotype)
 
 
 def split_pairs(pairs: np.ndarray, split_by_index: np.ndarray) -> dict[str, np.ndarray]:
@@ -214,6 +261,241 @@ def _sample_negatives(
     return anchors[keep], partners[keep], negatives[keep]
 
 
+def union_known_neighbours(relations: RelationPairs, n: int) -> list[set[int]]:
+    """Relations from any auxiliary task are never negatives for another."""
+
+    known = [set() for _ in range(n)]
+    for pairs in relations.by_task().values():
+        for a, b in pairs:
+            known[int(a)].add(int(b))
+            known[int(b)].add(int(a))
+    return known
+
+
+def sample_negative_matrix(
+    anchors: np.ndarray,
+    count: int,
+    candidates: np.ndarray,
+    known: list[set[int]],
+    rng: np.random.Generator,
+) -> np.ndarray:
+    """Uniform negatives, excluding self and every known auxiliary positive."""
+
+    result = np.empty((len(anchors), count), dtype=np.int64)
+    if count == 0:
+        return result
+    for row, anchor in enumerate(anchors):
+        excluded = known[int(anchor)] | {int(anchor)}
+        filled = 0
+        while filled < count:
+            draw = candidates[rng.integers(0, len(candidates), max(2 * (count - filled), 8))]
+            valid = [int(value) for value in draw if int(value) not in excluded]
+            take = min(len(valid), count - filled)
+            if take:
+                result[row, filled : filled + take] = valid[:take]
+                filled += take
+    return result
+
+
+@torch.no_grad()
+def hard_negative_matrix(
+    embeddings: torch.Tensor,
+    anchors: np.ndarray,
+    count: int,
+    candidates: np.ndarray,
+    known: list[set[int]],
+    rng: np.random.Generator,
+    buffer: int = 64,
+    block_size: int = 256,
+) -> np.ndarray:
+    """Current nearest non-positive train diseases for each anchor."""
+
+    if count == 0:
+        return np.empty((len(anchors), 0), dtype=np.int64)
+    unique, inverse = np.unique(anchors, return_inverse=True)
+    candidate_tensor = torch.from_numpy(candidates).to(embeddings.device)
+    selected = np.empty((len(unique), count), dtype=np.int64)
+    width = min(len(candidates), count + buffer)
+    for start in range(0, len(unique), block_size):
+        block = unique[start : start + block_size]
+        block_tensor = torch.from_numpy(block).to(embeddings.device)
+        scores = embeddings[block_tensor] @ embeddings[candidate_tensor].T
+        top = torch.topk(scores, width, dim=1).indices.cpu().numpy()
+        for local, anchor in enumerate(block):
+            ordered = candidates[top[local]]
+            valid = [
+                int(value)
+                for value in ordered
+                if int(value) != int(anchor) and int(value) not in known[int(anchor)]
+            ]
+            if len(valid) < count:
+                fallback = sample_negative_matrix(
+                    np.array([anchor]), count - len(valid), candidates, known, rng
+                )[0].tolist()
+                valid.extend(fallback)
+            selected[start + local] = valid[:count]
+    return selected[inverse]
+
+
+def sampled_softmax_loss(
+    embeddings: torch.Tensor,
+    anchors: np.ndarray,
+    partners: np.ndarray,
+    negatives: np.ndarray,
+    temperature: float,
+) -> torch.Tensor:
+    """InfoNCE with the positive in column zero and cosine-only logits."""
+
+    target = embeddings.device
+    anchor_index = torch.from_numpy(anchors).to(target)
+    partner_index = torch.from_numpy(partners).to(target)
+    negative_index = torch.from_numpy(negatives).to(target)
+    anchor_embedding = embeddings[anchor_index]
+    positive = (anchor_embedding * embeddings[partner_index]).sum(-1, keepdim=True)
+    negative = (anchor_embedding[:, None, :] * embeddings[negative_index]).sum(-1)
+    logits = torch.cat([positive, negative], dim=1) / temperature
+    labels = torch.zeros(len(anchors), dtype=torch.long, device=target)
+    return F.cross_entropy(logits, labels)
+
+
+@torch.no_grad()
+def retrieval_metrics(
+    embeddings: torch.Tensor,
+    pairs: np.ndarray,
+    queries: np.ndarray,
+    gallery: np.ndarray,
+) -> dict[str, float]:
+    """Macro retrieval metrics for relation-positive partners in a gallery."""
+
+    neighbours = _known_neighbours(pairs, len(embeddings))
+    gallery_set = set(int(value) for value in gallery)
+    eligible = np.array(
+        [
+            int(query)
+            for query in queries
+            if any(partner in gallery_set and partner != int(query) for partner in neighbours[int(query)])
+        ],
+        dtype=np.int64,
+    )
+    if not len(eligible):
+        return {"map": float("nan"), "mrr": float("nan"), "hits@10": float("nan"), "n_queries": 0}
+    query_tensor = torch.from_numpy(eligible).to(embeddings.device)
+    gallery_tensor = torch.from_numpy(gallery).to(embeddings.device)
+    scores = (embeddings[query_tensor] @ embeddings[gallery_tensor].T).cpu().numpy()
+    gallery_index = {int(value): index for index, value in enumerate(gallery)}
+    aps, reciprocal, hits = [], [], []
+    for row, query in enumerate(eligible):
+        own = gallery_index.get(int(query))
+        if own is not None:
+            scores[row, own] = -np.inf
+        positives = {
+            gallery_index[partner]
+            for partner in neighbours[int(query)]
+            if partner in gallery_index and partner != int(query)
+        }
+        order = np.argsort(-scores[row])
+        rank_by_column = np.empty(len(order), dtype=np.int64)
+        rank_by_column[order] = np.arange(1, len(order) + 1)
+        ranks = np.sort(rank_by_column[list(positives)])
+        aps.append(float(np.mean(np.arange(1, len(ranks) + 1) / ranks)))
+        reciprocal.append(1.0 / ranks[0])
+        hits.append(float(ranks[0] <= 10))
+    return {
+        "map": float(np.mean(aps)),
+        "mrr": float(np.mean(reciprocal)),
+        "hits@10": float(np.mean(hits)),
+        "n_queries": len(eligible),
+    }
+
+
+def retrieval_from_scores(
+    scores: np.ndarray,
+    pairs: np.ndarray,
+    queries: np.ndarray,
+    gallery: np.ndarray,
+) -> dict[str, float]:
+    """Same retrieval metrics as ``retrieval_metrics``, from an explicit score matrix."""
+
+    neighbours = _known_neighbours(pairs, scores.shape[1])
+    gallery_set = set(int(value) for value in gallery)
+    eligible = [
+        (row, int(query))
+        for row, query in enumerate(queries)
+        if any(partner in gallery_set and partner != int(query) for partner in neighbours[int(query)])
+    ]
+    if not eligible:
+        return {"map": float("nan"), "mrr": float("nan"), "hits@10": float("nan"), "n_queries": 0}
+    gallery_index = {int(value): index for index, value in enumerate(gallery)}
+    aps, reciprocal, hits = [], [], []
+    for row, query in eligible:
+        row_scores = scores[row].copy()
+        own = gallery_index.get(query)
+        if own is not None:
+            row_scores[query] = -np.inf
+        positives = {
+            gallery_index[partner]
+            for partner in neighbours[query]
+            if partner in gallery_index and partner != query
+        }
+        ranked = row_scores[gallery]
+        order = np.argsort(-ranked)
+        rank_by_column = np.empty(len(order), dtype=np.int64)
+        rank_by_column[order] = np.arange(1, len(order) + 1)
+        ranks = np.sort(rank_by_column[list(positives)])
+        aps.append(float(np.mean(np.arange(1, len(ranks) + 1) / ranks)))
+        reciprocal.append(1.0 / ranks[0])
+        hits.append(float(ranks[0] <= 10))
+    return {
+        "map": float(np.mean(aps)),
+        "mrr": float(np.mean(reciprocal)),
+        "hits@10": float(np.mean(hits)),
+        "n_queries": len(eligible),
+    }
+
+
+def choose_fusion_mix(
+    engine,
+    fusion,
+    embeddings_by_task: dict[str, np.ndarray],
+    relations: RelationPairs,
+    split_by_index: np.ndarray,
+    embedding_scale: float,
+    fusion_scale: float,
+    mixes: Sequence[float] = (0.0, 0.25, 0.5, 0.75, 1.0),
+) -> tuple[float, dict[str, float]]:
+    """Pick the fusion mix on validation MAP for sibling and gene retrieval."""
+
+    from fusion import combine_scores
+
+    queries = np.flatnonzero(split_by_index == "validation")
+    gallery = np.flatnonzero(split_by_index != "test")
+    best_mix, best_score, details = 0.5, -np.inf, {}
+    for mix in mixes:
+        maps = []
+        for task in ("sibling", "gene"):
+            embeddings = embeddings_by_task[task]
+            S, A = engine.block(queries, masked=TASK_MASKS[task])
+            scores = combine_scores(
+                embeddings[queries] @ embeddings.T,
+                fusion.score(S, A),
+                embedding_scale,
+                fusion_scale,
+                float(mix),
+            )
+            maps.append(retrieval_from_scores(scores, relations.by_task()[task], queries, gallery)["map"])
+        score = float(np.nanmean(maps))
+        details[str(mix)] = score
+        if score > best_score:
+            best_mix, best_score = float(mix), score
+    return best_mix, details
+
+
+def best_retrieval_epoch(history: Sequence[dict[str, Any]]) -> int:
+    """Zero-based checkpoint index selected only by validation retrieval MAP."""
+
+    return int(np.nanargmax([row["validation_mean_map"] for row in history]))
+
+
 @torch.no_grad()
 def _validation_auc(
     net: EmbeddingNet,
@@ -263,16 +545,15 @@ def train_network(
     pools = {task: split_pairs(pairs, split_by_index) for task, pairs in relations.by_task().items()}
     train_candidates = np.flatnonzero(split_by_index == "train")
     validation_candidates = np.flatnonzero(split_by_index != "test")
-    known = {
-        task: _known_neighbours(pairs, len(split_by_index))
-        for task, pairs in relations.by_task().items()
-    }
+    validation_queries = np.flatnonzero(split_by_index == "validation")
+    known = union_known_neighbours(relations, len(split_by_index))
     masks = {
         task: torch.tensor(
             [name in TASK_MASKS[task] for name in MODALITIES], dtype=torch.bool, device=target
         )
         for task in TASK_MASKS
     }
+    tasks = tuple(relations.by_task())
     best_score, best_state, bad_epochs = -np.inf, None, 0
     history: list[dict[str, Any]] = []
     max_pairs = int(config["max_pairs_per_task"])
@@ -280,33 +561,59 @@ def train_network(
         net.train()
         loss = torch.zeros((), device=target)
         task_losses: dict[str, float] = {}
-        for task in ("sibling", "gene"):
+        for task in tasks:
             positives = pools[task]["train"]
             if len(positives) > max_pairs:
                 positives = positives[rng.choice(len(positives), max_pairs, replace=False)]
-            anchors, partners, negatives = _sample_negatives(
-                positives,
-                int(config["negatives"]),
-                train_candidates,
-                known[task],
-                rng,
-            )
+            oriented = positives.copy()
+            swap = rng.random(len(oriented)) < 0.5
+            oriented[swap] = oriented[swap, ::-1]
+            anchors, partners = oriented[:, 0], oriented[:, 1]
             embeddings, _ = net.encode(
                 inputs, availability, masks[task], float(config["modality_dropout"])
             )
-            positive_score = (embeddings[anchors] * embeddings[partners]).sum(-1)
-            negative_score = (embeddings[anchors] * embeddings[negatives]).sum(-1)
-            task_loss = F.softplus(
-                (negative_score - positive_score + float(config["margin"])) / float(config["temperature"])
-            ).mean()
+            random_negatives = sample_negative_matrix(
+                anchors,
+                int(config["random_negatives"]),
+                train_candidates,
+                known,
+                rng,
+            )
+            hard_negatives = hard_negative_matrix(
+                embeddings.detach(),
+                anchors,
+                int(config["hard_negatives"]),
+                train_candidates,
+                known,
+                rng,
+                int(config["hard_candidate_buffer"]),
+            )
+            negatives = np.concatenate([hard_negatives, random_negatives], axis=1)
+            task_loss = sampled_softmax_loss(
+                embeddings,
+                anchors,
+                partners,
+                negatives,
+                float(config["temperature"]),
+            )
             loss = loss + task_loss
             task_losses[task] = float(task_loss.detach())
         optimizer.zero_grad(set_to_none=True)
         loss.backward()
         optimizer.step()
 
-        aucs = {
-            task: _validation_auc(
+        validation_retrieval, aucs = {}, {}
+        for offset, task in enumerate(tasks):
+            net.eval()
+            with torch.no_grad():
+                embeddings, _ = net.encode(inputs, availability, masks[task])
+            validation_retrieval[task] = retrieval_metrics(
+                embeddings,
+                relations.by_task()[task],
+                validation_queries,
+                validation_candidates,
+            )
+            aucs[task] = _validation_auc(
                 net,
                 inputs,
                 availability,
@@ -317,24 +624,28 @@ def train_network(
                 int(config["validation_negatives"]),
                 np.random.default_rng(seed + epoch * 10 + offset),
             )
-            for offset, task in enumerate(("sibling", "gene"))
-        }
-        score = float(np.nanmean(list(aucs.values())))
+        score = float(np.nanmean([entry["map"] for entry in validation_retrieval.values()]))
         row = {
             "epoch": epoch + 1,
             "loss": float(loss.detach()),
             **{f"{task}_loss": value for task, value in task_losses.items()},
             **{f"validation_{task}_auc": value for task, value in aucs.items()},
-            "validation_mean_auc": score,
+            **{
+                f"validation_{task}_{metric}": value
+                for task, entry in validation_retrieval.items()
+                for metric, value in entry.items()
+            },
+            "validation_mean_auc": float(np.nanmean(list(aucs.values()))),
+            "validation_mean_map": score,
         }
         history.append(row)
         if verbose:
             print(
                 f"[v4] epoch {epoch + 1:02d} loss={row['loss']:.4f} "
-                f"validation_auc={score:.4f}",
+                f"validation_map={score:.4f} validation_auc={row['validation_mean_auc']:.4f}",
                 flush=True,
             )
-        if score > best_score + 1e-4:
+        if score > best_score + 1e-5:
             best_score, bad_epochs = score, 0
             best_state = {key: value.detach().cpu().clone() for key, value in net.state_dict().items()}
         else:
@@ -346,8 +657,19 @@ def train_network(
     net.load_state_dict(best_state)
 
     test_candidates = np.arange(len(split_by_index))
-    test_auc = {
-        task: _validation_auc(
+    test_queries = np.flatnonzero(split_by_index == "test")
+    test_auc, test_retrieval = {}, {}
+    for offset, task in enumerate(tasks):
+        net.eval()
+        with torch.no_grad():
+            embeddings, _ = net.encode(inputs, availability, masks[task])
+        test_retrieval[task] = retrieval_metrics(
+            embeddings,
+            relations.by_task()[task],
+            test_queries,
+            test_candidates,
+        )
+        test_auc[task] = _validation_auc(
             net,
             inputs,
             availability,
@@ -358,15 +680,23 @@ def train_network(
             int(config["validation_negatives"]),
             np.random.default_rng(seed + 10_000 + offset),
         )
-        for offset, task in enumerate(("sibling", "gene"))
-    }
+    best_index = best_retrieval_epoch(history)
     diagnostics = {
         "device": str(target),
-        "best_epoch": int(np.argmax([row["validation_mean_auc"] for row in history])) + 1,
-        "best_validation_mean_auc": best_score,
+        "selection_metric": "validation_mean_map",
+        "best_epoch": best_index + 1,
+        "best_validation_mean_map": best_score,
+        "best_validation_mean_auc": history[best_index]["validation_mean_auc"],
         "test_auc": test_auc,
+        "test_retrieval": test_retrieval,
         "pair_counts": {
             task: {split: len(values) for split, values in task_pools.items()}
+            for task, task_pools in pools.items()
+        },
+        "leakage_checks": {
+            task: bool(
+                all(split_by_index[index] == "train" for pair in task_pools["train"] for index in pair)
+            )
             for task, task_pools in pools.items()
         },
     }
@@ -387,11 +717,17 @@ class EmbeddingModel:
     diagnostics: dict[str, Any]
     _net: Optional[EmbeddingNet] = field(default=None, repr=False)
     _embedding_cache: dict[tuple[str, ...], np.ndarray] = field(default_factory=dict, repr=False)
+    fusion: Any = None
+    embedding_scale: float = 1.0
+    fusion_scale: float = 1.0
+    fusion_mix: float = 0.0
+    _engine: Any = field(default=None, repr=False)
 
     def __getstate__(self):
         state = dict(self.__dict__)
         state["_net"] = None
         state["_embedding_cache"] = {}
+        state["_engine"] = None
         return state
 
     @property
@@ -424,7 +760,21 @@ class EmbeddingModel:
             raise KeyError(f"Queries absent from the v4 catalogue: {missing[:5]}")
         embeddings = self.embeddings(masked)
         rows = np.array([index[disease] for disease in query_ids], dtype=np.int64)
-        return np.asarray(embeddings[rows] @ embeddings.T, dtype=np.float32)
+        embedding_scores = np.asarray(embeddings[rows] @ embeddings.T, dtype=np.float32)
+        if self.fusion is None or self.fusion_mix == 0:
+            return embedding_scores
+        from fusion import CosineEngine, combine_scores
+
+        if self._engine is None:
+            self._engine = CosineEngine(self.matrices, self.available)
+        S, A = self._engine.block(rows, masked=masked)
+        return combine_scores(
+            embedding_scores,
+            self.fusion.score(S, A),
+            self.embedding_scale,
+            self.fusion_scale,
+            self.fusion_mix,
+        )
 
     def save(self) -> None:
         MODEL_PATH.parent.mkdir(parents=True, exist_ok=True)
@@ -448,6 +798,28 @@ def encode_full(
         inputs,
         torch.from_numpy(available.astype(bool)).to(target),
         torch.zeros(len(MODALITIES), dtype=torch.bool, device=target),
+    )
+    return values.cpu().numpy().astype(np.float32)
+
+
+@torch.no_grad()
+def encode_masked(
+    matrices: dict[str, sp.csr_matrix],
+    available: np.ndarray,
+    state: dict[str, Any],
+    config: dict[str, Any],
+    masked: Sequence[str] = (),
+) -> np.ndarray:
+    target = device()
+    dimensions = {name: matrices[name].shape[1] for name in MODALITIES}
+    net = EmbeddingNet(dimensions, config).to(target)
+    net.load_state_dict(state)
+    net.eval()
+    inputs = {name: to_torch(matrices[name], target) for name in MODALITIES}
+    values, _ = net.encode(
+        inputs,
+        torch.from_numpy(available.astype(bool)).to(target),
+        torch.tensor([name in masked for name in MODALITIES], dtype=torch.bool, device=target),
     )
     return values.cpu().numpy().astype(np.float32)
 
