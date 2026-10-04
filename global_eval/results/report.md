@@ -25,6 +25,9 @@ works in, so v2 and v3 can be compared like for like.
   (+0.052 over retrained v2, p = 6e-26) but it is a different task: popularity alone (designation count) already
   reaches 0.070, and the stacker ranks paper-stated similar pairs *worse* than the static score. The graph that
   should go to users is the static similarity; the forecast is for repurposing candidates.
+- **For symptom-only queries (the patient view), v2 beats v3.** With 5 symptoms the true disease is in v2's top 10 for
+  91% of queries and in v3's for 86%; with 3 symptoms 74% vs 68%; with one unrelated symptom added, 89% vs 79%. v1's
+  plain HPO Jaccard is competitive only when 10 symptoms are given (95% vs 99% for v2). The patient view should stay on v2.
 - **Papers' stated similarity is weakly tracked by every model** (Spearman 0.19–0.23, AUROC for "similar" vs
   "related but distinct" 0.63–0.64).
 
@@ -43,14 +46,14 @@ works in, so v2 and v3 can be compared like for like.
 
 ## Headline: share of diseases with a valid partner in their top 10
 
-| Model | Paper pairs, all | Paper pairs, no curated relation | Siblings* | Shared gene* | Shared drug* | Forward in time |
-|---|---|---|---|---|---|---|
-| v1 weighted Jaccard | 30% | 6% | 6% | 37% | 43% | 7% |
-| v2 (drug-free view; retrained for forward time) | 64% | 28% | 79% | 57% | 60% | 28% |
-| v3 static similarity | 64% | 28% | 76% | 60% | 63% | 29% |
-| v3 forecast / stacker | 55% | 20% | – | – | – | 42% |
+| Model | Paper pairs, all | Paper pairs, no curated relation | Siblings* | Shared gene* | Shared drug* | 5 symptoms only** | Forward in time |
+|---|---|---|---|---|---|---|---|
+| v1 weighted Jaccard | 30% | 6% | 6% | 37% | 43% | 80% | 7% |
+| v2 (drug-free view; retrained for forward time) | 64% | 28% | 79% | 57% | 60% | 91% | 28% |
+| v3 static similarity | 64% | 28% | 76% | 60% | 63% | 86% | 29% |
+| v3 forecast / stacker | 55% | 20% | – | – | – | – | 42% |
 
-Each cell is the percentage of query diseases with at least one valid partner among their 10 highest-scored diseases (paper-stated partner, curated relation, or a relation formed after the 2018 cutoff). \* In-sample for v2 and v3 (see the relations benchmark). Forward in time is the test fold over 9,525 nodes; v2 there is the v2 architecture retrained on pre-cutoff relations. MAP, MRR and AUROC are in the sections below.
+Each cell is the percentage of query diseases with at least one valid partner among their 10 highest-scored diseases (paper-stated partner, curated relation, the disease itself for a 5-symptom query, or a relation formed after the 2018 cutoff). \*\* Query is 5 of the disease's own phenotypes and nothing else; v2 there uses all 12 modalities. \* In-sample for v2 and v3 (see the relations benchmark). Forward in time is the test fold over 9,525 nodes; v2 there is the v2 architecture retrained on pre-cutoff relations. MAP, MRR and AUROC are in the sections below.
 
 ## Paper-stated disease pairs
 
@@ -167,6 +170,25 @@ Each disease counts once; it is a hit when at least one of the diseases papers l
 | pairs with no curated relation | v3 static similarity (neural + fusion) | 338 | 3.6% | 16.0% | 27.5% | 37.3% |
 | pairs with no curated relation | v3 forecast (stacker) | 338 | 5.3% | 13.6% | 20.1% | 32.8% |
 
+### Where does it fail? Diseases with a paper-stated partner in their top 10, by stratum
+
+Annotation richness is the number of modalities a disease has (terciles, ≤9 / 9–11 / >11); categories with at least 25 diseases are listed.
+
+| Stratum | Group | Diseases | v1 weighted Jaccard | v2 fusion, drug-free view | v3 static similarity (neural + fusion) |
+|---|---|---|---|---|---|
+| Orphanet category | Rare developmental defect during embryogenesis | 109 | 26% | 59% | 55% |
+| Orphanet category | Rare endocrine disease | 29 | 66% | 86% | 83% |
+| Orphanet category | Rare hematologic disease | 26 | 15% | 62% | 62% |
+| Orphanet category | Rare inborn error of metabolism | 48 | 44% | 65% | 73% |
+| Orphanet category | Rare neoplastic disease | 76 | 25% | 54% | 55% |
+| Orphanet category | Rare neurologic disease | 125 | 28% | 64% | 65% |
+| Orphanet category | Rare ophthalmic disorder | 28 | 32% | 75% | 75% |
+| Orphanet category | Rare skin disease | 39 | 49% | 79% | 82% |
+| Orphanet category | Rare systemic or rheumatologic disease | 53 | 28% | 57% | 58% |
+| annotation richness | fewest modalities | 229 | 24% | 58% | 58% |
+| annotation richness | middle | 270 | 34% | 64% | 66% |
+| annotation richness | most modalities | 149 | 34% | 70% | 72% |
+
 ### Paired differences in mean percentile of the partner (95% bootstrap CI)
 
 - v2 fusion, all 12 modalities − v1 weighted Jaccard (all pairs): +0.0529 [+0.0447, +0.0614]
@@ -252,6 +274,30 @@ Share of query diseases with at least one true partner in their top 10:
 
 - MAP v2 fusion, all 12 modalities − v1 weighted Jaccard: +0.0561 [+0.0467, +0.0669]
 - MAP v3 static similarity (neural + fusion) − v2 fusion, drug-free view: +0.0144 [+0.0095, +0.0195]
+
+
+## Symptom-only retrieval (patient scenario)
+
+A query is 3, 5 or 10 of a disease's own phenotypes, or 5 plus one unrelated one, and nothing else. The model ranks
+7,493 diseases. v1 is the Jaccard of raw HPO sets (v1 has no other way to use a bare symptom list); v2 and v3 encode the
+symptoms as a new disease. v3 here is the production weights; the v2 production model also saw these diseases' profiles,
+so the *rate of finding the true disease* is optimistic for both. The relaxed hit and the comparison between models are
+the informative parts.
+
+| Query | Model | Queries | True disease top 1 | top 10 [95% CI] | top 20 | Median rank | Disease or a sibling in top 10 |
+|---|---|---|---|---|---|---|---|
+| 3 symptoms | v1 weighted Jaccard | 500 | 20% | 59% [54, 63] | 71% | 7 | 64% |
+| 3 symptoms | v2 fusion, all 12 modalities | 500 | 34% | 74% [71, 78] | 86% | 3 | 79% |
+| 3 symptoms | v3 static similarity (neural + fusion) | 500 | 31% | 68% [64, 72] | 77% | 4 | 74% |
+| 5 symptoms | v1 weighted Jaccard | 500 | 45% | 80% [77, 83] | 86% | 2 | 83% |
+| 5 symptoms | v2 fusion, all 12 modalities | 500 | 56% | 91% [88, 93] | 96% | 1 | 93% |
+| 5 symptoms | v3 static similarity (neural + fusion) | 500 | 55% | 86% [83, 89] | 90% | 1 | 88% |
+| 10 symptoms | v1 weighted Jaccard | 500 | 77% | 95% [94, 97] | 97% | 1 | 96% |
+| 10 symptoms | v2 fusion, all 12 modalities | 500 | 86% | 99% [98, 100] | 100% | 1 | 99% |
+| 10 symptoms | v3 static similarity (neural + fusion) | 500 | 83% | 98% [96, 99] | 98% | 1 | 98% |
+| 5 symptoms + 1 unrelated | v1 weighted Jaccard | 500 | 49% | 80% [76, 83] | 86% | 2 | 83% |
+| 5 symptoms + 1 unrelated | v2 fusion, all 12 modalities | 500 | 53% | 89% [86, 91] | 94% | 1 | 91% |
+| 5 symptoms + 1 unrelated | v3 static similarity (neural + fusion) | 500 | 48% | 79% [76, 83] | 84% | 2 | 83% |
 
 
 ## Forward in time (v3 protocol)

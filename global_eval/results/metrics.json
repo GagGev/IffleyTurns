@@ -1,5 +1,5 @@
 {
- "generated": "2026-10-04T09:08:56+00:00",
+ "generated": "2026-10-04T09:23:02+00:00",
  "paper_pairs": {
   "n_pairs": 564,
   "strata": {
@@ -707,6 +707,80 @@
     }
    }
   },
+  "disease_level_top10_by_stratum": {
+   "Orphanet category: Rare developmental defect during embryogenesis": {
+    "n": 109,
+    "v1": 0.25688073394495414,
+    "v2_drugfree": 0.5871559633027523,
+    "v3_static": 0.5504587155963303
+   },
+   "Orphanet category: Rare endocrine disease": {
+    "n": 29,
+    "v1": 0.6551724137931034,
+    "v2_drugfree": 0.8620689655172413,
+    "v3_static": 0.8275862068965517
+   },
+   "Orphanet category: Rare hematologic disease": {
+    "n": 26,
+    "v1": 0.15384615384615385,
+    "v2_drugfree": 0.6153846153846154,
+    "v3_static": 0.6153846153846154
+   },
+   "Orphanet category: Rare inborn error of metabolism": {
+    "n": 48,
+    "v1": 0.4375,
+    "v2_drugfree": 0.6458333333333334,
+    "v3_static": 0.7291666666666666
+   },
+   "Orphanet category: Rare neoplastic disease": {
+    "n": 76,
+    "v1": 0.25,
+    "v2_drugfree": 0.5394736842105263,
+    "v3_static": 0.5526315789473685
+   },
+   "Orphanet category: Rare neurologic disease": {
+    "n": 125,
+    "v1": 0.28,
+    "v2_drugfree": 0.64,
+    "v3_static": 0.648
+   },
+   "Orphanet category: Rare ophthalmic disorder": {
+    "n": 28,
+    "v1": 0.32142857142857145,
+    "v2_drugfree": 0.75,
+    "v3_static": 0.75
+   },
+   "Orphanet category: Rare skin disease": {
+    "n": 39,
+    "v1": 0.48717948717948717,
+    "v2_drugfree": 0.7948717948717948,
+    "v3_static": 0.8205128205128205
+   },
+   "Orphanet category: Rare systemic or rheumatologic disease": {
+    "n": 53,
+    "v1": 0.2830188679245283,
+    "v2_drugfree": 0.5660377358490566,
+    "v3_static": 0.5849056603773585
+   },
+   "annotation richness: fewest modalities": {
+    "n": 229,
+    "v1": 0.23580786026200873,
+    "v2_drugfree": 0.5807860262008734,
+    "v3_static": 0.5807860262008734
+   },
+   "annotation richness: middle": {
+    "n": 270,
+    "v1": 0.337037037037037,
+    "v2_drugfree": 0.6444444444444445,
+    "v3_static": 0.6555555555555556
+   },
+   "annotation richness: most modalities": {
+    "n": 149,
+    "v1": 0.3422818791946309,
+    "v2_drugfree": 0.7046979865771812,
+    "v3_static": 0.7181208053691275
+   }
+  },
   "paired_differences_mean_percentile": {
    "v2-v1:all pairs": {
     "diff": 0.052914147094716965,
@@ -1386,6 +1460,172 @@
       0.019520315704311144
      ]
     }
+   }
+  }
+ },
+ "symptom_retrieval": {
+  "k3": {
+   "v1": {
+    "n": 500,
+    "top1": 0.198,
+    "top10": 0.586,
+    "top20": 0.712,
+    "median_rank": 7.0,
+    "mrr": 0.32709434823259464,
+    "relaxed_top10": 0.638,
+    "top10_ci": [
+     0.544,
+     0.628
+    ]
+   },
+   "v2": {
+    "n": 500,
+    "top1": 0.342,
+    "top10": 0.744,
+    "top20": 0.856,
+    "median_rank": 3.0,
+    "mrr": 0.4690909957012855,
+    "relaxed_top10": 0.788,
+    "top10_ci": [
+     0.708,
+     0.7800499999999998
+    ]
+   },
+   "v3_static": {
+    "n": 500,
+    "top1": 0.306,
+    "top10": 0.682,
+    "top20": 0.772,
+    "median_rank": 4.0,
+    "mrr": 0.428388388041035,
+    "relaxed_top10": 0.738,
+    "top10_ci": [
+     0.644,
+     0.724
+    ]
+   }
+  },
+  "k5": {
+   "v1": {
+    "n": 500,
+    "top1": 0.454,
+    "top10": 0.8,
+    "top20": 0.862,
+    "median_rank": 2.0,
+    "mrr": 0.5704290391692968,
+    "relaxed_top10": 0.832,
+    "top10_ci": [
+     0.766,
+     0.834
+    ]
+   },
+   "v2": {
+    "n": 500,
+    "top1": 0.562,
+    "top10": 0.906,
+    "top20": 0.96,
+    "median_rank": 1.0,
+    "mrr": 0.6880494933600385,
+    "relaxed_top10": 0.928,
+    "top10_ci": [
+     0.88,
+     0.93
+    ]
+   },
+   "v3_static": {
+    "n": 500,
+    "top1": 0.548,
+    "top10": 0.856,
+    "top20": 0.896,
+    "median_rank": 1.0,
+    "mrr": 0.6479082252481605,
+    "relaxed_top10": 0.876,
+    "top10_ci": [
+     0.826,
+     0.886
+    ]
+   }
+  },
+  "k10": {
+   "v1": {
+    "n": 500,
+    "top1": 0.772,
+    "top10": 0.954,
+    "top20": 0.972,
+    "median_rank": 1.0,
+    "mrr": 0.849211823730408,
+    "relaxed_top10": 0.964,
+    "top10_ci": [
+     0.936,
+     0.972
+    ]
+   },
+   "v2": {
+    "n": 500,
+    "top1": 0.858,
+    "top10": 0.988,
+    "top20": 0.996,
+    "median_rank": 1.0,
+    "mrr": 0.9160697269397269,
+    "relaxed_top10": 0.99,
+    "top10_ci": [
+     0.978,
+     0.996
+    ]
+   },
+   "v3_static": {
+    "n": 500,
+    "top1": 0.832,
+    "top10": 0.978,
+    "top20": 0.984,
+    "median_rank": 1.0,
+    "mrr": 0.8836636906636197,
+    "relaxed_top10": 0.982,
+    "top10_ci": [
+     0.964,
+     0.99
+    ]
+   }
+  },
+  "k5_noise1": {
+   "v1": {
+    "n": 500,
+    "top1": 0.488,
+    "top10": 0.796,
+    "top20": 0.856,
+    "median_rank": 1.5,
+    "mrr": 0.6027890759406521,
+    "relaxed_top10": 0.834,
+    "top10_ci": [
+     0.762,
+     0.832
+    ]
+   },
+   "v2": {
+    "n": 500,
+    "top1": 0.528,
+    "top10": 0.888,
+    "top20": 0.942,
+    "median_rank": 1.0,
+    "mrr": 0.65434671636083,
+    "relaxed_top10": 0.908,
+    "top10_ci": [
+     0.86,
+     0.9140499999999998
+    ]
+   },
+   "v3_static": {
+    "n": 500,
+    "top1": 0.476,
+    "top10": 0.794,
+    "top20": 0.844,
+    "median_rank": 2.0,
+    "mrr": 0.5881744576844861,
+    "relaxed_top10": 0.826,
+    "top10_ci": [
+     0.756,
+     0.828
+    ]
    }
   }
  },

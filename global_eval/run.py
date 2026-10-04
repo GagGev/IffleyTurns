@@ -17,15 +17,15 @@ HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE)); sys.path.insert(0, str(HERE / "benchmarks"))
 
 import core
-import forward_time, paper_pairs, relations
+import forward_time, paper_pairs, relations, symptom_retrieval
 
-BENCHMARKS = {m.NAME: m for m in (paper_pairs, relations, forward_time)}
+BENCHMARKS = {m.NAME: m for m in (paper_pairs, relations, symptom_retrieval, forward_time)}
 
 
 def score(rescore: bool) -> None:
     done = (core.DATA / "tasks.json").is_file() and all(
         (core.DATA / "scores" / t / f).is_file()
-        for t in ("paper_pairs", "rel_orphanet_siblings", "rel_shared_causal_gene", "rel_shared_drug")
+        for t in ("paper_pairs", "symptoms", "rel_orphanet_siblings", "rel_shared_causal_gene", "rel_shared_drug")
         for f in ("v2.npy", "v3_static.npy"))
     if done and not rescore:
         print("score matrices found; use --rescore to recompute")
@@ -39,14 +39,15 @@ def headline(metrics: dict) -> str:
     """One table across the benchmarks: the like-for-like (drug-free) rows of each version."""
     pp = metrics.get("paper_pairs", {}).get("strata", {})
     rel = metrics.get("relations", {})
+    sym = metrics.get("symptom_retrieval", {})
     fwd = metrics.get("forward_time", {}).get("folds", {}).get("test", {}).get("metrics", {}).get("full", {})
     # (label, paper-pair model id, relation model id, forward-time model id)
-    rows = [("v1 weighted Jaccard", "v1", "v1", "v1_weighted_jaccard"),
-            ("v2 (drug-free view; retrained for forward time)", "v2_drugfree", "v2_drugfree", "v2_retrained"),
-            ("v3 static similarity", "v3_static", "v3_static", "v3_static"),
-            ("v3 forecast / stacker", "v3_forecast", None, "v3_stacker")]
+    rows = [("v1 weighted Jaccard", "v1", "v1", "v1", "v1_weighted_jaccard"),
+            ("v2 (drug-free view; retrained for forward time)", "v2_drugfree", "v2_drugfree", "v2", "v2_retrained"),
+            ("v3 static similarity", "v3_static", "v3_static", "v3_static", "v3_static"),
+            ("v3 forecast / stacker", "v3_forecast", None, None, "v3_stacker")]
     out = []
-    for label, pm, rm, fm in rows:
+    for label, pm, rm, sm, fm in rows:
         cells = [label]
         dl = metrics.get("paper_pairs", {}).get("disease_level_hits", {})
         for stratum in ("all", "no_curated_relation"):
@@ -55,14 +56,16 @@ def headline(metrics: dict) -> str:
         for kind in ("orphanet_siblings", "shared_causal_gene", "shared_drug"):
             e = rel.get(kind, {}).get("models", {}).get(rm) if rm else None
             cells.append(f"{100 * e['hits@10']['mean']:.0f}%" if e else "–")
+        e = sym.get("k5", {}).get(sm) if sm else None
+        cells.append(f"{100 * e['top10']:.0f}%" if e else "–")
         e = fwd.get(fm)
         cells.append(f"{100 * e['hits@10']['mean']:.0f}%" if e else "–")
         out.append(cells)
     header = ["Model", "Paper pairs, all", "Paper pairs, no curated relation", "Siblings*", "Shared gene*", "Shared drug*",
-              "Forward in time"]
+              "5 symptoms only**", "Forward in time"]
     return ("## Headline: share of diseases with a valid partner in their top 10\n\n" + core.md_table(header, out)
             + "\n\nEach cell is the percentage of query diseases with at least one valid partner among their 10 highest-scored diseases"
-              " (paper-stated partner, curated relation, or a relation formed after the 2018 cutoff). \\* In-sample for v2 and v3 (see"
+              " (paper-stated partner, curated relation, the disease itself for a 5-symptom query, or a relation formed after the 2018 cutoff). \\*\\* Query is 5 of the disease's own phenotypes and nothing else; v2 there uses all 12 modalities. \\* In-sample for v2 and v3 (see"
               " the relations benchmark). Forward in time is the test fold over 9,525 nodes; v2 there is the v2 architecture retrained"
               " on pre-cutoff relations. MAP, MRR and AUROC are in the sections below.\n")
 
