@@ -1,9 +1,13 @@
 import type { AppView } from '../lib/route'
+import { ThemeToggle } from './ThemeToggle'
 
 /** Landing page: choose the patient or the researcher view. */
 export function Home({ onChoose }: { onChoose: (view: AppView) => void }) {
   return (
     <div className="home">
+      <div className="home-top">
+        <ThemeToggle />
+      </div>
       <header className="home-header">
         <h1>Rare Disease Explorer</h1>
         <p>
@@ -13,7 +17,7 @@ export function Home({ onChoose }: { onChoose: (view: AppView) => void }) {
       </header>
       <div className="home-choices">
         <button type="button" className="home-card" onClick={() => onChoose('patient')}>
-          <span className="home-card-title">I'm a patient or family member</span>
+          <span className="home-card-title">Patient view</span>
           <span className="home-card-body">
             Describe symptoms in your own words and see which groups of rare conditions share them, explained simply, with
             ideas for where to look for help.
@@ -21,10 +25,9 @@ export function Home({ onChoose }: { onChoose: (view: AppView) => void }) {
           <span className="home-card-cta">Start →</span>
         </button>
         <button type="button" className="home-card" onClick={() => onChoose('research')}>
-          <span className="home-card-title">I'm a researcher or clinician</span>
+          <span className="home-card-title">Researcher view</span>
           <span className="home-card-body">
-            Explore the full similarity graph of 7,500 rare diseases: filters, evidence behind every link, clusters,
-            literature checks and placing new diseases.
+            Explore the full similarity graph of 7,500 rare diseases
           </span>
           <span className="home-card-cta">Open the explorer →</span>
         </button>

@@ -16,6 +16,7 @@ import type { ApiHealth, GraphData, GraphNode, PlacementNeighbour } from '../dat
 import { displayName, orphanetUrl } from '../lib/format'
 import type { AppView } from '../lib/route'
 import { TermPicker } from './TermPicker'
+import { ThemeToggle } from './ThemeToggle'
 
 interface Symptom {
   id: string
@@ -160,9 +161,12 @@ export function PatientView({ graph, onNavigate }: { graph: GraphData; onNavigat
             ← Home
           </button>
           <span className="patient-brand">Rare Disease Explorer · for patients and families</span>
-          <button type="button" className="link-button" onClick={() => onNavigate('research')}>
-            Researcher view
-          </button>
+          <span className="header-nav">
+            <button type="button" className="link-button" onClick={() => onNavigate('research')}>
+              Researcher view
+            </button>
+            <ThemeToggle />
+          </span>
         </div>
       </header>
 
@@ -357,10 +361,12 @@ function Results({
             </li>
           ))}
         </ul>
+      </section>
+      <div className="patient-end">
         <button type="button" className="button" onClick={onStartAgain}>
           Start again
         </button>
-      </section>
+      </div>
     </>
   )
 }

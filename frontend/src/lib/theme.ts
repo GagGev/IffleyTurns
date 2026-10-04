@@ -64,13 +64,39 @@ export function categoricalColour(index: number, dark: boolean): string {
   return hslToHex(hue, saturation, lightness)
 }
 
+export type Theme = 'light' | 'dark'
+
+const THEME_KEY = 'theme'
+
+/** The theme showing now: the one chosen in this browser, else the OS setting. */
+export function currentTheme(): Theme {
+  const chosen = document.documentElement.dataset.theme
+  if (chosen === 'light' || chosen === 'dark') return chosen
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+}
+
+export function applyTheme(theme: Theme) {
+  document.documentElement.dataset.theme = theme
+  try {
+    localStorage.setItem(THEME_KEY, theme)
+  } catch {
+    // Private windows may block storage; the choice then lasts until reload.
+  }
+}
+
 export function useCanvasColours(): CanvasColours {
   const [colours, setColours] = useState(read)
   useEffect(() => {
     const media = window.matchMedia('(prefers-color-scheme: dark)')
     const update = () => setColours(read())
     media.addEventListener('change', update)
-    return () => media.removeEventListener('change', update)
+    // The theme toggle sets data-theme on <html>.
+    const observer = new MutationObserver(update)
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] })
+    return () => {
+      media.removeEventListener('change', update)
+      observer.disconnect()
+    }
   }, [])
   return colours
 }
