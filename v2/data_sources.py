@@ -33,7 +33,7 @@ import pyarrow.parquet as pq
 
 from common import CACHE_DIR, DATABASE_DIR, FEATURE_DIR, assign_split, normalize_curie, timed
 
-CACHE_VERSION = 4
+CACHE_VERSION = 5  # 5: drug_parent no longer maps parent-less drugs to NaN
 COHORT_GROUPS = ("Disorder", "Subtype of disorder")
 EXCLUDED_FLAGS = frozenset(
     {
@@ -405,8 +405,11 @@ def _build_knowledge(all_orpha_names: dict[str, str]) -> Knowledge:
             glob.glob(str(DATABASE_DIR / "opentargets" / "drug_molecule" / "*.parquet"))[0],
             columns=["id", "name", "parentId", "synonyms", "tradeNames"],
         )
+        # pandas reads a missing parentId as NaN, which is truthy: require a string.
         drug_parent = {
-            row.id: row.parentId for row in molecules.itertuples(index=False) if row.parentId and row.parentId != row.id
+            row.id: row.parentId
+            for row in molecules.itertuples(index=False)
+            if isinstance(row.parentId, str) and row.parentId and row.parentId != row.id
         }
         drug_labels = {row.id: (row.name or row.id) for row in molecules.itertuples(index=False)}
         name_candidates: dict[str, set[str]] = defaultdict(set)
