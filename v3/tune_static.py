@@ -50,10 +50,17 @@ def evaluate(world, sim, task, scorers: dict, chunk: int = 64) -> dict[str, dict
     }
 
 
+def _value(text: str):
+    try:
+        return json.loads(text)
+    except json.JSONDecodeError:
+        return text
+
+
 def parse_overrides(text: str) -> dict:
     if text in ("", "default"):
         return {}
-    return {key: json.loads(value) for key, value in (item.split("=", 1) for item in text.split(","))}
+    return {key: _value(value) for key, value in (item.split("=", 1) for item in text.split(","))}
 
 
 def main() -> int:
@@ -73,6 +80,11 @@ def main() -> int:
         model = train_static(world, sim, p, seed=0, config=config)
         ensemble = StaticEnsemble([model])
         scorers[f"neural {json.dumps(overrides)}"] = lambda rows, S, A, e=ensemble: e.block(rows, S, A)
+        neural_sd = float(np.std(model.pair_logits(model.z[pool.a], model.z[pool.b], pool.S, pool.A)))
+        linear_sd = float(np.std(logistic.score(pool.S, pool.A)))
+        scorers[f"blend {json.dumps(overrides)}"] = (
+            lambda rows, S, A, e=ensemble, n=neural_sd, l=linear_sd: e.block(rows, S, A) / n + logistic.score(S, A) / l
+        )
         print(f"trained {overrides} in {time.time() - start:.0f}s, best epoch {max(model.history, key=lambda h: h['holdout_auc'])['epoch']}")
     for name, result in evaluate(world, sim, task, scorers).items():
         print(f"{name:60s} full MAP {result['full']['map']:.4f} AUC {result['full']['auc']:.4f} | warm MAP {result['warm']['map']:.4f} AUC {result['warm']['auc']:.4f}")

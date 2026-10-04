@@ -7,13 +7,15 @@ the mechanisms (targets, target pathways) of drugs designated so far.  Every
 feature is symmetric in the two diseases.
 
 All block computations are "query rows x every node", so the same code
-serves evaluation (rank the gallery) and training (gather sampled columns).
+serves evaluation (rank the gallery), training (gather sampled columns) and
+new diseases (query rows built from a user record instead of a node).
 """
 
 from __future__ import annotations
 
 import warnings
-from typing import Callable, Optional, Sequence
+from dataclasses import dataclass
+from typing import Any, Callable, Optional, Sequence
 
 import numpy as np
 import scipy.sparse as sp
@@ -104,7 +106,8 @@ HISTORY_FEATURES = (
 MECHANISM_FEATURES = ("target_cosine", "target_pathway_cosine", "gene_target", "pathway_target_pathway")
 GRAPH_FEATURES = ("common_neighbors", "adamic_adar", "neighbor_jaccard", "neighbor_static_max", "neighbor_static_min")
 NODE_FEATURES = ("groups_in_pair", "group_size_max", "oncology_in_pair", "same_category")
-STATIC_FEATURES = ("static_logit",) + tuple(f"sim_{m}" for m in MODALITIES) + ("static_available",)
+STATIC_LOGITS = ("static_logit", "neural_logit", "linear_logit")
+STATIC_FEATURES = STATIC_LOGITS + tuple(f"sim_{m}" for m in MODALITIES) + ("static_available",)
 ALL_FEATURES = STATIC_FEATURES + HISTORY_FEATURES + MECHANISM_FEATURES + GRAPH_FEATURES + NODE_FEATURES
 FEATURE_GROUPS = {
     "static": STATIC_FEATURES + ("neighbor_static_max", "neighbor_static_min"),
@@ -114,7 +117,8 @@ FEATURE_GROUPS = {
     "node": NODE_FEATURES,
 }
 
-StaticScorer = Callable[[np.ndarray, np.ndarray, np.ndarray], np.ndarray]
+# (rows, S, A) -> {"static_logit", "neural_logit", "linear_logit"} blocks.
+StaticScorer = Callable[[np.ndarray, np.ndarray, np.ndarray], dict[str, np.ndarray]]
 
 
 def _vocabulary_matrix(rows: list[dict[str, float]], vocabulary: dict[str, int], n_cols: int) -> sp.csr_matrix:
@@ -135,6 +139,32 @@ def _idf(matrix: sp.csr_matrix) -> np.ndarray:
     return np.log((annotated + 1) / (df + 1)).astype(np.float32) + 1.0
 
 
+@dataclass
+class QueryRows:
+    """Inputs of the temporal features for the query side of a block:
+    catalogue nodes (``index`` set) or new diseases (``index`` None)."""
+
+    index: Optional[np.ndarray]
+    log_designations: np.ndarray
+    years: np.ndarray
+    degree: np.ndarray
+    is_group: np.ndarray
+    group_size: np.ndarray
+    oncology: np.ndarray
+    category: np.ndarray
+    drugs: sp.csr_matrix
+    targets: sp.csr_matrix
+    targets_binary: sp.csr_matrix
+    genes_binary: sp.csr_matrix
+    target_pathways: sp.csr_matrix
+    target_pathways_binary: sp.csr_matrix
+    gene_pathways_binary: sp.csr_matrix
+    adjacency: sp.csr_matrix
+
+    def __len__(self) -> int:
+        return len(self.log_designations)
+
+
 class TemporalFeatures:
     """Feature blocks for one snapshot date and one static model."""
 
@@ -150,66 +180,155 @@ class TemporalFeatures:
         self.snapshot = snapshot
         self.static = static
         self.static_scorer = static_scorer
-        knowledge = world.bundle.knowledge
-        n = world.n
+        self.knowledge = world.bundle.knowledge
 
         drug_rows = [snapshot.drugs.get(d, {}) for d in world.ids]
-        drug_vocab = {d: i for i, d in enumerate(sorted({x for row in drug_rows for x in row}))}
-        self.drugs = _vocabulary_matrix(drug_rows, drug_vocab, max(len(drug_vocab), 1))
-        self.drugs.data[:] = 1.0
-
-        target_rows = []
-        for row in drug_rows:
-            targets: dict[str, float] = {}
-            for drug in row:
-                for gene in knowledge.drug_targets.get(drug, ()):
-                    targets[gene] = 1.0
-            target_rows.append(targets)
+        self.drug_vocab = {d: i for i, d in enumerate(sorted({x for row in drug_rows for x in row}))}
         gene_rows = [dict.fromkeys(world.bundle.records[d].get("genes", {}), 1.0) for d in world.ids]
+        target_rows = [self._targets_of(row) for row in drug_rows]
         genes = sorted({g for row in target_rows for g in row} | {g for row in gene_rows for g in row})
-        gene_vocab = {g: i for i, g in enumerate(genes)}
-        targets = _vocabulary_matrix(target_rows, gene_vocab, max(len(gene_vocab), 1))
-        self.targets = _normalize_rows(targets @ sp.diags(_idf(targets)))
-        self.targets_binary = _normalize_rows(targets)
-        self.genes_binary = _normalize_rows(_vocabulary_matrix(gene_rows, gene_vocab, max(len(gene_vocab), 1)))
-
-        def pathways(rows: list[dict[str, float]]) -> list[dict[str, float]]:
-            return [{p: 1.0 for g in row for p in knowledge.gene_pathways.get(g, ())} for row in rows]
-
-        target_pathway_rows, gene_pathway_rows = pathways(target_rows), pathways(gene_rows)
+        self.gene_vocab = {g: i for i, g in enumerate(genes)}
+        target_pathway_rows, gene_pathway_rows = self._pathways_of(target_rows), self._pathways_of(gene_rows)
         names = sorted({p for row in target_pathway_rows + gene_pathway_rows for p in row})
-        pathway_vocab = {p: i for i, p in enumerate(names)}
-        tp = _vocabulary_matrix(target_pathway_rows, pathway_vocab, max(len(names), 1))
-        self.target_pathways = _normalize_rows(tp @ sp.diags(_idf(tp)))
-        self.target_pathways_binary = _normalize_rows(tp)
-        self.gene_pathways_binary = _normalize_rows(_vocabulary_matrix(gene_pathway_rows, pathway_vocab, max(len(names), 1)))
+        self.pathway_vocab = {p: i for i, p in enumerate(names)}
+        targets = self._matrix(target_rows, self.gene_vocab)
+        target_pathways = self._matrix(target_pathway_rows, self.pathway_vocab)
+        self.target_idf = _idf(targets)
+        self.target_pathway_idf = _idf(target_pathways)
 
-        self.adjacency = snapshot.adjacency.tocsr()
-        self.degree = snapshot.degree.astype(np.float32)
-        weights = 1.0 / np.log(2.0 + self.degree)
-        self.adjacency_weighted_t = (sp.diags(weights) @ self.adjacency).T.tocsr()
-        self.adjacency_t = self.adjacency.T.tocsr()
         if reference_year is None:
             reference_year = (
                 snapshot.time.year + (snapshot.time.dayofyear - 1) / 365.25
                 if snapshot.time is not None
                 else float(np.nanmax(snapshot.first_designation)) + 1.0
             )
-        self.years = np.where(np.isnan(snapshot.first_designation), 0.0, reference_year - snapshot.first_designation)
-        self.log_designations = np.log1p(snapshot.designations)
-        self.log_degree = np.log1p(self.degree)
+        self.reference_year = reference_year
         categories = {c: i for i, c in enumerate(sorted(set(world.top_category)))}
-        self.category = np.array([categories[c] for c in world.top_category])
+        self.categories = categories
+        self.nodes = self._rows(
+            index=np.arange(world.n),
+            designations=snapshot.designations,
+            first=snapshot.first_designation,
+            adjacency=snapshot.adjacency.tocsr(),
+            is_group=world.is_group,
+            group_size=world.group_size,
+            oncology=world.oncology,
+            category=np.array([categories[c] for c in world.top_category]),
+            drug_rows=drug_rows,
+            gene_rows=gene_rows,
+        )
+        self.drugs_t = self.nodes.drugs.T.tocsr()
+        self.targets_t = self.nodes.targets.T.tocsr()
+        self.targets_binary_t = self.nodes.targets_binary.T.tocsr()
+        self.genes_binary_t = self.nodes.genes_binary.T.tocsr()
+        self.target_pathways_t = self.nodes.target_pathways.T.tocsr()
+        self.target_pathways_binary_t = self.nodes.target_pathways_binary.T.tocsr()
+        self.gene_pathways_binary_t = self.nodes.gene_pathways_binary.T.tocsr()
+        self.adjacency = self.nodes.adjacency
+        self.degree = self.nodes.degree
+        self.adjacency_t = self.adjacency.T.tocsr()
+        weights = 1.0 / np.log(2.0 + self.degree)
+        self.adjacency_weighted_t = (sp.diags(weights) @ self.adjacency).T.tocsr()
+
+    # ------------------------------------------------------------------ query rows
+
+    def _targets_of(self, drugs: dict[str, float]) -> dict[str, float]:
+        return {gene: 1.0 for drug in drugs for gene in self.knowledge.drug_targets.get(drug, ())}
+
+    def _pathways_of(self, rows: list[dict[str, float]]) -> list[dict[str, float]]:
+        return [{p: 1.0 for g in row for p in self.knowledge.gene_pathways.get(g, ())} for row in rows]
+
+    @staticmethod
+    def _matrix(rows: list[dict[str, float]], vocabulary: dict[str, int]) -> sp.csr_matrix:
+        return _vocabulary_matrix(rows, vocabulary, max(len(vocabulary), 1))
+
+    def _rows(
+        self,
+        index: Optional[np.ndarray],
+        designations: np.ndarray,
+        first: np.ndarray,
+        adjacency: sp.csr_matrix,
+        is_group: np.ndarray,
+        group_size: np.ndarray,
+        oncology: np.ndarray,
+        category: np.ndarray,
+        drug_rows: list[dict[str, float]],
+        gene_rows: list[dict[str, float]],
+    ) -> QueryRows:
+        drugs = self._matrix(drug_rows, self.drug_vocab)
+        drugs.data[:] = 1.0
+        target_rows = [self._targets_of(row) for row in drug_rows]
+        targets = self._matrix(target_rows, self.gene_vocab)
+        target_pathways = self._matrix(self._pathways_of(target_rows), self.pathway_vocab)
+        degree = np.asarray(adjacency.sum(axis=1)).ravel().astype(np.float32)
+        return QueryRows(
+            index=index,
+            log_designations=np.log1p(designations).astype(np.float32),
+            years=np.where(np.isnan(first), 0.0, self.reference_year - first).astype(np.float32),
+            degree=degree,
+            is_group=np.asarray(is_group, dtype=bool),
+            group_size=np.asarray(group_size, dtype=np.float32),
+            oncology=np.asarray(oncology, dtype=bool),
+            category=np.asarray(category),
+            drugs=drugs,
+            targets=_normalize_rows(targets @ sp.diags(self.target_idf)),
+            targets_binary=_normalize_rows(targets),
+            genes_binary=_normalize_rows(self._matrix(gene_rows, self.gene_vocab)),
+            target_pathways=_normalize_rows(target_pathways @ sp.diags(self.target_pathway_idf)),
+            target_pathways_binary=_normalize_rows(target_pathways),
+            gene_pathways_binary=_normalize_rows(self._matrix(self._pathways_of(gene_rows), self.pathway_vocab)),
+            adjacency=adjacency,
+        )
+
+    def node_rows(self, rows: np.ndarray) -> QueryRows:
+        n = self.nodes
+        return QueryRows(
+            index=rows,
+            log_designations=n.log_designations[rows],
+            years=n.years[rows],
+            degree=n.degree[rows],
+            is_group=n.is_group[rows],
+            group_size=n.group_size[rows],
+            oncology=n.oncology[rows],
+            category=n.category[rows],
+            drugs=n.drugs[rows],
+            targets=n.targets[rows],
+            targets_binary=n.targets_binary[rows],
+            genes_binary=n.genes_binary[rows],
+            target_pathways=n.target_pathways[rows],
+            target_pathways_binary=n.target_pathways_binary[rows],
+            gene_pathways_binary=n.gene_pathways_binary[rows],
+            adjacency=n.adjacency[rows],
+        )
+
+    def new_rows(self, records: Sequence[dict[str, Any]], oncology: Optional[Sequence[bool]] = None) -> QueryRows:
+        """Query rows for new diseases.  Their ``drugs`` are treated as
+        designated now; they have no established relations yet."""
+
+        k = len(records)
+        drug_rows = [dict(r.get("drugs", {})) for r in records]
+        return self._rows(
+            index=None,
+            designations=np.array([len(d) for d in drug_rows], dtype=np.float32),
+            first=np.array([self.reference_year if d else np.nan for d in drug_rows], dtype=np.float64),
+            adjacency=sp.csr_matrix((k, self.world.n), dtype=np.float32),
+            is_group=np.zeros(k, dtype=bool),
+            group_size=np.ones(k, dtype=np.float32),
+            oncology=np.asarray(oncology if oncology is not None else [False] * k, dtype=bool),
+            category=np.full(k, -1),
+            drug_rows=drug_rows,
+            gene_rows=[dict.fromkeys(r.get("genes", {}), 1.0) for r in records],
+        )
 
     # ------------------------------------------------------------------ helpers
 
     @staticmethod
-    def _pairwise(values: np.ndarray, rows: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
-        q = values[rows][:, None]
-        g = values[None, :]
+    def _pairwise(query: np.ndarray, gallery: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+        q = query[:, None]
+        g = gallery[None, :]
         return np.minimum(q, g), np.maximum(q, g)
 
-    def _neighbor_static(self, rows: np.ndarray, logits: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    def _neighbor_static(self, q: QueryRows, logits: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
         """Best static score between one disease and the other's known relatives.
 
         ``toward_gallery[q, g]`` = max over relatives r of g of logit(q, r);
@@ -225,7 +344,8 @@ class TemporalFeatures:
             toward_gallery[:, nonempty] = reduced
 
         toward_query = np.full(logits.shape, np.nan, dtype=np.float32)
-        neighbor_lists = [adjacency.indices[adjacency.indptr[q] : adjacency.indptr[q + 1]] for q in rows]
+        qa = q.adjacency.tocsr()
+        neighbor_lists = [qa.indices[qa.indptr[i] : qa.indptr[i + 1]] for i in range(len(q))]
         union = np.unique(np.concatenate(neighbor_lists)) if any(len(x) for x in neighbor_lists) else np.array([], int)
         if union.size and self.static_scorer is not None:
             position = {r: i for i, r in enumerate(union)}
@@ -233,7 +353,7 @@ class TemporalFeatures:
             for start in range(0, union.size, 32):
                 chunk = union[start : start + 32]
                 S, A = self.static.block(chunk)
-                union_logits[start : start + 32] = self.static_scorer(chunk, S, A)
+                union_logits[start : start + 32] = self.static_scorer(chunk, S, A)["static_logit"]
             for i, neighbors in enumerate(neighbor_lists):
                 if len(neighbors):
                     toward_query[i] = union_logits[[position[r] for r in neighbors]].max(axis=0)
@@ -245,55 +365,68 @@ class TemporalFeatures:
     # ------------------------------------------------------------------ block
 
     def block(self, rows: np.ndarray, groups: Sequence[str] = tuple(FEATURE_GROUPS)) -> dict[str, np.ndarray]:
-        """Named (len(rows) x N) feature matrices for the requested feature groups."""
+        """Named (len(rows) x N) feature matrices for catalogue nodes ``rows``."""
 
-        out: dict[str, np.ndarray] = {}
-        logits = None
+        parts = None
+        S = A = None
         if "static" in groups or "graph" in groups:
             S, A = self.static.block(rows)
-            if self.static_scorer is not None:
-                logits = self.static_scorer(rows, S, A)
-            if "static" in groups:
-                out["static_logit"] = logits if logits is not None else np.zeros(S.shape[:2], dtype=np.float32)
-                for j, m in enumerate(MODALITIES):
-                    out[f"sim_{m}"] = np.where(A[:, :, j], S[:, :, j], np.nan).astype(np.float32)
-                out["static_available"] = A.sum(axis=2).astype(np.float32)
-            del S, A
+            parts = self.static_scorer(rows, S, A) if self.static_scorer is not None else {}
+        return self.block_for(self.node_rows(rows), S, A, parts, groups)
+
+    def block_for(
+        self,
+        q: QueryRows,
+        S: Optional[np.ndarray],
+        A: Optional[np.ndarray],
+        parts: Optional[dict[str, np.ndarray]],
+        groups: Sequence[str] = tuple(FEATURE_GROUPS),
+    ) -> dict[str, np.ndarray]:
+        """Feature block for any query rows given their static S, A and static logits."""
+
+        out: dict[str, np.ndarray] = {}
+        n = self.nodes
+        logits = (parts or {}).get("static_logit")
+        if "static" in groups:
+            for name in STATIC_LOGITS:
+                out[name] = (parts or {}).get(name, np.zeros(S.shape[:2], dtype=np.float32))
+            for j, m in enumerate(MODALITIES):
+                out[f"sim_{m}"] = np.where(A[:, :, j], S[:, :, j], np.nan).astype(np.float32)
+            out["static_available"] = A.sum(axis=2).astype(np.float32)
         if "history" in groups:
-            out["designations_min"], out["designations_max"] = self._pairwise(self.log_designations, rows)
+            out["designations_min"], out["designations_max"] = self._pairwise(q.log_designations, n.log_designations)
             out["designations_sum"] = out["designations_min"] + out["designations_max"]
-            out["years_designated_min"], out["years_designated_max"] = self._pairwise(self.years, rows)
-            out["degree_min"], out["degree_max"] = self._pairwise(self.log_degree, rows)
+            out["years_designated_min"], out["years_designated_max"] = self._pairwise(q.years, n.years)
+            q_log_degree, n_log_degree = np.log1p(q.degree), np.log1p(n.degree)
+            out["degree_min"], out["degree_max"] = self._pairwise(q_log_degree, n_log_degree)
             out["degree_sum"] = out["degree_min"] + out["degree_max"]
-            out["shared_drugs"] = _dense(self.drugs[rows] @ self.drugs.T).astype(np.float32)
+            out["shared_drugs"] = _dense(q.drugs @ self.drugs_t).astype(np.float32)
         if "mechanism" in groups:
-            out["target_cosine"] = _dense(self.targets[rows] @ self.targets.T)
-            out["target_pathway_cosine"] = _dense(self.target_pathways[rows] @ self.target_pathways.T)
+            out["target_cosine"] = _dense(q.targets @ self.targets_t)
+            out["target_pathway_cosine"] = _dense(q.target_pathways @ self.target_pathways_t)
             out["gene_target"] = np.maximum(
-                _dense(self.genes_binary[rows] @ self.targets_binary.T),
-                _dense(self.targets_binary[rows] @ self.genes_binary.T),
+                _dense(q.genes_binary @ self.targets_binary_t), _dense(q.targets_binary @ self.genes_binary_t)
             )
             out["pathway_target_pathway"] = np.maximum(
-                _dense(self.gene_pathways_binary[rows] @ self.target_pathways_binary.T),
-                _dense(self.target_pathways_binary[rows] @ self.gene_pathways_binary.T),
+                _dense(q.gene_pathways_binary @ self.target_pathways_binary_t),
+                _dense(q.target_pathways_binary @ self.gene_pathways_binary_t),
             )
         if "graph" in groups:
-            common = _dense(self.adjacency[rows] @ self.adjacency_t).astype(np.float32)
+            common = _dense(q.adjacency @ self.adjacency_t).astype(np.float32)
             out["common_neighbors"] = common
-            out["adamic_adar"] = _dense(self.adjacency[rows] @ self.adjacency_weighted_t).astype(np.float32)
-            union = self.degree[rows][:, None] + self.degree[None, :] - common
+            out["adamic_adar"] = _dense(q.adjacency @ self.adjacency_weighted_t).astype(np.float32)
+            union = q.degree[:, None] + self.degree[None, :] - common
             out["neighbor_jaccard"] = np.divide(common, union, out=np.zeros_like(common), where=union > 0)
             if logits is not None:
-                out["neighbor_static_max"], out["neighbor_static_min"] = self._neighbor_static(rows, logits)
+                out["neighbor_static_max"], out["neighbor_static_min"] = self._neighbor_static(q, logits)
             else:
                 out["neighbor_static_max"] = np.full(common.shape, np.nan, dtype=np.float32)
                 out["neighbor_static_min"] = np.full(common.shape, np.nan, dtype=np.float32)
         if "node" in groups:
-            w = self.world
-            out["groups_in_pair"] = (w.is_group[rows][:, None].astype(np.float32) + w.is_group[None, :]).astype(np.float32)
-            out["group_size_max"] = np.log(np.maximum(w.group_size[rows][:, None], w.group_size[None, :]))
-            out["oncology_in_pair"] = (w.oncology[rows][:, None].astype(np.float32) + w.oncology[None, :]).astype(np.float32)
-            out["same_category"] = (self.category[rows][:, None] == self.category[None, :]).astype(np.float32)
+            out["groups_in_pair"] = (q.is_group[:, None].astype(np.float32) + n.is_group[None, :]).astype(np.float32)
+            out["group_size_max"] = np.log(np.maximum(q.group_size[:, None], n.group_size[None, :]))
+            out["oncology_in_pair"] = (q.oncology[:, None].astype(np.float32) + n.oncology[None, :]).astype(np.float32)
+            out["same_category"] = (q.category[:, None] == n.category[None, :]).astype(np.float32)
         return {k: v.astype(np.float32, copy=False) for k, v in out.items()}
 
 
@@ -301,8 +434,3 @@ def stack(block: dict[str, np.ndarray], names: Sequence[str]) -> np.ndarray:
     """(rows, N, features) array in the given feature order."""
 
     return np.stack([block[name] for name in names], axis=-1)
-
-
-def log_odds(p: np.ndarray) -> np.ndarray:
-    p = np.clip(p, 1e-7, 1 - 1e-7)
-    return np.log(p) - np.log1p(-p)

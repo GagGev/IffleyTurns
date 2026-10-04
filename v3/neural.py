@@ -17,14 +17,17 @@ Tasks (one logit each):
                (ontology and name hidden, they encode the classification);
   gene         cohort diseases sharing a causal gene (gene and pathway hidden).
 The auxiliary tasks teach the encoder general disease relatedness from far
-more pairs than the regulatory history alone provides.
+more pairs than the regulatory history alone provides.  The therapeutic task
+trains only the pair head (``detach_therapeutic``): with a few hundred
+regulatory relations, letting it update the encoder memorizes which diseases
+attract drugs instead of how diseases relate.
 """
 
 from __future__ import annotations
 
 import math
 from dataclasses import dataclass, field
-from typing import Any, Optional
+from typing import Any, Optional, Sequence
 
 import numpy as np
 import scipy.sparse as sp
@@ -56,6 +59,13 @@ DEFAULT_CONFIG: dict[str, Any] = {
     "aux_negatives": 3,
     "holdout": 0.1,
     "seeds": 3,
+    "wide": True,
+    "input_dropout": 0.0,
+    "head": "mlp",
+    # The few hundred regulatory relations train only the pair head; the
+    # encoder learns from the auxiliary tasks, so it cannot memorize which
+    # diseases attract drugs (validation-fold AUC 0.78 -> 0.86).
+    "detach_therapeutic": True,
 }
 
 
@@ -95,6 +105,26 @@ class StaticNet(nn.Module):
             nn.Dropout(p),
         )
         self.task_output = nn.Linear(hidden // 2, len(TASKS))
+        # "cosine" head: each task scores a pair by the scaled cosine of
+        # task-specific projections of the two embeddings, which can express
+        # "these diseases are alike" but not "this disease attracts drugs".
+        self.head_type = config.get("head", "cosine")
+        self.task_projection = nn.Parameter(torch.randn(len(TASKS), dz, dz) / math.sqrt(dz))
+        self.task_scale = nn.Parameter(torch.full((len(TASKS),), 2.0))
+        self.task_bias = nn.Parameter(torch.zeros(len(TASKS)))
+        self.wide = bool(config.get("wide", True))
+        # Wide path: per task, non-negative weights on the raw cosines plus
+        # availability offsets -- v2's fusion, learned jointly with the deep part.
+        self.wide_similarity = nn.Parameter(torch.zeros(len(TASKS), m))
+        self.wide_availability = nn.Parameter(torch.zeros(len(TASKS), m))
+        self.input_dropout = float(config.get("input_dropout", 0.0))
+
+    def _drop_inputs(self, x: torch.Tensor) -> torch.Tensor:
+        if not self.training or self.input_dropout <= 0:
+            return x
+        values = x.values()
+        keep = (torch.rand_like(values) >= self.input_dropout).float() / (1.0 - self.input_dropout)
+        return torch.sparse_coo_tensor(x.indices(), values * keep, x.shape, check_invariants=False)
 
     def encode(
         self,
@@ -106,7 +136,10 @@ class StaticNet(nn.Module):
         """Disease embeddings (N x z_dim) and attention weights (N x modalities)."""
 
         hidden = torch.stack(
-            [self.norm[m](F.gelu(torch.sparse.mm(inputs[m], self.projection[m]) + self.bias[m])) for m in self.modalities],
+            [
+                self.norm[m](F.gelu(torch.sparse.mm(self._drop_inputs(inputs[m]), self.projection[m]) + self.bias[m]))
+                for m in self.modalities
+            ],
             dim=1,
         )
         scores = self.attention(hidden + self.modality_embedding).squeeze(-1)
@@ -120,8 +153,16 @@ class StaticNet(nn.Module):
         return self.output_norm(self.output(pooled)), weights[:, :-1]
 
     def pair(self, za: torch.Tensor, zb: torch.Tensor, S: torch.Tensor, A: torch.Tensor) -> torch.Tensor:
-        x = torch.cat([za * zb, (za - zb).abs(), S, A], dim=-1)
-        return self.task_output(self.head(x))
+        if self.head_type == "cosine":
+            pa = F.normalize(torch.einsum("nd,tde->nte", za, self.task_projection), dim=-1)
+            pb = F.normalize(torch.einsum("nd,tde->nte", zb, self.task_projection), dim=-1)
+            deep = F.softplus(self.task_scale) * (pa * pb).sum(-1) * 4.0 + self.task_bias
+        else:
+            x = torch.cat([za * zb, (za - zb).abs(), S, A], dim=-1)
+            deep = self.task_output(self.head(x))
+        if not self.wide:
+            return deep
+        return deep + S @ F.softplus(self.wide_similarity).T + A @ self.wide_availability.T
 
 
 @dataclass
@@ -323,6 +364,8 @@ def train_static(
                 else:
                     idx = torch.randint(0, data["y"].shape[0], (batch,), device=device)
                 z, _ = net.encode(inputs, available, masks[task], config["modality_dropout"])
+                if task == "therapeutic" and config["detach_therapeutic"]:
+                    z = z.detach()
                 S, A = data["S"][idx], data["A"][idx]
                 drop = torch.rand_like(S) < config["modality_dropout"] * 0.5
                 S, A = S.masked_fill(drop, 0.0), A.masked_fill(drop, 0.0)
@@ -369,22 +412,33 @@ class StaticEnsemble:
     def block(self, rows: np.ndarray, S: np.ndarray, A: np.ndarray) -> np.ndarray:
         return np.mean([m.block(rows, S, A) for m in self.models], axis=0)
 
-    def encode_new(self, world_matrices: dict[str, sp.csr_matrix], available: np.ndarray) -> list[np.ndarray]:
-        """Embeddings of new (user-supplied) diseases under each member network."""
+    def embeddings(
+        self, matrices: dict[str, sp.csr_matrix], available: np.ndarray, masked: Sequence[str] = ()
+    ) -> list[np.ndarray]:
+        """Embeddings of any diseases (e.g. user-supplied) under each member
+        network, optionally with some modalities withheld."""
 
         device = _device()
-        inputs = {m: _to_torch(world_matrices[m], device) for m in MODALITIES}
-        avail = torch.from_numpy(available).to(device)
+        inputs = {m: _to_torch(matrices[m], device) for m in MODALITIES}
+        avail = torch.from_numpy(np.asarray(available, dtype=bool)).to(device)
+        mask = torch.tensor([m in masked for m in MODALITIES], dtype=torch.bool, device=device)
         out = []
         with torch.no_grad():
             for model in self.models:
-                z, _ = model.net.encode(inputs, avail, torch.zeros(len(MODALITIES), dtype=torch.bool, device=device))
+                z, _ = model.net.encode(inputs, avail, mask)
                 out.append(z.cpu().numpy())
         return out
 
     def block_new(self, z_new: list[np.ndarray], S: np.ndarray, A: np.ndarray) -> np.ndarray:
+        """Logits of new diseases (rows of ``z_new``) against every node."""
+
         rows = np.zeros(S.shape[0], dtype=np.int64)
         return np.mean([m.block(rows, S, A, z_rows=z) for m, z in zip(self.models, z_new)], axis=0)
+
+    def pair_logits(self, z_a: list[np.ndarray], z_b: list[np.ndarray], S: np.ndarray, A: np.ndarray) -> np.ndarray:
+        """Ensemble logits of explicit pairs given per-member embeddings of both sides."""
+
+        return np.mean([m.pair_logits(a, b, S, A) for m, a, b in zip(self.models, z_a, z_b)], axis=0)
 
 
 def train_ensemble(

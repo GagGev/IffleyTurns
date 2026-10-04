@@ -389,8 +389,8 @@ def _add_group_records(bundle: Bundle, groups: pd.DataFrame, edges: set[tuple[st
     """Records for Orphanet groups, built from their member diseases.
 
     Regulators often designate a drug for a whole disease family ("spinal
-    muscular atrophy", "acute myeloid leukemia").  Such a group becomes a graph
-    node only if it receives a designation (``attach_groups``).  Its
+    muscular atrophy", "acute myeloid leukemia").  Every group with 2-200
+    members becomes a graph node (``attach_groups``), designated or not.  Its
     phenotypes and genes are the member diseases' annotations averaged over
     members, so features shared by most members dominate; inheritance and onset
     are the union over members; prevalence is the group's own estimate.

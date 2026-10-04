@@ -10,10 +10,9 @@ one molecule plausibly treats both.
 
 The dates make the relations usable prospectively: relations established
 before a cutoff can train a model, and relations first established after it
-measure whether the similarity graph anticipated them.  None of these
-relations is visible to the models through their inputs (see
-``data_sources``); dated designations enter only as drug *history* before the
-cutoff, with the drugs a pair shares removed (``features.pair_drug_features``).
+measure whether the similarity graph anticipated them.  The static disease
+profiles contain no drug data (``modalities``); dated designations enter
+only as drug *history* known before the cutoff (``features.TemporalFeatures``).
 
 Steps:
 
@@ -22,8 +21,9 @@ Steps:
    synonyms and trade names (salt forms stripped), else a normalized-name key.
 3. Map the designation wording to Orphanet cohort diseases with a tiered
    matcher over Orphanet names/synonyms and the exact synonyms of Mondo terms
-   that Mondo declares equivalent to an Orphanet entity.  Small Orphanet groups
-   expand to their member diseases; vague or broad wording stays unmapped.
+   that Mondo declares equivalent to an Orphanet entity.  Wording that names an
+   Orphanet group maps to the group node (groups of 2-200 diseases are graph
+   nodes); vague or broad wording stays unmapped.
 4. Build dated disease-pair relations from distinct designation records.
 """
 
@@ -593,7 +593,8 @@ def build_relations(
         }
         for (a, b), v in pairs.items()
     ]
-    relations = pd.DataFrame(rows).sort_values(["date", "a", "b"]).reset_index(drop=True)
+    columns = ["a", "b", "date", "year", "n_drugs", "drugs", "sources", "approved_both"]
+    relations = pd.DataFrame(rows, columns=columns).sort_values(["date", "a", "b"]).reset_index(drop=True)
     return relations, broad
 
 
@@ -624,7 +625,8 @@ def tree_catalog(bundle: Bundle) -> OrphanetCatalog:
 
 
 def load_regulatory(bundle: Bundle, rebuild: bool = False) -> RegulatoryData:
-    """Designations and dated relations; designated Orphanet groups become nodes of ``bundle``."""
+    """Designations and dated relations; designated Orphanet groups are attached to ``bundle``
+    (``world.build_world`` then attaches every other eligible group)."""
 
     path = REGULATORY_OUT_DIR / "designations.parquet"
     if path.is_file() and not rebuild:

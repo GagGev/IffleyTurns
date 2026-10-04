@@ -247,7 +247,12 @@ def _phenotype_items(knowledge: Knowledge, record: dict[str, Any]) -> dict[str, 
 
 
 def _pathway_items(knowledge: Knowledge, record: dict[str, Any]) -> dict[str, float]:
-    return {p: 1.0 for gene in record.get("genes", {}) for p in knowledge.gene_pathways.get(gene, ())}
+    items = dict(record.get("pathways", {}))
+    for gene, gene_weight in record.get("genes", {}).items():
+        for pathway in knowledge.gene_pathways.get(gene, ()):
+            if gene_weight > items.get(pathway, 0.0):
+                items[pathway] = gene_weight
+    return items
 
 
 def _drug_target_items(knowledge: Knowledge, record: dict[str, Any]) -> dict[str, float]:

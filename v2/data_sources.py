@@ -81,6 +81,7 @@ RECORD_KEYS = (
     "description",
     "phenotypes",
     "genes",
+    "pathways",
     "ot_genes",
     "inheritance",
     "onset",
@@ -544,6 +545,7 @@ def empty_record(name: str = "") -> dict[str, Any]:
         "description": "",
         "phenotypes": {},
         "genes": {},
+        "pathways": {},
         "ot_genes": {},
         "inheritance": [],
         "onset": [],
@@ -580,6 +582,11 @@ def record_from_user_input(document: dict[str, Any], knowledge: Knowledge) -> tu
         if symbol not in knowledge.gene_symbols:
             warnings.append(f"Gene {symbol!r} is not a known HGNC/Open Targets symbol; kept as given")
         record["genes"][symbol] = weight
+    for pathway, weight in weighted(document.get("pathways", [])).items():
+        if pathway not in knowledge.pathway_labels:
+            warnings.append(f"Ignored pathway {pathway!r}: not a known Reactome pathway")
+            continue
+        record["pathways"][pathway] = weight
     record["ot_genes"] = weighted(document.get("ot_genes", {}))
     for drug, weight in weighted(document.get("drugs", []), REGULATORY_DESIGNATION_WEIGHT).items():
         chembl = knowledge.resolve_drug(drug)

@@ -27,7 +27,7 @@ FOLDS = {
     "validation": ("2014-01-01", "2018-01-01"),
     "test": ("2018-01-01", None),
 }
-STATIC_MODELS = ("v1_weighted_jaccard", "v2_shipped", "v2_retrained", "gbm_static", "v3_static")
+STATIC_MODELS = ("v1_weighted_jaccard", "v2_shipped", "v2_retrained", "gbm_static", "v3_neural", "v3_static")
 REFERENCE_MODELS = ("random", "degree", "adamic_adar", "drug_mechanism")
 STRATA = {
     "warm query": lambda d: d["query_warm"],
@@ -166,7 +166,7 @@ def render_report(summary: dict[str, Any]) -> str:
             for group, value in sorted(importance.items(), key=lambda x: -x[1]):
                 lines.append(f"| {group} | {value:.4f} |")
             lines.append("")
-    lines.append(f"Production stacker variant (best validation MAP): `{summary['selected']['stacker']}`")
+    lines.append(f"Production stacker variant ({summary['selected']['selection']}): `{summary['selected']['stacker']}`")
     lines.append("")
     return "\n".join(lines)
 
@@ -201,15 +201,52 @@ def plot(summary: dict[str, Any], path) -> None:
     plt.close(fig)
 
 
+def select_and_test(summary: dict[str, Any], per_query: pd.DataFrame) -> None:
+    """Pick the production stacker on the first fold and test it against everything else."""
+
+    from pipeline import STACKER_VARIANTS
+
+    first = "validation" if "validation" in summary["folds"] else next(iter(summary["folds"]))
+    validation = summary["folds"][first]["metrics"]["full"]
+    best = max(STACKER_VARIANTS, key=lambda v: validation[v][PRIMARY_METRIC]["mean"] if v in validation else -1)
+    summary["selected"] = {"stacker": best, "selection": f"highest full-gallery MAP on the {first} fold"}
+    if best == "v3_stacker":
+        return
+    for fold, data in summary["folds"].items():
+        frame = per_query[per_query["fold"] == fold]
+        others = [m for m in (*REFERENCE_MODELS, *STATIC_MODELS, "v3_stacker") if m in set(frame["model"])]
+        data["paired_tests"][best] = paired_tests(frame, "full", best, others)
+
+
+def write_outputs(summary: dict[str, Any], per_query: pd.DataFrame) -> None:
+    EVALUATION_DIR.mkdir(parents=True, exist_ok=True)
+    per_query.to_csv(EVALUATION_DIR / "per_query_metrics.csv", index=False)
+    write_json(EVALUATION_DIR / "summary.json", summary)
+    write_json(EVALUATION_DIR / "selected_config.json", summary["selected"])
+    (EVALUATION_DIR / "report.md").write_text(render_report(summary), encoding="utf-8")
+    plot(summary, EVALUATION_DIR / "map_by_model.png")
+
+
 def main() -> int:
     configure_stdout()
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--folds", nargs="+", default=list(FOLDS), choices=list(FOLDS))
     parser.add_argument("--seeds", type=int, default=None, help="Static ensemble size (default from neural.DEFAULT_CONFIG)")
     parser.add_argument("--rebuild-world", action="store_true")
+    parser.add_argument("--report-only", action="store_true", help="Re-render the report from saved per-query metrics.")
     args = parser.parse_args()
 
-    from pipeline import STACKER_VARIANTS, evaluate_fold
+    if args.report_only:
+        summary = json.loads((EVALUATION_DIR / "summary.json").read_text(encoding="utf-8"))
+        per_query = pd.read_csv(EVALUATION_DIR / "per_query_metrics.csv")
+        for data in summary["folds"].values():
+            data["paired_tests"] = {k: v for k, v in data["paired_tests"].items() if k in ("v3_stacker", "v3_static")}
+        select_and_test(summary, per_query)
+        write_outputs(summary, per_query)
+        print(f"Report: {EVALUATION_DIR / 'report.md'}")
+        return 0
+
+    from pipeline import evaluate_fold
 
     config = {"seeds": args.seeds} if args.seeds else None
     world = load_world(rebuild=args.rebuild_world)
@@ -242,15 +279,9 @@ def main() -> int:
             "global_ranking": result.global_ranking,
             "stacker_importance": result.importance,
         }
-    validation = summary["folds"].get("validation", summary["folds"][args.folds[0]])["metrics"]["full"]
-    best = max(STACKER_VARIANTS, key=lambda v: validation[v][PRIMARY_METRIC]["mean"] if v in validation else -1)
-    summary["selected"] = {"stacker": best, "selection": "highest full-gallery MAP on the first evaluated fold"}
-    EVALUATION_DIR.mkdir(parents=True, exist_ok=True)
-    pd.concat(frames).to_csv(EVALUATION_DIR / "per_query_metrics.csv", index=False)
-    write_json(EVALUATION_DIR / "summary.json", summary)
-    write_json(EVALUATION_DIR / "selected_config.json", summary["selected"])
-    (EVALUATION_DIR / "report.md").write_text(render_report(summary), encoding="utf-8")
-    plot(summary, EVALUATION_DIR / "map_by_model.png")
+    per_query = pd.concat(frames)
+    select_and_test(summary, per_query)
+    write_outputs(summary, per_query)
     for fold, data in summary["folds"].items():
         print(f"\n{fold}: full-gallery MAP / AUC")
         for model, m in data["metrics"]["full"].items():

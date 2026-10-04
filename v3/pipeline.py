@@ -75,12 +75,52 @@ def _config_hash(world: World, config: dict[str, Any], time: Optional[pd.Timesta
 
 
 @dataclass
+class HybridStatic:
+    """The v3 static (drug-free) relatedness score: the standardized sum of
+    the neural ensemble and v2's non-negative logistic fusion of the raw
+    cosines, both trained on relations established before one date.  On the
+    validation fold the sum ranks better (AUC) than either part alone."""
+
+    neural: StaticEnsemble
+    linear: LinearFusion
+    neural_scale: float
+    linear_scale: float
+
+    def combine(self, neural: np.ndarray, S: np.ndarray, A: np.ndarray) -> dict[str, np.ndarray]:
+        linear = self.linear.score(S, A)
+        return {
+            "static_logit": (neural / self.neural_scale + linear / self.linear_scale).astype(np.float32),
+            "neural_logit": neural.astype(np.float32),
+            "linear_logit": linear,
+        }
+
+    def parts(self, rows: np.ndarray, S: np.ndarray, A: np.ndarray) -> dict[str, np.ndarray]:
+        return self.combine(self.neural.block(rows, S, A), S, A)
+
+
+def fit_hybrid(world: World, sim: StaticSimilarity, snapshot, config: dict[str, Any]) -> HybridStatic:
+    neural = train_ensemble(world, sim, snapshot, config)
+    pool = build_pools(world, sim, snapshot, config, np.random.default_rng(7))["therapeutic"]
+    linear = fit_nonnegative_logistic(pool.S, pool.A, pool.y)
+    sample = np.random.default_rng(0).choice(len(pool.y), min(20_000, len(pool.y)), replace=False)
+    neural_scores = np.mean(
+        [m.pair_logits(m.z[pool.a[sample]], m.z[pool.b[sample]], pool.S[sample], pool.A[sample]) for m in neural.models],
+        axis=0,
+    )
+    return HybridStatic(
+        neural=neural,
+        linear=linear,
+        neural_scale=float(np.std(neural_scores)) or 1.0,
+        linear_scale=float(np.std(linear.score(pool.S[sample], pool.A[sample]))) or 1.0,
+    )
+
+
+@dataclass
 class TimeModels:
     """Everything trained on relations established before ``time``."""
 
     time: Optional[pd.Timestamp]
-    static: StaticEnsemble
-    v2_retrained: Optional[LinearFusion] = None
+    static: HybridStatic
     gbm_static: Optional[GBMStatic] = None
 
 
@@ -99,12 +139,11 @@ def time_models(
     if cache and path.is_file():
         models = joblib.load(path)
     else:
-        with timed(f"Training the static ensemble on {len(snapshot.relations)} relations before {_label(time)}"):
-            models = TimeModels(time=time, static=train_ensemble(world, sim, snapshot, config))
+        with timed(f"Training the static models on {len(snapshot.relations)} relations before {_label(time)}"):
+            models = TimeModels(time=time, static=fit_hybrid(world, sim, snapshot, config))
         changed = True
-    if baselines and models.v2_retrained is None:
+    if baselines and models.gbm_static is None:
         pool = build_pools(world, sim, snapshot, config, np.random.default_rng(7))["therapeutic"]
-        models.v2_retrained = fit_nonnegative_logistic(pool.S, pool.A, pool.y)
         models.gbm_static = GBMStatic().fit(pool.S, pool.A, pool.y)
         changed = True
     if cache and changed:
@@ -169,7 +208,7 @@ def collect_stacker_data(
     for origin in origins:
         models = time_models(world, sim, origin, config=config)
         task = make_task(world, f"origin {_label(origin)}", origin, cutoff)
-        features = TemporalFeatures(world, task.snapshot, sim, models.static.block)
+        features = TemporalFeatures(world, task.snapshot, sim, models.static.parts)
         queries = task.queries(np.arange(world.n), world)
         warm = task.snapshot.warm
         with timed(f"Stacker rows from origin {_label(origin)}: {len(task.relations)} new relations, {len(queries)} queries"):
@@ -266,7 +305,7 @@ def build_fold_models(
     with timed(f"Fitting {len(STACKER_VARIANTS)} stackers on {len(data.y)} rows ({int(data.y.sum())} positive)"):
         stackers = fit_stackers(data, seed=seed)
     models = time_models(world, sim, cutoff, baselines=True, config=config)
-    features = TemporalFeatures(world, world.snapshot(cutoff), sim, models.static.block)
+    features = TemporalFeatures(world, world.snapshot(cutoff), sim, models.static.parts)
     v1 = V1Baseline(world.bundle.v1_sets, world.ids)
     shipped = v2_shipped()
     rng = np.random.default_rng(seed)
@@ -274,7 +313,7 @@ def build_fold_models(
     scorers: dict[str, Scorer] = {
         "random": lambda rows, block, S, A: rng.random((len(rows), world.n)).astype(np.float32),
         "degree": lambda rows, block, S, A: np.broadcast_to(
-            features.log_designations[None, :] + 1e-3 * features.log_degree[None, :], (len(rows), world.n)
+            features.nodes.log_designations[None, :] + 1e-3 * np.log1p(features.nodes.degree)[None, :], (len(rows), world.n)
         ),
         "adamic_adar": lambda rows, block, S, A: block["adamic_adar"],
         "drug_mechanism": lambda rows, block, S, A: block["target_cosine"]
@@ -284,8 +323,9 @@ def build_fold_models(
     }
     if shipped is not None:
         scorers["v2_shipped"] = lambda rows, block, S, A: shipped.score(S, A)
-    scorers["v2_retrained"] = lambda rows, block, S, A: models.v2_retrained.score(S, A)
+    scorers["v2_retrained"] = lambda rows, block, S, A: block["linear_logit"]
     scorers["gbm_static"] = lambda rows, block, S, A: models.gbm_static.score(S, A)
+    scorers["v3_neural"] = lambda rows, block, S, A: block["neural_logit"]
     scorers["v3_static"] = lambda rows, block, S, A: block["static_logit"]
     for name, stacker in stackers.items():
         scorers[name] = lambda rows, block, S, A, s=stacker: s.score(block)
@@ -395,8 +435,8 @@ def evaluate_fold(
         "stacker_rows": int(len(fold.stacker_data.y)),
         "stacker_positives": int(fold.stacker_data.y.sum()),
         "stacker_origins": sorted({int(x) for x in fold.stacker_data.origin}),
-        "static_training_history": [m.history for m in fold.time_models.static.models],
-        "v2_retrained_coefficients": fold.time_models.v2_retrained.coefficients(),
+        "static_training_history": [m.history for m in fold.time_models.static.neural.models],
+        "v2_retrained_coefficients": fold.time_models.static.linear.coefficients(),
     }
     return FoldResult(
         name=name,
