@@ -9,6 +9,9 @@ environment because the annotations come from v2's cached knowledge bundle.  Wri
   Loaded lazily, the first time a colour mode needs it.
 * ``literature.json``: the curated paper-pair dataset (``literature_review/additional_runs``), grouped by paper,
   with each stated similarity dimension mapped onto v2's modalities.  The UI checks every claim against the graph.
+  Under ``acquired`` it also lists the papers of the latest acquisition release
+  (``.data/literature_acquisition/v1``), each with the disease pairs its full text co-mentions (unreviewed), so
+  "Find a paper" can search both.
 
 Usage (from the repository root):
     python3 frontend/scripts/build_annotations.py
@@ -17,7 +20,9 @@ Usage (from the repository root):
 from __future__ import annotations
 
 import csv
+import html
 import json
+import re
 import sys
 from collections import defaultdict
 from pathlib import Path
@@ -25,6 +30,9 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 OUTPUT_DIR = PROJECT_ROOT / "frontend" / "public" / "data"
 LITERATURE_CSV = PROJECT_ROOT / "literature_review" / "additional_runs" / "literature_disease_pairs_pairfirst.csv"
+ACQUISITION_DIR = PROJECT_ROOT / ".data" / "literature_acquisition" / "v1"
+# Longest passage kept for a co-mention; the median full-text paragraph is about 1,100 characters.
+PASSAGE_CHARS = 360
 
 # Dimension named by the paper -> v2 modalities that would carry it.  Empty: v2 has no modality for it, so only the
 # existence of the edge can be checked.
@@ -163,7 +171,69 @@ def literature(graph: dict) -> dict:
     claims = [c for p in ordered for c in p["claims"]]
     print(f"{len(ordered)} papers, {len(claims)} claims ({dropped} rows dropped: disease not in graph); "
           f"{sum('edge' in c for c in claims)} claims have an edge in the graph")
-    return {"papers": ordered, "dimensions": DIMENSION_MODALITIES}
+    acquired, release = acquired_papers(node_ids, edge_ids, detail, {p["id"] for p in ordered})
+    return {"papers": ordered, "dimensions": DIMENSION_MODALITIES, "acquired": acquired, "acquiredRelease": release}
+
+
+def acquired_papers(node_ids: set[str], edge_ids: dict, detail, known: set[str]) -> tuple[list[dict], str | None]:
+    """Every paper of the acquisition release that is not already in the curated set.
+
+    The release has no reviewed scores.  Its review queue holds candidate passages in which open full text names two
+    catalogued diseases; these become claims with no dimensions, so the UI only checks whether the graph has the edge.
+    """
+
+    exports = ACQUISITION_DIR / "exports"
+    if not (exports / "screening_queue.csv").is_file():
+        print(f"{exports / 'screening_queue.csv'} not found; no acquisition papers")
+        return [], None
+    manifest = json.loads((ACQUISITION_DIR / "release_manifest.json").read_text(encoding="utf-8"))
+    passages: dict[str, dict[tuple[str, str], dict]] = defaultdict(dict)
+    for line in (exports / "review_queue.jsonl").open(encoding="utf-8"):
+        row = json.loads(line)
+        a, b = row["pair_id"].split("|")
+        if a not in node_ids or b not in node_ids or a == b or (a, b) in passages[row["paper_id"]]:
+            continue
+        text = " ".join(row["source_passage"].split())
+        hints = ", ".join(d.replace("_", " ") for d in json.loads(row["dimensions_json"] or "[]"))
+        claim = {
+            "a": a,
+            "b": b,
+            "dimensions": [],
+            "relationship": f"co-mentioned, unreviewed{f' (hint: {hints})' if hints else ''}",
+            "stated": None,
+            "finding": text if len(text) <= PASSAGE_CHARS else f"{text[:PASSAGE_CHARS].rsplit(' ', 1)[0]}…",
+            "locator": row["section_name"] or row["source_locator"],
+        }
+        edge_id = edge_ids.get((a, b))
+        if edge_id:
+            claim["edge"] = edge_id
+            claim["detail"] = detail(edge_id)
+        passages[row["paper_id"]][(a, b)] = claim
+
+    out = []
+    for row in csv.DictReader((exports / "screening_queue.csv").open(encoding="utf-8")):
+        paper_id = f"pmid:{row['pmid']}" if row["pmid"] else row["paper_id"]
+        if paper_id in known:
+            continue
+        link = (
+            f"https://europepmc.org/article/MED/{row['pmid']}" if row["pmid"]
+            else f"https://europepmc.org/article/PMC/{row['pmcid']}" if row["pmcid"] else ""
+        )
+        out.append(
+            {
+                "id": paper_id,
+                # Europe PMC titles keep inline markup, escaped: "&lt;i&gt;RAI1&lt;/i&gt;".
+                "title": re.sub(r"<[^>]+>", "", html.unescape(html.unescape(row["title"]))).strip(),
+                "year": int(row["year"]) if row["year"].isdigit() else None,
+                "link": link,
+                "access": row["access_class"],
+                "claims": list(passages.get(row["paper_id"], {}).values()),
+            }
+        )
+    out.sort(key=lambda p: (-len(p["claims"]), -(p["year"] or 0), p["title"]))
+    print(f"{len(out)} acquisition papers not in the curated set; "
+          f"{sum(1 for p in out if p['claims'])} with {sum(len(p['claims']) for p in out)} co-mentioned pairs")
+    return out, manifest.get("generated_at", "")[:10] or None
 
 
 def main() -> int:

@@ -7,9 +7,10 @@ import { GraphView } from './components/GraphView'
 import { Legend } from './components/Legend'
 import { SearchBox } from './components/SearchBox'
 import { PaperPanel } from './components/PaperPanel'
+import { PaperSearch } from './components/PaperSearch'
 import { PapersPanel } from './components/PapersPanel'
 import { UserDiseasesPanel } from './components/UserDiseasesPanel'
-import { type Literature, loadLiterature } from './data/annotations'
+import { type Literature, type LoadedAnnotations, loadAnnotations, loadLiterature } from './data/annotations'
 import { apiHealth, detailFromPlacement, GraphNotBuiltError, loadGraph, placeDisease } from './data/source'
 import type { ApiHealth, DiseaseInput, EdgeDetail, GraphData, GraphEdge, GraphNode, PaperEntry, PaperResult } from './data/types'
 import { useNodeColouring } from './lib/colouring'
@@ -23,15 +24,19 @@ import {
   placementFromResult,
 } from './lib/paperService'
 import { download, plural } from './lib/format'
-import { DEFAULT_FILTERS, type Filters, filterEdges, findEdge, neighbourhood } from './lib/graph'
+import { DEFAULT_FILTERS, type Filters, filterEdges, findEdge, isClaimOnly, neighbourhood } from './lib/graph'
 import { useHashSelection } from './lib/selection'
 import { categoricalColour, useCanvasColours, verdictColour } from './lib/theme'
 import { exportJson, type UserDisease, useUserDiseases } from './lib/userDiseases'
+import { Home } from './components/Home'
+import { PatientView } from './components/PatientView'
+import { type AppView, useAppView } from './lib/route'
 
 type View = 'graph' | 'table'
 type Scope = 'all' | 'neighbourhood'
 
 export default function App() {
+  const [view, navigate] = useAppView()
   const [graph, setGraph] = useState<GraphData | null>(null)
   const [loadError, setLoadError] = useState<'not-built' | string | null>(null)
 
@@ -39,6 +44,7 @@ export default function App() {
     loadGraph().then(setGraph, (e: Error) => setLoadError(e instanceof GraphNotBuiltError ? 'not-built' : e.message))
   }, [])
 
+  if (view === 'home') return <Home onChoose={navigate} />
   if (loadError === 'not-built') return <SetupNeeded />
   if (loadError) {
     return (
@@ -55,7 +61,8 @@ export default function App() {
       </div>
     )
   }
-  return <Explorer graph={graph} />
+  if (view === 'patient') return <PatientView graph={graph} onNavigate={navigate} />
+  return <Explorer graph={graph} onNavigate={navigate} />
 }
 
 function SetupNeeded() {
@@ -98,7 +105,7 @@ function useApiHealth(): ApiHealth {
   return health
 }
 
-function Explorer({ graph }: { graph: GraphData }) {
+function Explorer({ graph, onNavigate }: { graph: GraphData; onNavigate: (view: AppView) => void }) {
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS)
   const [selection, select] = useHashSelection()
   const [view, setView] = useState<View>('graph')
@@ -291,9 +298,14 @@ function Explorer({ graph }: { graph: GraphData }) {
   const [uploadStage, setUploadStage] = useState<string | null>(null)
   const [uploadError, setUploadError] = useState<string | null>(null)
   const uploads = useMemo(() => user.diseases.filter((d) => d.paper), [user.diseases])
+  /** Every paper "Find a paper" searches: uploads, the curated set, then the latest acquisition release. */
+  const allPapers = useMemo<PaperEntry[]>(
+    () => [...uploads.map((d) => d.paper!), ...(literature?.papers ?? []), ...(literature?.acquired ?? [])],
+    [uploads, literature],
+  )
   const activePaper = useMemo<PaperEntry | null>(
-    () => uploads.find((d) => d.paper!.id === activePaperId)?.paper ?? literature?.papers.find((p) => p.id === activePaperId) ?? null,
-    [uploads, literature, activePaperId],
+    () => (activePaperId ? (allPapers.find((p) => p.id === activePaperId) ?? null) : null),
+    [allPapers, activePaperId],
   )
   const activeFocal = uploads.find((d) => d.paper!.id === activePaperId)
   const graphEdgesById = useMemo(() => new Map(graph.edges.map((e) => [e.id, e])), [graph])
@@ -332,7 +344,8 @@ function Explorer({ graph }: { graph: GraphData }) {
   // The active paper's claims drawn over the graph: real edges in their verdict colour, and a dashed line
   // between two diseases when the paper links them but the graph does not.
   const overlay = useMemo(() => {
-    if (!activePaper) return null
+    // A paper with nothing to draw (most of the acquisition release) leaves the graph as it is.
+    if (!activePaper || (evaluations.length === 0 && !activeFocal)) return null
     const tint = new Map<string, string>()
     const extra: GraphEdge[] = []
     const members = new Set<string>()
@@ -380,7 +393,27 @@ function Explorer({ graph }: { graph: GraphData }) {
   }, [activePaper, evaluations, nodes, colours.dark, activeFocal, userEdges])
 
   // --- Filtering, scope and highlighting --------------------------------------------
-  const visible = useMemo(() => filterEdges(allEdges, filters, nodes), [allEdges, filters, nodes])
+  // Symptom filter: the per-disease HPO annotations load the first time it is switched on.
+  const [symptomData, setSymptomData] = useState<LoadedAnnotations | null>(null)
+  const [symptomError, setSymptomError] = useState<string | null>(null)
+  useEffect(() => {
+    if (!filters.symptomFilter || symptomData) return
+    loadAnnotations().then(setSymptomData, (e: Error) => setSymptomError(e.message))
+  }, [filters.symptomFilter, symptomData])
+  /** Diseases with all (or any) of the chosen symptoms, or null when the filter is not in use. */
+  const symptomSet = useMemo(() => {
+    if (!filters.symptomFilter || filters.symptoms.length === 0 || !symptomData) return null
+    const { raw } = symptomData
+    const sets = filters.symptoms.map((t) => new Set((raw.phenotypes[t]?.n ?? []).map((i) => raw.nodes[i])))
+    if (filters.symptomMatch === 'any') return new Set(sets.flatMap((s) => [...s]))
+    const [first, ...rest] = sets
+    return new Set([...first].filter((id) => rest.every((s) => s.has(id))))
+  }, [filters.symptomFilter, filters.symptoms, filters.symptomMatch, symptomData])
+
+  const visible = useMemo(
+    () => filterEdges(allEdges, filters, nodes, symptomSet),
+    [allEdges, filters, nodes, symptomSet],
+  )
   const visibleIds = useMemo(() => new Set(visible.map((e) => e.id)), [visible])
   const centres = useMemo(
     () => (!selection ? [] : selection.kind === 'disease' ? [selection.id] : [selection.a, selection.b]),
@@ -428,16 +461,43 @@ function Explorer({ graph }: { graph: GraphData }) {
     return { nodes: n, edges: e }
   }, [selection, centres, scoped, selectedEdgeId, clusterFocus, nodes, colourBy, colouring.members, overlay])
 
-  const diseaseCount = useMemo(() => {
+  // Edges a paper overlay draws only to show a claim are not part of the graph's total.
+  const drawnGraphEdges = useMemo(() => drawn.filter((e) => !isClaimOnly(e)).length, [drawn])
+  const connectedIds = useMemo(() => {
     const ids = new Set<string>()
     for (const e of drawn) {
       ids.add(e.source)
       ids.add(e.target)
     }
-    return ids.size
+    return ids
   }, [drawn])
+  // Diseases in view: every disease passing the category/cluster filters, or,
+  // in neighbourhood mode, just the connected neighbourhood.  Those left with
+  // no edge by the edge filters stay on the map as "unconnected" hollow dots.
+  const inScope = useMemo(() => {
+    if (focused) return null
+    const ids: string[] = []
+    for (const n of nodes.values()) {
+      const user = n.origin === 'user'
+      if (filters.category && n.category !== filters.category && !user) continue
+      if (filters.cluster !== null && n.cluster !== filters.cluster && !user) continue
+      if (symptomSet && !symptomSet.has(n.id) && !user) continue
+      ids.push(n.id)
+    }
+    return ids
+  }, [focused, nodes, filters.category, filters.cluster, symptomSet])
+  const unconnected = useMemo(
+    () => (inScope ? inScope.filter((id) => !connectedIds.has(id)) : []),
+    [inScope, connectedIds],
+  )
+  const diseaseCount = inScope ? inScope.length : connectedIds.size
+  const pinnedIds = useMemo(() => [...centres, ...unconnected], [centres, unconnected])
 
-  const fitKey = focused ? `n-${depth}-${centres.join(',')}` : 'all'
+  // Re-fit the view when the set of diseases in view changes (neighbourhood,
+  // or a category / cluster / symptom filter), not on every edge filter.
+  const fitKey = focused
+    ? `n-${depth}-${centres.join(',')}`
+    : `all-${filters.category ?? ''}-${filters.cluster ?? ''}-${symptomSet ? `${filters.symptoms.join(',')}-${filters.symptomMatch}` : ''}`
   const onColourBy = (mode: 'gene' | 'symptom' | 'onset' | 'inheritance', term: string | null) => {
     colouring.setMode(mode)
     if (mode === 'gene' || mode === 'symptom') colouring.setTerm(term)
@@ -478,10 +538,26 @@ function Explorer({ graph }: { graph: GraphData }) {
             {plural(graph.stats.support.novel ?? 0, 'novel hypothesis', 'novel hypotheses')}
           </p>
         </div>
+        <nav className="header-nav" aria-label="Views">
+          <button type="button" className="link-button" onClick={() => onNavigate('home')}>
+            Home
+          </button>
+          <button type="button" className="link-button" onClick={() => onNavigate('patient')}>
+            Patient view
+          </button>
+        </nav>
       </header>
 
       <aside className="sidebar" aria-label="Search and filters">
         <SearchBox diseases={searchable} onSelect={selectDisease} />
+        <PaperSearch
+          papers={literature || literatureError ? allPapers : null}
+          error={literatureError}
+          onSelect={(id) => {
+            setActivePaperId(id)
+            select(null)
+          }}
+        />
         <UserDiseasesPanel
           diseases={user.diseases}
           api={api}
@@ -512,12 +588,18 @@ function Explorer({ graph }: { graph: GraphData }) {
           }}
           onRemoveUpload={removeDisease}
         />
-        <FilterPanel graph={graph} filters={filters} onChange={setFilters} />
+        <FilterPanel
+          graph={graph}
+          filters={filters}
+          onChange={setFilters}
+          symptomOptions={symptomData?.symptoms ?? null}
+          symptomError={symptomError}
+          symptomMatches={symptomSet?.size ?? null}
+        />
         <Legend
           colouring={colouring}
           nodes={nodes}
           clusters={graph.clusters}
-          modularity={graph.clustering?.modularity ?? null}
           categories={categoryCounts}
           clusterColour={clusterColour}
           categoryColour={categoryColour}
@@ -568,7 +650,14 @@ function Explorer({ graph }: { graph: GraphData }) {
             </span>
           )}
           <span className="toolbar-count muted small" aria-live="polite">
-            {plural(drawn.length, 'edge')} · {plural(diseaseCount, 'disease')}
+            Showing {drawnGraphEdges.toLocaleString()} of {plural(allEdges.length, 'edge')} ·{' '}
+            {diseaseCount.toLocaleString()} of {plural(nodes.size, 'disease')}
+            {unconnected.length > 0 && (
+              <span title="Diseases with no edge under the current filters, drawn as hollow dots">
+                {' '}
+                ({unconnected.length.toLocaleString()} unconnected)
+              </span>
+            )}
           </span>
           <button type="button" className="button" disabled={scoped.length === 0} onClick={() => exportCsv(scoped, nodes)}>
             Export CSV
@@ -580,7 +669,7 @@ function Explorer({ graph }: { graph: GraphData }) {
             <GraphView
               nodes={nodes}
               edges={drawn}
-              pinnedIds={centres}
+              pinnedIds={pinnedIds}
               selection={selection}
               highlightNodes={highlight.nodes}
               highlightEdges={highlight.edges}

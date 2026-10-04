@@ -6,6 +6,7 @@ import { VERDICT_LABEL, VERDICT_MEANING, VERDICT_ORDER } from './paperEval'
 
 export type HelpTopic =
   | 'search'
+  | 'paperSearch'
   | 'yourDiseases'
   | 'linksPerDisease'
   | 'papers'
@@ -17,6 +18,7 @@ export type HelpTopic =
   | 'mainEvidence'
   | 'cluster'
   | 'category'
+  | 'symptoms'
   | 'nodeColour'
   | 'readingGraph'
 
@@ -39,6 +41,33 @@ export const HELP: Record<HelpTopic, { title: string; body: ReactNode }> = {
         Search the diseases in the graph by name or ORPHA ID.
         Choosing one zooms the graph to it and its most similar diseases, and opens its details.
       </p>
+    ),
+  },
+  paperSearch: {
+    title: 'Find a paper',
+    body: (
+      <>
+        <p>
+          Search papers by title or PMID. Choosing one opens it and draws the disease pairs it links on the graph, in the
+          colours below.
+        </p>
+        <p>The search covers three sets:</p>
+        <dl className="help-list">
+          <dt>Uploaded</dt>
+          <dd>Papers you added under Papers.</dd>
+          <dt>Curated literature</dt>
+          <dd>
+            Papers that each compare two diseases, with the respects in which they are similar. These are the papers
+            listed under Papers.
+          </dd>
+          <dt>Newly acquired</dt>
+          <dd>
+            The latest search of Europe PMC (October 2026). Most of these papers have only an abstract, and none are
+            reviewed yet. Where a paper's open full text names two diseases in one passage, that pair is shown, but only
+            whether the graph has an edge for it is checked.
+          </dd>
+        </dl>
+      </>
     ),
   },
   yourDiseases: {
@@ -76,7 +105,7 @@ export const HELP: Record<HelpTopic, { title: string; body: ReactNode }> = {
     ),
   },
   literatureSet: {
-    title: 'Literature set',
+    title: 'Curated literature',
     body: (
       <p>
         A curated set of published papers that each compare two diseases. Each claim is checked against the graph in
@@ -130,7 +159,10 @@ export const HELP: Record<HelpTopic, { title: string; body: ReactNode }> = {
           Each disease links to its 10 most similar diseases. An edge is <strong>mutual</strong> when both diseases have
           each other in their top 10, which makes it a stronger link.
         </p>
-        <p>Turn this off to also show one-way edges. That is about twice as many, and the graph gets busier.</p>
+        <p>
+          Turn this off to also show one-way edges. That is about twice as many, and the graph gets busier. Diseases
+          with no mutual edge stay on the map as hollow, unconnected dots.
+        </p>
       </>
     ),
   },
@@ -181,14 +213,35 @@ export const HELP: Record<HelpTopic, { title: string; body: ReactNode }> = {
       </p>
     ),
   },
+  symptoms: {
+    title: 'Filter by symptoms',
+    body: (
+      <>
+        <p>
+          Limit the graph to diseases with chosen symptoms (HPO terms). A symptom also matches its more specific forms:
+          "Seizure" includes focal seizures. With several symptoms, choose whether a disease needs all of them or any.
+        </p>
+        <p>
+          The links between the remaining diseases still come from the similarity model. Symptoms come from the
+          Orphanet and HPO annotations, which cover about three-quarters of the diseases. A disease with no recorded
+          symptoms never matches, but that does not mean it lacks the symptom.
+        </p>
+      </>
+    ),
+  },
   nodeColour: {
     title: 'Node colour',
     body: (
       <>
         <p>What the colour of each disease shows. It does not change the edges.</p>
         <dl className="help-list">
-          <dt>Cluster / Orphanet category</dt>
-          <dd>Which group the disease belongs to.</dd>
+          <dt>Cluster</dt>
+          <dd>
+            Groups of diseases that link to each other far more than to the rest of the graph, found automatically by
+            community detection (the Louvain method). Each is named after its most common Orphanet category.
+          </dd>
+          <dt>Orphanet category</dt>
+          <dd>Orphanet's own top-level classification of the disease.</dd>
           <dt>Gene / Symptom</dt>
           <dd>Highlights the diseases linked to one gene, or with one symptom (HPO term, including its subtypes).</dd>
           <dt>Age of onset / Inheritance</dt>
@@ -204,7 +257,8 @@ export const HELP: Record<HelpTopic, { title: string; body: ReactNode }> = {
     body: (
       <p>
         Each dot is a disease and each line links two similar diseases. Diseases with similar overall profiles sit close
-        together. Larger dots have more links. Click a dot or a line to see why the diseases are considered similar.
+        together. Larger dots have more links; hollow dots have no link under the current filters. Click a dot or a line
+        to see why the diseases are considered similar.
       </p>
     ),
   },

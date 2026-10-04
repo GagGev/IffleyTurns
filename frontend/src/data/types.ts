@@ -262,8 +262,11 @@ export interface PaperEntry {
   title: string
   year: number | null
   link?: string
-  kind: 'literature' | 'upload'
+  /** literature: the curated pair-first set; acquired: the latest acquisition release (unreviewed co-mentions). */
+  kind: 'literature' | 'acquired' | 'upload'
   mock: boolean
+  /** Acquisition release only: how much of the paper was retrieved (abstract_only, open_full_text_xml, ...). */
+  access?: string
   claims: PaperClaim[]
   /** For uploads: the v2_5 output, and the placed disease that represents the paper's focal disease. */
   result?: PaperResult

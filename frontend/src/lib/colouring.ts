@@ -8,15 +8,15 @@ import type { ColourBy, DiseaseInput, GraphEdge, GraphNode } from '../data/types
 import { phenotypeWeights } from './userDiseases'
 import { accentColour, type CanvasColours, categoricalColour, hslToHex, mix } from './theme'
 
-export const COLOUR_MODES: { value: ColourBy; label: string; hint: string }[] = [
-  { value: 'cluster', label: 'Cluster', hint: 'Louvain communities of the similarity graph' },
-  { value: 'category', label: 'Orphanet category', hint: 'Top-level Orphanet classification' },
-  { value: 'gene', label: 'Gene', hint: 'Diseases linked to one gene' },
-  { value: 'symptom', label: 'Symptom (HPO)', hint: 'Diseases with one phenotype, or a subtype of it' },
-  { value: 'onset', label: 'Age of onset', hint: 'Diseases that start at the same stage of life' },
-  { value: 'inheritance', label: 'Inheritance', hint: 'Mode of inheritance' },
-  { value: 'disease', label: 'Similarity to a disease', hint: 'A disease (ORPHA ID) and its most similar neighbours' },
-  { value: 'plain', label: 'None', hint: 'One colour' },
+export const COLOUR_MODES: { value: ColourBy; label: string }[] = [
+  { value: 'cluster', label: 'Cluster' },
+  { value: 'category', label: 'Orphanet category' },
+  { value: 'gene', label: 'Gene' },
+  { value: 'symptom', label: 'Symptom (HPO)' },
+  { value: 'onset', label: 'Age of onset' },
+  { value: 'inheritance', label: 'Inheritance' },
+  { value: 'disease', label: 'Similarity to a disease' },
+  { value: 'plain', label: 'None' },
 ]
 
 /** Stages of life in order, so the colours run as a ramp. */

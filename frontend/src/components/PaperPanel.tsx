@@ -27,6 +27,13 @@ interface Props {
   onClose: () => void
 }
 
+const ACCESS_NOTE: Record<string, string> = {
+  abstract_only: 'abstract only',
+  metadata_only: 'metadata only',
+  open_full_text_xml: 'open full text',
+  retracted_or_removed: 'retracted or removed',
+}
+
 const nameOf = (nodes: Map<string, GraphNode>, id: string) => displayName(nodes.get(id)?.name ?? id)
 
 function VerdictPill({ verdict, dark }: { verdict: ClaimVerdict | undefined; dark: boolean }) {
@@ -306,23 +313,34 @@ export function PaperPanel(props: Props) {
   const checkable = counts.confirmed + counts.partial + counts.unsupported
   const shown = filter ? evaluations.filter((e) => e.verdict === filter) : evaluations
   const result = paper.result
+  const noun = paper.kind === 'acquired' ? 'candidate pair' : 'claim'
 
   return (
     <div className="paper-panel panel-body">
       <section className="panel-section">
-        <p className="eyebrow">{paper.kind === 'upload' ? 'Uploaded paper' : 'Literature paper'}</p>
+        <p className="eyebrow">
+          {paper.kind === 'upload' ? 'Uploaded paper' : paper.kind === 'acquired' ? 'Newly acquired paper' : 'Curated literature paper'}
+        </p>
         <h2>{paper.title}</h2>
         <p className="muted small">
           {paper.year ?? ''}
+          {paper.access && `${paper.year ? ' · ' : ''}${ACCESS_NOTE[paper.access] ?? paper.access.replace(/_/g, ' ')}`}
           {paper.link && (
             <>
               {paper.year ? ' · ' : ''}
               <a href={paper.link} target="_blank" rel="noreferrer">
-                Open paper
+                {paper.kind === 'acquired' ? 'Open in Europe PMC' : 'Open paper'}
               </a>
             </>
           )}
         </p>
+        {paper.kind === 'acquired' && paper.claims.length > 0 && (
+          <p className="callout small">
+            <strong>Unreviewed.</strong> This paper comes from the latest literature acquisition, which has no reviewed
+            similarity scores yet. A pair below only means one passage of the paper’s open full text names both diseases;
+            the check is whether the graph has an edge between them, not whether the paper says they are similar.
+          </p>
+        )}
         {paper.mock && (
           <p className="callout small">
             <strong>Mock extraction.</strong> The profile, quotes and comparisons below are generated from the graph, not read
@@ -338,7 +356,14 @@ export function PaperPanel(props: Props) {
 
       <section className="panel-section">
         <h3>Does the graph carry the paper’s evidence?</h3>
-        {evaluations.length === 0 ? (
+        {evaluations.length === 0 && paper.kind === 'acquired' ? (
+          <p className="muted small">
+            No passage of this paper names two diseases in the graph, so there is nothing to check.{' '}
+            {paper.access === 'open_full_text_xml'
+              ? 'Its full text was searched.'
+              : 'Only its abstract or metadata was retrieved, and candidate pairs are drawn from open full text.'}
+          </p>
+        ) : evaluations.length === 0 ? (
           <p className="muted small">
             This paper states no comparison between two diseases, so there is no pair to check. The extracted profile below is
             checked instead.
@@ -346,7 +371,7 @@ export function PaperPanel(props: Props) {
         ) : (
           <>
             <p className="small">
-              <strong>{Math.round(recall(counts) * 100)}%</strong> of {plural(judged, 'claim')} have an edge in the graph
+              <strong>{Math.round(recall(counts) * 100)}%</strong> of {plural(judged, noun)} have an edge in the graph
               {checkable > 0 && (
                 <>
                   ; <strong>{counts.confirmed}</strong> of {checkable} with a checkable dimension have every named dimension
@@ -387,7 +412,7 @@ export function PaperPanel(props: Props) {
       {evaluations.length > 0 && (
         <section className="panel-section">
           <h3>
-            Claims <span className="muted">{shown.length}</span>
+            {paper.kind === 'acquired' ? 'Candidate pairs' : 'Claims'} <span className="muted">{shown.length}</span>
           </h3>
           <ClaimMap
             evaluations={shown}

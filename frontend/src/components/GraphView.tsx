@@ -196,6 +196,8 @@ export function GraphView(props: Props) {
     return { nodes: out, links }
   }, [edges, extraPinned, store, fixedLayout, nodes])
 
+  const sparse = data.nodes.length <= 600
+
   // The simulation reheats whenever the data changes; camera moves made while
   // it runs are repeated once it settles.
   const engineRunning = useRef(true)
@@ -276,7 +278,8 @@ export function GraphView(props: Props) {
       const dimmed = highlightNodes !== null && !highlightNodes.has(node.id)
       // A small highlighted set (a gene's diseases, a paper's claims) is drawn larger so it stands out.
       const picked = highlightNodes !== null && !dimmed && highlightNodes.size <= 300
-      const r = nodeRadius(node.degree) * (picked ? 1.5 : 1) + (picked ? 1.5 : 0)
+      // When only a few hundred diseases are drawn (a filtered view), keep each dot at least a few pixels wide.
+      const r = Math.max(nodeRadius(node.degree) * (picked ? 1.5 : 1) + (picked ? 1.5 : 0), sparse ? 3.5 / scale : 0)
       const selected = selectedIds.has(node.id)
       const hovered = hover?.kind === 'node' && hover.node.id === node.id
       const added = node.disease.origin !== 'catalogue'
@@ -287,8 +290,17 @@ export function GraphView(props: Props) {
       if (added) diamond(ctx, x, y, r * 1.4)
       else ctx.arc(x, y, r, 0, 2 * Math.PI)
       const fill = colourOf(node.disease)
-      ctx.fillStyle = withAlpha(fill, dimmed ? 0.1 : 0.92)
-      ctx.fill()
+      if (node.degree === 0 && !added) {
+        // Unconnected under the current filters: a hollow ring keeps it on the map without implying links.
+        ctx.fillStyle = withAlpha(colours.surface, dimmed ? 0.3 : 0.9)
+        ctx.fill()
+        ctx.lineWidth = Math.max(1.2 / scale, 0.35)
+        ctx.strokeStyle = withAlpha(fill, dimmed ? 0.15 : 0.85)
+        ctx.stroke()
+      } else {
+        ctx.fillStyle = withAlpha(fill, dimmed ? 0.1 : 0.92)
+        ctx.fill()
+      }
       if (added && !dimmed) {
         // Added diseases keep a ring so they stay distinguishable from catalogue diseases of the same cluster.
         ctx.lineWidth = 1.5 / scale
@@ -349,16 +361,19 @@ export function GraphView(props: Props) {
         ctx.fillText(detail, x, y2)
       }
     },
-    [highlightNodes, selectedIds, hover, colours, selection, store, colourOf],
+    [highlightNodes, selectedIds, hover, colours, selection, store, colourOf, sparse],
   )
 
-  const paintNodeArea = useCallback((node: N, colour: string, ctx: CanvasRenderingContext2D, scale: number) => {
-    // Hit target larger than the dot so small nodes are easy to click.
-    ctx.fillStyle = colour
-    ctx.beginPath()
-    ctx.arc(node.x!, node.y!, nodeRadius(node.degree) + 4 / scale, 0, 2 * Math.PI)
-    ctx.fill()
-  }, [])
+  const paintNodeArea = useCallback(
+    (node: N, colour: string, ctx: CanvasRenderingContext2D, scale: number) => {
+      // Hit target larger than the dot so small nodes are easy to click.
+      ctx.fillStyle = colour
+      ctx.beginPath()
+      ctx.arc(node.x!, node.y!, Math.max(nodeRadius(node.degree), sparse ? 3.5 / scale : 0) + 4 / scale, 0, 2 * Math.PI)
+      ctx.fill()
+    },
+    [sparse],
+  )
 
   const linkColour = useCallback(
     (link: L) => {

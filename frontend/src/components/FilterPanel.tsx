@@ -1,16 +1,24 @@
+import { useMemo } from 'react'
+import type { TermOption } from '../data/annotations'
 import type { GraphData, Support } from '../data/types'
 import { SUPPORT_LEVELS, SUPPORT_MEANING } from '../data/types'
 import { DEFAULT_FILTERS, type Filters, PERCENTILE_STEPS } from '../lib/graph'
 import { capitalise, modalityLabel, percentile } from '../lib/format'
 import { InfoTip } from './InfoTip'
+import { TermPicker } from './TermPicker'
 
 interface Props {
   graph: GraphData
   filters: Filters
   onChange: (next: Filters) => void
+  /** HPO terms to pick from; null until the annotations have loaded. */
+  symptomOptions: TermOption[] | null
+  symptomError: string | null
+  /** How many diseases match the chosen symptoms, or null when none are chosen. */
+  symptomMatches: number | null
 }
 
-export function FilterPanel({ graph, filters, onChange }: Props) {
+export function FilterPanel({ graph, filters, onChange, symptomOptions, symptomError, symptomMatches }: Props) {
   const set = <K extends keyof Filters>(key: K, value: Filters[K]) => onChange({ ...filters, [key]: value })
   const isDefault = JSON.stringify(filters) === JSON.stringify(DEFAULT_FILTERS)
   const toggleSupport = (s: Support) =>
@@ -109,6 +117,104 @@ export function FilterPanel({ graph, filters, onChange }: Props) {
           ))}
         </select>
       </label>
+      <div className="label-row">
+        <label className="check">
+          <input
+            type="checkbox"
+            checked={filters.symptomFilter}
+            onChange={(e) => set('symptomFilter', e.target.checked)}
+          />
+          Filter by symptoms
+        </label>
+        <InfoTip topic="symptoms" />
+      </div>
+      {filters.symptomFilter && (
+        <SymptomFilter
+          filters={filters}
+          onChange={onChange}
+          options={symptomOptions}
+          error={symptomError}
+          matches={symptomMatches}
+        />
+      )}
+    </div>
+  )
+}
+
+function SymptomFilter({
+  filters,
+  onChange,
+  options,
+  error,
+  matches,
+}: {
+  filters: Filters
+  onChange: (next: Filters) => void
+  options: TermOption[] | null
+  error: string | null
+  matches: number | null
+}) {
+  const labels = useMemo(() => new Map((options ?? []).map((o) => [o.id, o.label])), [options])
+  const set = (symptoms: string[]) => onChange({ ...filters, symptoms })
+  const chosen = filters.symptoms
+  return (
+    <div className="symptom-filter">
+      {chosen.length > 0 && (
+        <ul className="symptom-chips" aria-label="Chosen symptoms">
+          {chosen.map((id) => (
+            <li key={id}>
+              <span title={id}>{labels.get(id) ?? id}</span>
+              <button
+                type="button"
+                aria-label={`Remove ${labels.get(id) ?? id}`}
+                onClick={() => set(chosen.filter((x) => x !== id))}
+              >
+                ×
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+      {error ? (
+        <p className="callout small">{error}</p>
+      ) : (
+        <TermPicker
+          label={chosen.length ? 'Add another symptom' : 'Add a symptom'}
+          placeholder="e.g. seizure, HP:0001250"
+          options={(options ?? []).filter((o) => !chosen.includes(o.id))}
+          value={null}
+          loading={options === null}
+          onPick={(id) => set([...chosen, id])}
+          onClear={() => {}}
+        />
+      )}
+      {chosen.length >= 2 && (
+        <div className="radio-row small" role="radiogroup" aria-label="How to combine symptoms">
+          <label className="check">
+            <input
+              type="radio"
+              checked={filters.symptomMatch === 'all'}
+              onChange={() => onChange({ ...filters, symptomMatch: 'all' })}
+            />
+            Has all of them
+          </label>
+          <label className="check">
+            <input
+              type="radio"
+              checked={filters.symptomMatch === 'any'}
+              onChange={() => onChange({ ...filters, symptomMatch: 'any' })}
+            />
+            Has any of them
+          </label>
+        </div>
+      )}
+      {matches !== null && (
+        <small className="muted">
+          {matches.toLocaleString()} {matches === 1 ? 'disease has' : 'diseases have'}{' '}
+          {chosen.length === 1 ? 'this symptom' : filters.symptomMatch === 'all' ? 'all of these' : 'at least one of these'}.
+        </small>
+      )}
+      {chosen.length === 0 && !error && <small className="muted">Choose a symptom to limit the graph.</small>}
     </div>
   )
 }

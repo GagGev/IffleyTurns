@@ -7,11 +7,12 @@
     "data": "python3 scripts/build_graph_data.py",
     "data:annotations": "python3 scripts/build_annotations.py",
     "api": "python3 api/server.py",
-    "test:api": "python3 -m unittest api/test_server.py",
+    "test:api": "python3 -m unittest api/test_server.py api/test_patient.py",
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "medgemma": "python3 api/medgemma_server.py"
   },
   "dependencies": {
     "react": "^19.2.8",

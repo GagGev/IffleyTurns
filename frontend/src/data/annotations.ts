@@ -73,11 +73,17 @@ interface RawLiterature {
   }[]
   /** Paper dimension → v2 modalities that would carry it. */
   dimensions: Record<string, string[]>
+  /** The latest acquisition release, minus papers already above; claims are unreviewed co-mentions. */
+  acquired?: { id: string; title: string; year: number | null; link: string; access: string; claims: PaperClaim[] }[]
+  acquiredRelease?: string | null
 }
 
 export interface Literature {
   papers: PaperEntry[]
   dimensions: Record<string, string[]>
+  acquired: PaperEntry[]
+  /** Date of the acquisition release, e.g. 2026-10-04. */
+  acquiredRelease: string | null
 }
 
 let literaturePromise: Promise<Literature> | null = null
@@ -100,6 +106,17 @@ export function loadLiterature(): Promise<Literature> {
           mock: false,
           claims: p.claims,
         })),
+        acquired: (raw.acquired ?? []).map((p) => ({
+          id: p.id,
+          title: p.title,
+          year: p.year,
+          link: p.link || undefined,
+          kind: 'acquired' as const,
+          mock: false,
+          access: p.access,
+          claims: p.claims,
+        })),
+        acquiredRelease: raw.acquiredRelease ?? null,
       }
     })
     literaturePromise.catch(() => (literaturePromise = null))

@@ -12,6 +12,12 @@ export interface Filters {
   cluster: number | null
   /** Only edges where both diseases list each other among their top-k. */
   mutualOnly: boolean
+  /** Limit the graph to diseases with the chosen symptoms (off by default). */
+  symptomFilter: boolean
+  /** HPO term IDs; a term also matches its subtypes. */
+  symptoms: string[]
+  /** Diseases must have every chosen symptom, or at least one. */
+  symptomMatch: 'all' | 'any'
 }
 
 export const DEFAULT_FILTERS: Filters = {
@@ -21,12 +27,28 @@ export const DEFAULT_FILTERS: Filters = {
   category: null,
   cluster: null,
   mutualOnly: true,
+  symptomFilter: false,
+  symptoms: [],
+  symptomMatch: 'all',
 }
 
 export const PERCENTILE_STEPS = [0, 0.9, 0.99, 0.999, 0.9999]
 
-export function filterEdges(edges: GraphEdge[], filters: Filters, nodes: Map<string, GraphNode>): GraphEdge[] {
+/**
+ * `diseaseSet`, when given, keeps only edges between diseases in it (the
+ * symptom filter); diseases added by the user are always kept.
+ */
+export function filterEdges(
+  edges: GraphEdge[],
+  filters: Filters,
+  nodes: Map<string, GraphNode>,
+  diseaseSet: Set<string> | null = null,
+): GraphEdge[] {
   return edges.filter((e) => {
+    if (diseaseSet) {
+      const inside = (id: string) => diseaseSet.has(id) || nodes.get(id)?.origin === 'user'
+      if (!inside(e.source) || !inside(e.target)) return false
+    }
     if (!filters.support.includes(e.support)) return false
     if (e.percentile < filters.minPercentile) return false
     if (filters.mainModality && e.mainModality !== filters.mainModality) return false

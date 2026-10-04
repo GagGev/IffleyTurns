@@ -124,7 +124,7 @@ export function PapersPanel(props: Props) {
 
       <div className="label-row">
         <button type="button" className="disclosure" aria-expanded={open} onClick={() => setOpen(!open)}>
-          <span aria-hidden>{open ? '▾' : '▸'}</span> Literature set
+          <span aria-hidden>{open ? '▾' : '▸'}</span> Curated literature
           {summary && <span className="muted small"> · {plural(summary.papers, 'paper')}</span>}
         </button>
         <InfoTip topic="literatureSet" />

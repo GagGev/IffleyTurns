@@ -135,7 +135,7 @@ export function detailFromPlacement(n: PlacementNeighbour, modalities: string[])
 
 // --- Placement API ------------------------------------------------------------------
 
-async function api<T>(path: string, init?: RequestInit): Promise<T> {
+export async function api<T>(path: string, init?: RequestInit): Promise<T> {
   let response: Response
   try {
     response = await fetch(`${import.meta.env.BASE_URL}api/${path}`, init)

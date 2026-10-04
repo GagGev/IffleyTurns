@@ -10,6 +10,10 @@ Endpoints:
     POST /api/place                       place one disease (body below)
     GET  /api/suggest?field=...&q=...     vocabulary lookup for the form
                                           (field: phenotypes, genes, drugs, ontology)
+    GET  /api/patient/status              whether MedGemma is reachable
+    POST /api/patient/interpret           {"text"}: patient's words -> HPO terms to confirm
+    POST /api/patient/explain-disease     {"id", "name"}: Orphanet description in plain words
+    POST /api/patient/explain-group       {"category", "examples", "shared"}: a group in plain words
 
 POST /api/place body:
     {"disease": {<v2 JSON: name, description, phenotypes, genes, ...>},
@@ -41,6 +45,9 @@ from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import Any, Callable, Optional
 from urllib.parse import parse_qs, urlparse
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from patient import MedGemma, PatientHelper  # noqa: E402
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 V2_DIR = PROJECT_ROOT / "v2"
@@ -184,9 +191,36 @@ class PlacementService:
                 break
         return [{"id": t, "label": l} for t, l in (prefix + contains)[:limit]]
 
+    def vocabulary(self, field: str) -> list[tuple[str, str]]:
+        """(ID, label) pairs for a suggestion field; empty until the model has loaded."""
+
+        return [(term, label) for term, label, _ in self._index.get(field, [])]
+
     def _require_ready(self) -> None:
         if self.status != "ready":
             raise RuntimeError(self.error or "The v2 model is still loading.")
+
+
+class Descriptions:
+    """Orphanet clinical descriptions from v2's cached bundle, loaded on first use."""
+
+    def __init__(self, loader: Callable[[], dict[str, str]]):
+        self._loader = loader
+        self._texts: Optional[dict[str, str]] = None
+        self._lock = threading.Lock()
+
+    def __call__(self, disease_id: str) -> Optional[str]:
+        with self._lock:
+            if self._texts is None:
+                self._texts = self._loader()
+        return self._texts.get(disease_id) or None
+
+
+def load_descriptions() -> dict[str, str]:
+    sys.path.insert(0, str(V2_DIR))
+    from data_sources import load_bundle
+
+    return {d: r.get("description") or "" for d, r in load_bundle().records.items()}
 
 
 def load_v2() -> tuple[Any, Callable, Callable]:
@@ -207,8 +241,9 @@ def load_v2() -> tuple[Any, Callable, Callable]:
 class Handler(SimpleHTTPRequestHandler):
     service: PlacementService
 
-    def __init__(self, *args, service: PlacementService, directory: Optional[str], **kwargs):
+    def __init__(self, *args, service: PlacementService, patient: Optional[PatientHelper], directory: Optional[str], **kwargs):
         self.service = service
+        self.patient = patient
         self.has_static = directory is not None
         super().__init__(*args, directory=directory or ".", **kwargs)
 
@@ -239,14 +274,28 @@ class Handler(SimpleHTTPRequestHandler):
         if url.path == "/api/suggest":
             params = parse_qs(url.query)
             return self._api(lambda: self.service.suggest(params.get("field", [""])[0], params.get("q", [""])[0]))
+        if url.path == "/api/patient/status":
+            return self._api(lambda: self._patient().status())
         if url.path.startswith("/api/"):
             return self._send_json(HTTPStatus.NOT_FOUND, {"error": "Unknown endpoint"})
         if not self.has_static:
             return self._send_json(HTTPStatus.NOT_FOUND, {"error": "Frontend not built; run `npm run build` in frontend/."})
         super().do_GET()
 
+    def _patient(self) -> PatientHelper:
+        if self.patient is None:
+            raise RuntimeError("The patient view's language helper is not configured.")
+        return self.patient
+
     def do_POST(self) -> None:
-        if urlparse(self.path).path != "/api/place":
+        routes: dict[str, Callable[[dict[str, Any]], Any]] = {
+            "/api/place": self.service.place,
+            "/api/patient/interpret": lambda b: self._patient().interpret(str(b.get("text", ""))),
+            "/api/patient/explain-disease": lambda b: self._patient().explain_disease(str(b.get("id", "")), str(b.get("name", ""))),
+            "/api/patient/explain-group": lambda b: self._patient().explain_group(b),
+        }
+        route = routes.get(urlparse(self.path).path)
+        if route is None:
             return self._send_json(HTTPStatus.NOT_FOUND, {"error": "Unknown endpoint"})
         length = int(self.headers.get("Content-Length") or 0)
         if length > MAX_BODY:
@@ -257,16 +306,22 @@ class Handler(SimpleHTTPRequestHandler):
             return self._send_json(HTTPStatus.BAD_REQUEST, {"error": f"Invalid JSON: {error}"})
         if not isinstance(body, dict):
             return self._send_json(HTTPStatus.BAD_REQUEST, {"error": "Body must be a JSON object"})
-        self._api(lambda: self.service.place(body))
+        self._api(lambda: route(body))
 
     def log_message(self, format: str, *args: Any) -> None:
         if self.path.startswith("/api/"):
             super().log_message(format, *args)
 
 
-def make_server(service: PlacementService, host: str, port: int, static_dir: Optional[Path]) -> ThreadingHTTPServer:
+def make_server(
+    service: PlacementService,
+    host: str,
+    port: int,
+    static_dir: Optional[Path],
+    patient: Optional[PatientHelper] = None,
+) -> ThreadingHTTPServer:
     directory = str(static_dir) if static_dir and static_dir.is_dir() else None
-    return ThreadingHTTPServer((host, port), partial(Handler, service=service, directory=directory))
+    return ThreadingHTTPServer((host, port), partial(Handler, service=service, patient=patient, directory=directory))
 
 
 def main(argv: Optional[list[str]] = None) -> int:
@@ -277,7 +332,13 @@ def main(argv: Optional[list[str]] = None) -> int:
 
     service = PlacementService(load_v2)
     threading.Thread(target=service.load, daemon=True).start()
-    server = make_server(service, args.host, args.port, DIST_DIR)
+    patient = PatientHelper(
+        MedGemma(),
+        lambda field, q, limit: service.suggest(field, q, limit),
+        Descriptions(load_descriptions),
+        service.vocabulary,
+    )
+    server = make_server(service, args.host, args.port, DIST_DIR, patient)
     where = f"http://{args.host}:{args.port}"
     print(f"Loading the v2 model in the background; API at {where}/api/health")
     if DIST_DIR.is_dir():

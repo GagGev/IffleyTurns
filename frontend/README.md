@@ -85,9 +85,15 @@ until the service is running.
   placed in the graph, and its claims are drawn over the graph and checked (see
   below). Uploading a PDF or text file currently runs a **mock** extractor
   (`src/lib/paperService.ts`), which builds a v2_5-shaped result from the graph;
-  swap `mockExtractPaper` for a call to the real pipeline. The **Literature
-  set** lists 508 papers from `literature_review/additional_runs` with 539
+  swap `mockExtractPaper` for a call to the real pipeline. The **Curated
+  literature** panel lists 508 papers from `literature_review/additional_runs` with 539
   paper-stated disease pairs.
+- **Find a paper** searches, by title or PMID, the uploads, the curated literature,
+  and the 1,972 other ("newly acquired") papers of the latest acquisition release
+  (`.data/literature_acquisition/v1`, 2026-10-04): 2,480 papers in all. The
+  release is unreviewed, so for its papers only the 86 disease pairs that open
+  full text co-mentions are shown, and only whether the graph has the edge is
+  checked.
 - **Does the graph carry the paper's evidence?** Each claim says two diseases
   are similar in some respects (phenotype, genes, pathways, treatment,
   epidemiology). It is judged against the graph's edge for that pair: *no edge*
@@ -134,6 +140,52 @@ to the v2 graph files. **Export JSON** saves them, and **Download v2 JSON**
 on a disease gives a file for `place_disease.py --json --add` to add it to the
 shared graph.
 
+## Patient view
+
+The home page offers two views. The **researcher view** is the explorer
+described above. The **patient view** is for patients and families. It is
+deliberately simple and framed throughout as "not a diagnosis":
+
+1. Describe symptoms in your own words. MedGemma turns them into candidate
+   clinical terms, each is matched to an HPO term, and the patient confirms or
+   removes them. Symptoms can also be chosen from a list.
+2. The confirmed symptoms are placed with the v2 model, the same way as **Add a
+   disease**. The closest diseases are grouped by cluster, and the top three
+   groups are shown.
+3. Each group shows a plain-language name, a short explanation from MedGemma,
+   example conditions, and **who to talk to**. Each example shows the symptoms
+   it shares, an Orphanet link and an "Explain simply" button. That button
+   rewrites Orphanet's own description; it is not the model's own knowledge.
+   General resources (GP, Orphanet, Genetic Alliance UK, EURORDIS, NORD) follow.
+
+MedGemma only handles language. Which conditions match is decided by v2. Group
+names and the "who to talk to" advice come from a fixed table in
+`src/data/patient.ts`, not from the model. Safeguards on MedGemma's terms:
+
+- each term is checked against the HPO vocabulary, and unmatched terms are left
+  for the patient to search;
+- a term is never made more specific than the patient said;
+- a match that negates the term ("Lack of skin elasticity" for stretchy skin) is
+  rejected;
+- the patient confirms every term before it is used.
+
+### Running MedGemma
+
+The patient view uses a text-only MedGemma checkpoint through any
+OpenAI-compatible endpoint on this machine. The included server loads it with
+transformers (Apple GPU, CUDA or CPU):
+
+```sh
+pip install torch transformers   # if not already installed
+python frontend/api/medgemma_server.py --model /path/to/medgemma-4b-text   # http://127.0.0.1:8766/v1
+```
+
+On an M4 MacBook the 4B model loads in about 10 seconds, uses about 8 GB of
+memory, and answers in 3–10 seconds. llama-server or vLLM can be used instead;
+set `MEDGEMMA_BASE_URL` (it must be a local address, so symptoms never leave
+the machine). Without MedGemma, the patient view still works: symptoms are
+chosen from a list and the fixed group descriptions are shown.
+
 ## API
 
 `api/server.py` uses only the standard library, plus v2's own dependencies
@@ -144,7 +196,11 @@ for the model.
 | `GET /api/health` | `{"status": "loading" \| "ready" \| "error", "diseases": n}` |
 | `POST /api/place` | `{"disease": {...}, "id": "USER:...", "top": 20, "others": [{"id", "disease"}]}` → neighbours with v2's explanation, support, warnings and refitted weights |
 | `GET /api/suggest?field=phenotypes\|genes\|drugs\|ontology&q=...` | vocabulary matches for the form |
+| `GET /api/patient/status` | whether MedGemma is reachable |
+| `POST /api/patient/interpret` | `{"text"}` → clinical terms with HPO matches for the patient to confirm |
+| `POST /api/patient/explain-disease` | `{"id", "name"}` → Orphanet's description in plain words (`text` is null if there is none) |
+| `POST /api/patient/explain-group` | `{"category", "examples", "shared"}` → a group in plain words |
 
 ```sh
-npm run test:api   # request handling, with a stub in place of the model
+npm run test:api   # request handling and patient helpers, with stubs in place of v2 and MedGemma
 ```

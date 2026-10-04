@@ -281,6 +281,12 @@ input[type='checkbox'] {
 .search {
   position: relative;
 }
+.search-field {
+  position: relative;
+}
+.search-hint {
+  margin: 4px 0 0;
+}
 .search-results {
   position: absolute;
   z-index: 20;
@@ -2066,4 +2072,288 @@ details[open] summary {
 .help-list dd {
   margin: 1px 0 0;
   color: var(--text-secondary);
+}
+
+/* ---------- Symptom filter ---------- */
+
+.symptom-filter {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: -6px;
+  padding-left: 24px;
+}
+.symptom-chips {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.symptom-chips li {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  background: var(--surface-2);
+  border-radius: 999px;
+  padding: 1px 2px 1px 9px;
+  font-size: 12px;
+}
+.symptom-chips span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.symptom-chips button {
+  border: none;
+  background: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  padding: 0 5px;
+}
+.symptom-chips button:hover {
+  color: var(--text-primary);
+}
+.symptom-filter .radio-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+}
+
+/* ---------- Home ---------- */
+
+.home {
+  min-height: 100vh;
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 12vh 20px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+.home-header h1 {
+  font-size: 30px;
+  margin-bottom: 10px;
+}
+.home-header p {
+  font-size: 16px;
+  color: var(--text-secondary);
+  max-width: 640px;
+}
+.home-choices {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+}
+.home-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  background: var(--surface-1);
+  border: 1px solid var(--border-strong);
+  border-radius: 12px;
+  padding: 22px;
+  cursor: pointer;
+}
+.home-card:hover {
+  border-color: var(--text-secondary);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+}
+.home-card-title {
+  font-size: 19px;
+  font-weight: 650;
+}
+.home-card-body {
+  color: var(--text-secondary);
+  font-size: 15px;
+}
+.home-card-cta {
+  margin-top: auto;
+  font-weight: 600;
+  color: var(--link);
+}
+.home-note {
+  color: var(--text-muted);
+  font-size: 13px;
+}
+.header-nav {
+  display: flex;
+  gap: 16px;
+  font-size: 13px;
+}
+
+/* ---------- Patient view ---------- */
+
+.patient {
+  min-height: 100vh;
+  background: var(--page);
+  font-size: 16px;
+  line-height: 1.55;
+}
+.patient-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 20px;
+  background: var(--surface-1);
+  border-bottom: 1px solid var(--border);
+  font-size: 14px;
+}
+.patient-brand {
+  font-weight: 600;
+  text-align: center;
+}
+.patient-main {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 24px 16px 60px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.patient-notice {
+  background: var(--warning-bg);
+  border-radius: 10px;
+  padding: 14px 16px;
+  font-size: 15px;
+}
+.patient-card {
+  position: relative;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.patient-card h2 {
+  font-size: 20px;
+}
+.patient-card h3 {
+  font-size: 15px;
+  margin: 6px 0 0;
+}
+.patient-card p {
+  margin: 0;
+}
+.patient-label {
+  font-weight: 500;
+}
+.patient-card textarea {
+  font: inherit;
+  color: inherit;
+  background: var(--surface-1);
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  padding: 10px 12px;
+  resize: vertical;
+}
+.patient-card .button {
+  align-self: flex-start;
+  font-size: 15px;
+  padding: 8px 16px;
+}
+.patient-card .term-picker input {
+  font-size: 16px;
+}
+.interpreted-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.interpreted-list li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+}
+.interpreted-list select {
+  width: auto;
+  font-size: 14px;
+}
+.patient-symptoms {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.patient-symptoms li {
+  display: inline-flex;
+  align-items: center;
+  background: var(--surface-2);
+  border-radius: 999px;
+  padding: 3px 4px 3px 12px;
+  font-size: 14px;
+}
+.patient-symptoms button {
+  border: none;
+  background: none;
+  color: var(--text-muted);
+  font-size: 17px;
+  line-height: 1;
+  padding: 0 6px;
+  cursor: pointer;
+}
+.badge {
+  align-self: flex-start;
+  font-size: 12px;
+  font-weight: 600;
+  background: var(--surface-2);
+  border-radius: 999px;
+  padding: 2px 10px;
+}
+.example-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.example-list li {
+  border-top: 1px solid var(--border);
+  padding-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.example-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+}
+.example-explanation {
+  background: var(--surface-2);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 15px;
+}
+.resource-list {
+  margin: 0;
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+@media (max-width: 600px) {
+  .patient-brand {
+    display: none;
+  }
+  .home {
+    padding-top: 6vh;
+  }
 }

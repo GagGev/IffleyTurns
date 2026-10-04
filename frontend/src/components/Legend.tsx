@@ -2,14 +2,12 @@ import { useMemo } from 'react'
 import type { TermOption } from '../data/annotations'
 import type { ClusterInfo, GraphNode } from '../data/types'
 import { COLOUR_MODES, type NodeColouring } from '../lib/colouring'
-import { plural } from '../lib/format'
 import { TermPicker } from './TermPicker'
 import { InfoTip } from './InfoTip'
 
 interface Props {
   colouring: NodeColouring
   clusters: ClusterInfo[]
-  modularity: number | null
   categories: { name: string; count: number }[]
   /** Every disease in view, for the "similarity to a disease" picker. */
   nodes: Map<string, GraphNode>
@@ -23,7 +21,6 @@ interface Props {
 export function Legend({
   colouring,
   clusters,
-  modularity,
   categories,
   nodes,
   clusterColour,
@@ -33,7 +30,6 @@ export function Legend({
 }: Props) {
   const { mode, annotations } = colouring
   const modes = clusters.length > 0 ? COLOUR_MODES : COLOUR_MODES.filter((m) => m.value !== 'cluster')
-  const hint = COLOUR_MODES.find((m) => m.value === mode)?.hint
   const diseaseOptions = useMemo<TermOption[]>(
     () => (mode === 'disease' ? [...nodes.values()].map((n) => ({ id: n.id, label: n.name, count: n.degree })) : []),
     [mode, nodes],
@@ -54,14 +50,10 @@ export function Legend({
           ))}
         </select>
       </label>
-      {hint && <p className="muted small">{hint}.</p>}
 
       {mode === 'cluster' && clusters.length > 0 && (
         <>
-          <p className="muted small">
-            {plural(clusters.length, 'cluster')} found with Louvain community detection on the similarity graph
-            {modularity !== null ? ` (modularity ${modularity.toFixed(2)})` : ''}. Click one to highlight it.
-          </p>
+          <p className="muted small">Click a cluster to highlight it.</p>
           <ul className="cluster-list">
             {clusters.map((c, i) => (
               <li key={c.id}>
@@ -193,6 +185,9 @@ export function Legend({
         </li>
         <li>
           <span className="node-key sized" aria-hidden /> Larger node = more edges
+        </li>
+        <li>
+          <span className="node-key hollow" aria-hidden /> Hollow: no edge under the current filters
         </li>
       </ul>
       <p className="muted small">
