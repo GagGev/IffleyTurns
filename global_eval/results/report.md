@@ -41,16 +41,16 @@ works in, so v2 and v3 can be compared like for like.
   README's no-history variant (reported alongside).
 
 
-## Headline
+## Headline: share of diseases with a valid partner in their top 10
 
-| Model | Paper pairs, all: Hits@10 / mean pctl | Paper pairs, no curated relation | Siblings MAP* | Shared gene MAP* | Shared drug MAP* | Forward-time MAP |
+| Model | Paper pairs, all | Paper pairs, no curated relation | Siblings* | Shared gene* | Shared drug* | Forward in time |
 |---|---|---|---|---|---|---|
-| v1 weighted Jaccard | 0.22 / 0.925 | 0.05 / 0.870 | 0.019 | 0.165 | 0.050 | 0.014 |
-| v2 (drug-free view; retrained for forward time) | 0.48 / 0.970 | 0.22 / 0.936 | 0.334 | 0.291 | 0.106 | 0.061 |
-| v3 static similarity | 0.49 / 0.972 | 0.21 / 0.940 | 0.318 | 0.301 | 0.121 | 0.064 |
-| v3 forecast / stacker | 0.42 / 0.969 | 0.16 / 0.939 | – | – | – | 0.113 |
+| v1 weighted Jaccard | 30% | 6% | 6% | 37% | 43% | 7% |
+| v2 (drug-free view; retrained for forward time) | 64% | 28% | 79% | 57% | 60% | 28% |
+| v3 static similarity | 64% | 28% | 76% | 60% | 63% | 29% |
+| v3 forecast / stacker | 55% | 20% | – | – | – | 42% |
 
-\* In-sample for v2 and v3 (see the relations benchmark). Forward-time MAP is the test fold, all 9,525 nodes as candidates; v2 there is the v2 architecture retrained on pre-cutoff relations. Paper-pair columns are Hits@10 and the mean percentile of the partner among 7,493 diseases.
+Each cell is the percentage of query diseases with at least one valid partner among their 10 highest-scored diseases (paper-stated partner, curated relation, or a relation formed after the 2018 cutoff). \* In-sample for v2 and v3 (see the relations benchmark). Forward in time is the test fold over 9,525 nodes; v2 there is the v2 architecture retrained on pre-cutoff relations. MAP, MRR and AUROC are in the sections below.
 
 ## Paper-stated disease pairs
 
@@ -148,6 +148,25 @@ For each pair, the partner's rank among the 7,493 catalogue diseases, in both di
 
 295 pairs are “similar”, 269 “related but distinct”.
 
+### Diseases with a paper-stated partner in their top k
+
+Each disease counts once; it is a hit when at least one of the diseases papers link it to ranks within the top k of the 7,493-disease catalogue.
+
+| Pairs | Model | Diseases | top 1 | top 5 | top 10 | top 20 |
+|---|---|---|---|---|---|---|
+| all pairs | v1 weighted Jaccard | 648 | 11.4% | 24.5% | 30.2% | 37.0% |
+| all pairs | v1 weighted Jaccard (no approved drugs) | 648 | 11.4% | 24.8% | 30.2% | 37.2% |
+| all pairs | v2 fusion, all 12 modalities | 648 | 27.2% | 54.2% | 68.1% | 76.4% |
+| all pairs | v2 fusion, drug-free view | 648 | 24.7% | 50.5% | 63.6% | 73.3% |
+| all pairs | v3 static similarity (neural + fusion) | 648 | 23.8% | 50.9% | 64.4% | 71.9% |
+| all pairs | v3 forecast (stacker) | 648 | 23.6% | 44.4% | 55.4% | 65.9% |
+| pairs with no curated relation | v1 weighted Jaccard | 338 | 1.2% | 4.7% | 5.6% | 8.9% |
+| pairs with no curated relation | v1 weighted Jaccard (no approved drugs) | 338 | 1.2% | 4.7% | 5.6% | 8.9% |
+| pairs with no curated relation | v2 fusion, all 12 modalities | 338 | 5.3% | 20.1% | 30.5% | 40.8% |
+| pairs with no curated relation | v2 fusion, drug-free view | 338 | 4.7% | 18.6% | 28.1% | 38.5% |
+| pairs with no curated relation | v3 static similarity (neural + fusion) | 338 | 3.6% | 16.0% | 27.5% | 37.3% |
+| pairs with no curated relation | v3 forecast (stacker) | 338 | 5.3% | 13.6% | 20.1% | 32.8% |
+
 ### Paired differences in mean percentile of the partner (95% bootstrap CI)
 
 - v2 fusion, all 12 modalities − v1 weighted Jaccard (all pairs): +0.0529 [+0.0447, +0.0614]
@@ -176,6 +195,15 @@ Orphanet siblings, shared causal gene and shared trial drug, with the modalities
 | v2 fusion, drug-free view | 0.334 [0.302, 0.366] | 0.608 [0.568, 0.649] | 0.790 [0.750, 0.830] | 0.908 [0.895, 0.919] | 0.357 |
 | v3 static similarity (neural + fusion) | 0.318 [0.287, 0.348] | 0.589 [0.548, 0.631] | 0.765 [0.723, 0.805] | 0.923 [0.912, 0.932] | 0.325 |
 
+Share of query diseases with at least one true partner in their top 10:
+
+| Model | Diseases with a hit in the top 10 [95% CI] |
+|---|---|
+| v1 weighted Jaccard | 6.0% [3.8, 8.2] |
+| v2 fusion, all 12 modalities | 79.5% [75.5, 83.5] |
+| v2 fusion, drug-free view | 79.0% [75.0, 83.0] |
+| v3 static similarity (neural + fusion) | 76.5% [72.2, 80.5] |
+
 - MAP v2 fusion, all 12 modalities − v1 weighted Jaccard: +0.3155 [+0.2842, +0.3465]
 - MAP v3 static similarity (neural + fusion) − v2 fusion, drug-free view: -0.0164 [-0.0306, -0.0025]
 
@@ -190,6 +218,15 @@ Orphanet siblings, shared causal gene and shared trial drug, with the modalities
 | v2 fusion, drug-free view | 0.291 [0.258, 0.325] | 0.438 [0.396, 0.481] | 0.575 [0.527, 0.623] | 0.890 [0.872, 0.907] | 0.297 |
 | v3 static similarity (neural + fusion) | 0.301 [0.269, 0.335] | 0.447 [0.406, 0.491] | 0.598 [0.550, 0.645] | 0.947 [0.938, 0.956] | 0.291 |
 
+Share of query diseases with at least one true partner in their top 10:
+
+| Model | Diseases with a hit in the top 10 [95% CI] |
+|---|---|
+| v1 weighted Jaccard | 37.0% [32.5, 41.8] |
+| v2 fusion, all 12 modalities | 57.2% [52.2, 62.0] |
+| v2 fusion, drug-free view | 57.5% [52.8, 62.3] |
+| v3 static similarity (neural + fusion) | 59.8% [55.0, 64.5] |
+
 - MAP v2 fusion, all 12 modalities − v1 weighted Jaccard: +0.1250 [+0.1052, +0.1460]
 - MAP v3 static similarity (neural + fusion) − v2 fusion, drug-free view: +0.0099 [-0.0003, +0.0201]
 
@@ -203,6 +240,15 @@ Orphanet siblings, shared causal gene and shared trial drug, with the modalities
 | v2 fusion, all 12 modalities | 0.106 [0.093, 0.121] | 0.353 [0.315, 0.391] | 0.603 [0.552, 0.647] | 0.783 [0.765, 0.801] | 0.119 |
 | v2 fusion, drug-free view | 0.106 [0.093, 0.121] | 0.353 [0.315, 0.391] | 0.603 [0.552, 0.647] | 0.783 [0.765, 0.801] | 0.119 |
 | v3 static similarity (neural + fusion) | 0.121 [0.107, 0.136] | 0.373 [0.336, 0.411] | 0.630 [0.580, 0.675] | 0.833 [0.816, 0.849] | 0.134 |
+
+Share of query diseases with at least one true partner in their top 10:
+
+| Model | Diseases with a hit in the top 10 [95% CI] |
+|---|---|
+| v1 weighted Jaccard | 42.8% [38.0, 47.5] |
+| v2 fusion, all 12 modalities | 60.2% [55.2, 64.8] |
+| v2 fusion, drug-free view | 60.2% [55.2, 64.8] |
+| v3 static similarity (neural + fusion) | 63.0% [58.0, 67.5] |
 
 - MAP v2 fusion, all 12 modalities − v1 weighted Jaccard: +0.0561 [+0.0467, +0.0669]
 - MAP v3 static similarity (neural + fusion) − v2 fusion, drug-free view: +0.0144 [+0.0095, +0.0195]

@@ -58,9 +58,13 @@ def run(tasks: dict) -> tuple[dict, str]:
                 diffs[f"{a}-{b}"] = {"map_diff": d, "ci": [lo, hi]}
         metrics[kind] = {"n_pairs": info["n_pairs"], "n_eligible_queries": info["n_eligible_queries"],
                          "n_queries": len(queries), "models": out, "paired_map_differences": diffs}
+        rows_hit = [[core.MODELS[m][1], f"{100 * out[m]['hits@10']['mean']:.1f}% [{100 * out[m]['hits@10']['ci'][0]:.1f}, {100 * out[m]['hits@10']['ci'][1]:.1f}]"]
+                    for m in models]
         header = ["Model", "MAP [95% CI]", "MRR [95% CI]", "Hits@10 [95% CI]", "AUROC [95% CI]", "MAP, v2-test-split queries"]
         text.append(f"### {title}\n\n{info['n_pairs']:,} pairs; {len(queries)} of {info['n_eligible_queries']:,} eligible query diseases sampled (seed 0).\n\n"
                     + core.md_table(header, rows_md) + "\n\n"
+                    + "Share of query diseases with at least one true partner in their top 10:\n\n"
+                    + core.md_table(["Model", "Diseases with a hit in the top 10 [95% CI]"], rows_hit) + "\n\n"
                     + "\n".join(f"- MAP {core.MODELS[a.split('-')[0]][1]} − {core.MODELS[a.split('-')[1]][1]}: {v['map_diff']:+.4f} [{v['ci'][0]:+.4f}, {v['ci'][1]:+.4f}]"
                                 for a, v in diffs.items()) + "\n")
     return metrics, "\n".join(text)
