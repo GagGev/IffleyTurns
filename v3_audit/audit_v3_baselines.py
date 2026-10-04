@@ -28,9 +28,9 @@ for fold, (a, b) in FOLDS.items():
         rows = queries[s:s + 64]; B = feats.block(rows)
         sims = np.stack([B[f"sim_{m}"] for m in sim.modalities], -1)
         static_mean = np.nan_to_num(np.nanmean(sims, axis=-1), nan=0.0)
-        pop = np.broadcast_to(feats.log_designations[None, :], (len(rows), w.n))
+        pop = np.broadcast_to(feats.nodes.log_designations[None, :], (len(rows), w.n))
         sc = {"random": rng.random((len(rows), w.n)), "popularity (log #designations)": pop,
-              "popularity + graph degree": pop + 1e-3 * feats.log_degree[None, :], "adamic_adar": B["adamic_adar"],
+              "popularity + graph degree": pop + 1e-3 * np.log1p(feats.nodes.degree)[None, :], "adamic_adar": B["adamic_adar"],
               "drug mechanism": B["target_cosine"] + B["gene_target"] + 0.5 * B["target_pathway_cosine"],
               "v1 weighted Jaccard": v1.block(rows), "static uniform mean of cosines": static_mean,
               "same top-level category": B["same_category"], "static mean + popularity": static_mean * 5 + pop}
