@@ -1,0 +1,167 @@
+{
+  "created_at": "2026-10-04T00:50:48.623951+00:00",
+  "source_sha256": "872bf2cb5bc23eb3af3a209fb87d6754499680c28f018c18983852a7955e0777",
+  "code_sha256": "8911676db8907c823d8b15ec6157cd2f063f02f5581bdab8f2134cb730de73a2",
+  "task": "paragraph-to-source-paper retrieval using self-supervised within-paper targets",
+  "biological_similarity_metrics": null,
+  "versions": {
+    "python": "3.13.7 (tags/v3.13.7:bcee1c3, Aug 14 2025, 14:15:11) [MSC v.1944 64 bit (AMD64)]",
+    "numpy": "2.3.3",
+    "sklearn": "1.9.0"
+  },
+  "counts": {
+    "original_paragraphs": 4967,
+    "training_paragraphs": 3908,
+    "training_queries": 1927,
+    "training_papers": 104,
+    "test_queries": 28,
+    "test_papers": 2,
+    "gallery_papers": 106,
+    "gallery_paragraphs": 2009,
+    "vocabulary_terms": 30000,
+    "excluded_papers_too_few_paragraphs": 1
+  },
+  "filter_rejections": {
+    "fewer_than_40_words": 754,
+    "administrative_section": 236,
+    "text_shared_between_papers": 10
+  },
+  "models": {
+    "tfidf": {
+      "micro": {
+        "queries": 28,
+        "recall_at_1": 0.8928571428571429,
+        "recall_at_5": 0.9642857142857143,
+        "recall_at_10": 1.0,
+        "mrr": 0.9270833333333333,
+        "ndcg_at_10": 0.9445140939413281,
+        "median_rank": 1.0
+      },
+      "macro_over_papers": {
+        "recall_at_1": 0.8897435897435897,
+        "recall_at_5": 0.9666666666666667,
+        "recall_at_10": 1.0,
+        "mrr": 0.9259615384615384,
+        "ndcg_at_10": 0.9437563838507341
+      },
+      "per_paper": {
+        "PMID:37675393": {
+          "queries": 13,
+          "recall_at_1": 0.8461538461538461,
+          "recall_at_5": 1.0,
+          "recall_at_10": 1.0,
+          "mrr": 0.9102564102564101,
+          "ndcg_at_10": 0.9331484425824198,
+          "median_rank": 1.0
+        },
+        "PMID:38335127": {
+          "queries": 15,
+          "recall_at_1": 0.9333333333333333,
+          "recall_at_5": 0.9333333333333333,
+          "recall_at_10": 1.0,
+          "mrr": 0.9416666666666667,
+          "ndcg_at_10": 0.9543643251190486,
+          "median_rank": 1.0
+        }
+      }
+    },
+    "svd": {
+      "micro": {
+        "queries": 28,
+        "recall_at_1": 0.75,
+        "recall_at_5": 0.9642857142857143,
+        "recall_at_10": 0.9642857142857143,
+        "mrr": 0.8595238095238095,
+        "ndcg_at_10": 0.8851992329081695,
+        "median_rank": 1.0
+      },
+      "macro_over_papers": {
+        "recall_at_1": 0.7512820512820513,
+        "recall_at_5": 0.9666666666666667,
+        "recall_at_10": 0.9666666666666667,
+        "mrr": 0.8611965811965812,
+        "ndcg_at_10": 0.8871746135897498
+      },
+      "per_paper": {
+        "PMID:37675393": {
+          "queries": 13,
+          "recall_at_1": 0.7692307692307693,
+          "recall_at_5": 1.0,
+          "recall_at_10": 1.0,
+          "mrr": 0.8846153846153846,
+          "ndcg_at_10": 0.9148299431318748,
+          "median_rank": 1.0
+        },
+        "PMID:38335127": {
+          "queries": 15,
+          "recall_at_1": 0.7333333333333333,
+          "recall_at_5": 0.9333333333333333,
+          "recall_at_10": 0.9333333333333333,
+          "mrr": 0.8377777777777777,
+          "ndcg_at_10": 0.8595192840476249,
+          "median_rank": 1.0
+        }
+      }
+    },
+    "svd_ridge": {
+      "micro": {
+        "queries": 28,
+        "recall_at_1": 0.8571428571428571,
+        "recall_at_5": 1.0,
+        "recall_at_10": 1.0,
+        "mrr": 0.9029761904761904,
+        "ndcg_at_10": 0.9267306828171211,
+        "median_rank": 1.0
+      },
+      "macro_over_papers": {
+        "recall_at_1": 0.8564102564102565,
+        "recall_at_5": 1.0,
+        "recall_at_10": 1.0,
+        "mrr": 0.9021794871794871,
+        "ndcg_at_10": 0.9261315940040484
+      },
+      "per_paper": {
+        "PMID:37675393": {
+          "queries": 13,
+          "recall_at_1": 0.8461538461538461,
+          "recall_at_5": 1.0,
+          "recall_at_10": 1.0,
+          "mrr": 0.891025641025641,
+          "ndcg_at_10": 0.9177443506210303,
+          "median_rank": 1.0
+        },
+        "PMID:38335127": {
+          "queries": 15,
+          "recall_at_1": 0.8666666666666667,
+          "recall_at_5": 1.0,
+          "recall_at_10": 1.0,
+          "mrr": 0.9133333333333333,
+          "ndcg_at_10": 0.9345188373870666,
+          "median_rank": 1.0
+        }
+      }
+    }
+  },
+  "uniform_random_expectation": {
+    "recall_at_1": 0.009433962264150943,
+    "recall_at_5": 0.04716981132075472,
+    "recall_at_10": 0.09433962264150944,
+    "mrr": 0.049484569090327175,
+    "ndcg_at_10": 0.04286376734045609
+  },
+  "explained_training_variance": 0.15906434475731884,
+  "integrity": {
+    "train_test_papers_disjoint": true,
+    "train_test_components_disjoint": true,
+    "query_gallery_sections_disjoint": true,
+    "held_out_text_used_for_fitting": false,
+    "clinical_labels_used": 0
+  },
+  "limitations": [
+    "Only two held-out papers and no validation split.",
+    "No hyperparameter selection or confidence/significance claim.",
+    "Source identity is an automatic retrieval target, not clinical similarity evidence.",
+    "Family review remains incomplete; paper split is provisional.",
+    "This new experiment does not amend or overwrite the source review protocol."
+  ]
+}

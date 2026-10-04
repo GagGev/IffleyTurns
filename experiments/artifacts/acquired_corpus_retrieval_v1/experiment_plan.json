@@ -1,0 +1,42 @@
+{
+  "experiment": "acquired-corpus-source-paper-retrieval-v1",
+  "registered_at": "2026-10-04T00:50:45.476777+00:00",
+  "source_sha256": "872bf2cb5bc23eb3af3a209fb87d6754499680c28f018c18983852a7955e0777",
+  "architecture_reference": "models/svd_embeddings.py",
+  "task": "paragraph-to-source-paper retrieval using self-supervised within-paper targets",
+  "not_evaluated": "seven-dimensional disease similarity: no reviewed targets available",
+  "split": "existing provisional paper_pair_family split; no resplitting",
+  "within_paper": "SHA256 deterministic alternating gallery/query paragraphs; minimum four usable paragraphs",
+  "text_filters": ">=40 words; exclude administrative sections; strip URLs, DOI/PMID and numeric citations; remove exact duplicated text",
+  "model": {
+    "tfidf": "word 1-2 grams; min_df=2; max_df=0.95; max_features=30000; sublinear_tf",
+    "svd_components": 128,
+    "svd_iterations": 7,
+    "ridge_alpha": 10.0,
+    "ridge_scaler": "StandardScaler",
+    "random_seed": 42,
+    "weighting": "each training paper contributes equal total ridge sample weight"
+  },
+  "fit_scope": "TF-IDF and SVD on train paper text only; ridge on train query embeddings -> disjoint train gallery centroids",
+  "index_scope": "train and held-out gallery text may be indexed with frozen transforms; held-out query paragraphs never in index",
+  "baselines": [
+    "raw TF-IDF cosine",
+    "SVD cosine",
+    "uniform random expected rank"
+  ],
+  "primary_metric_for_this_exploratory_task": "paper-macro mean reciprocal rank",
+  "secondary_metrics": [
+    "Recall@1",
+    "Recall@5",
+    "Recall@10",
+    "nDCG@10",
+    "per-paper ranks"
+  ],
+  "limitations": [
+    "Only two held-out papers and no validation split.",
+    "No hyperparameter selection or confidence/significance claim.",
+    "Source identity is an automatic retrieval target, not clinical similarity evidence.",
+    "Family review remains incomplete; paper split is provisional.",
+    "This new experiment does not amend or overwrite the source review protocol."
+  ]
+}

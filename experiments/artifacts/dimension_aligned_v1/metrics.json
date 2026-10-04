@@ -1,0 +1,1203 @@
+{
+  "dimensions": {
+    "diagnostic_confusability": {
+      "aligned_feature_count": 46,
+      "aligned_feature_names": [
+        "phenotypes_exact_both_available",
+        "phenotypes_exact_jaccard",
+        "phenotypes_exact_overlap_coefficient",
+        "phenotypes_exact_size_balance",
+        "phenotypes_exact_log1p_shared",
+        "phenotypes_exact_log1p_union",
+        "phenotypes_ancestors_both_available",
+        "phenotypes_ancestors_jaccard",
+        "phenotypes_ancestors_overlap_coefficient",
+        "phenotypes_ancestors_size_balance",
+        "phenotypes_ancestors_log1p_shared",
+        "phenotypes_ancestors_log1p_union",
+        "categories_both_available",
+        "categories_jaccard",
+        "categories_overlap_coefficient",
+        "categories_size_balance",
+        "categories_log1p_shared",
+        "categories_log1p_union",
+        "ontology_parents_both_available",
+        "ontology_parents_jaccard",
+        "ontology_parents_overlap_coefficient",
+        "ontology_parents_size_balance",
+        "ontology_parents_log1p_shared",
+        "ontology_parents_log1p_union",
+        "preferential_parents_both_available",
+        "preferential_parents_jaccard",
+        "preferential_parents_overlap_coefficient",
+        "preferential_parents_size_balance",
+        "preferential_parents_log1p_shared",
+        "preferential_parents_log1p_union",
+        "body_systems_both_available",
+        "body_systems_jaccard",
+        "body_systems_overlap_coefficient",
+        "body_systems_size_balance",
+        "body_systems_log1p_shared",
+        "body_systems_log1p_union",
+        "onset_both_available",
+        "onset_jaccard",
+        "onset_overlap_coefficient",
+        "onset_size_balance",
+        "onset_log1p_shared",
+        "onset_log1p_union",
+        "phenotypes_ic_weighted_jaccard",
+        "phenotypes_ic_cosine",
+        "disorder_type_match",
+        "disorder_group_match"
+      ],
+      "aligned_selected_alpha": 10000.0,
+      "counts": {
+        "test": 23,
+        "train": 175,
+        "validation": 28
+      },
+      "current_feature_count": 144,
+      "current_selected_alpha": 10000.0,
+      "paired_bootstrap": {
+        "examples": 23,
+        "interpretation": "Positive RMSE deltas favor aligned semantic features.",
+        "repetitions": 10000,
+        "rmse_delta": -0.00121716310331077,
+        "rmse_delta_95_percentile_interval": [
+          -0.0033744631756827763,
+          0.0006364375438900775
+        ],
+        "rmse_probability_improved": 0.1072
+      },
+      "paper_blocked_removed_pairs": 1,
+      "paper_blocked_test": {
+        "aligned_semantic_ridge": {
+          "effective_sample_size": 17.799020358181544,
+          "examples": 22,
+          "mean_absolute_error": 0.1887087797503852,
+          "pearson_correlation": 0.5334995313318456,
+          "r2": -0.26074513491373374,
+          "root_mean_squared_error": 0.21377951998079806,
+          "spearman_correlation": 0.5455746658932537,
+          "weight_sum": 17.05
+        },
+        "current_ridge": {
+          "effective_sample_size": 17.799020358181544,
+          "examples": 22,
+          "mean_absolute_error": 0.1893884235757328,
+          "pearson_correlation": 0.45975253448347947,
+          "r2": -0.24920939556998833,
+          "root_mean_squared_error": 0.21279923781109375,
+          "spearman_correlation": 0.5524230991363673,
+          "weight_sum": 17.05
+        },
+        "mean_baseline": {
+          "effective_sample_size": 17.799020358181544,
+          "examples": 22,
+          "mean_absolute_error": 0.1906733575222984,
+          "pearson_correlation": -6.540859842925917e-16,
+          "r2": -0.2828712257633499,
+          "root_mean_squared_error": 0.21564727728518165,
+          "spearman_correlation": -2.241357782536108e-16,
+          "weight_sum": 17.05
+        }
+      },
+      "test": {
+        "aligned_semantic_ridge": {
+          "effective_sample_size": 18.66242324397185,
+          "examples": 23,
+          "mean_absolute_error": 0.19148373641112015,
+          "pearson_correlation": 0.4366346793109747,
+          "r2": -0.18181502430212948,
+          "root_mean_squared_error": 0.21594558166646893,
+          "spearman_correlation": 0.4547205946564336,
+          "weight_sum": 17.650000000000002
+        },
+        "current_ridge": {
+          "effective_sample_size": 18.66242324397185,
+          "examples": 23,
+          "mean_absolute_error": 0.19191511492809513,
+          "pearson_correlation": 0.4786448190557278,
+          "r2": -0.16853012415170587,
+          "root_mean_squared_error": 0.21472841856315816,
+          "spearman_correlation": 0.5716495470813401,
+          "weight_sum": 17.650000000000002
+        },
+        "mean_baseline": {
+          "effective_sample_size": 18.66242324397185,
+          "examples": 23,
+          "mean_absolute_error": 0.1932503490383016,
+          "pearson_correlation": 3.918692254235996e-16,
+          "r2": -0.19966622215262797,
+          "root_mean_squared_error": 0.21757038724762737,
+          "spearman_correlation": 1.069135318829652e-16,
+          "weight_sum": 17.650000000000002
+        }
+      },
+      "validation_trials": {
+        "aligned_semantic_ridge": [
+          {
+            "alpha": 0.01,
+            "effective_sample_size": 15.14471074848434,
+            "examples": 28,
+            "mean_absolute_error": 0.16251882704451312,
+            "pearson_correlation": 0.08728732399770191,
+            "r2": -0.2971334636529761,
+            "root_mean_squared_error": 0.1881042003141433,
+            "spearman_correlation": 0.18236540124906678,
+            "weight_sum": 25.85
+          },
+          {
+            "alpha": 0.1,
+            "effective_sample_size": 15.14471074848434,
+            "examples": 28,
+            "mean_absolute_error": 0.15989245314816583,
+            "pearson_correlation": 0.10136300558228813,
+            "r2": -0.26280318676439096,
+            "root_mean_squared_error": 0.1855983009569668,
+            "spearman_correlation": 0.19842538570734308,
+            "weight_sum": 25.85
+          },
+          {
+            "alpha": 1.0,
+            "effective_sample_size": 15.14471074848434,
+            "examples": 28,
+            "mean_absolute_error": 0.15384580959576583,
+            "pearson_correlation": 0.16095570888423005,
+            "r2": -0.15222359971294597,
+            "root_mean_squared_error": 0.17728604215929256,
+            "spearman_correlation": 0.22584054793122288,
+            "weight_sum": 25.85
+          },
+          {
+            "alpha": 10.0,
+            "effective_sample_size": 15.14471074848434,
+            "examples": 28,
+            "mean_absolute_error": 0.15009923097305813,
+            "pearson_correlation": 0.19801189246156017,
+            "r2": -0.05335735905688188,
+            "root_mean_squared_error": 0.169509494381187,
+            "spearman_correlation": 0.30605072446629067,
+            "weight_sum": 25.85
+          },
+          {
+            "alpha": 100.0,
+            "effective_sample_size": 15.14471074848434,
+            "examples": 28,
+            "mean_absolute_error": 0.14867504655606595,
+            "pearson_correlation": 0.11790098680147804,
+            "r2": -0.041262416249044254,
+            "root_mean_squared_error": 0.16853350702100506,
+            "spearman_correlation": 0.17262606249636872,
+            "weight_sum": 25.85
+          },
+          {
+            "alpha": 1000.0,
+            "effective_sample_size": 15.14471074848434,
+            "examples": 28,
+            "mean_absolute_error": 0.1458772933234362,
+            "pearson_correlation": -0.06318552509639608,
+            "r2": -0.041717455267392456,
+            "root_mean_squared_error": 0.1685703281641596,
+            "spearman_correlation": -0.15679041610260802,
+            "weight_sum": 25.85
+          },
+          {
+            "alpha": 10000.0,
+            "effective_sample_size": 15.14471074848434,
+            "examples": 28,
+            "mean_absolute_error": 0.14081024994403615,
+            "pearson_correlation": -0.17785889520401735,
+            "r2": -0.0156377866973767,
+            "root_mean_squared_error": 0.16644685238468931,
+            "spearman_correlation": -0.24299383073573103,
+            "weight_sum": 25.85
+          }
+        ],
+        "current_ridge": [
+          {
+            "alpha": 0.01,
+            "effective_sample_size": 15.14471074848434,
+            "examples": 28,
+            "mean_absolute_error": 0.29723989212714236,
+            "pearson_correlation": -0.06129718379600043,
+            "r2": -4.326507233180961,
+            "root_mean_squared_error": 0.38117764464171433,
+            "spearman_correlation": -0.07617727390374553,
+            "weight_sum": 25.85
+          },
+          {
+            "alpha": 0.1,
+            "effective_sample_size": 15.14471074848434,
+            "examples": 28,
+            "mean_absolute_error": 0.2911216099005345,
+            "pearson_correlation": -0.0521541910947557,
+            "r2": -4.13389148013617,
+            "root_mean_squared_error": 0.37422216223137755,
+            "spearman_correlation": -0.03690752437857723,
+            "weight_sum": 25.85
+          },
+          {
+            "alpha": 1.0,
+            "effective_sample_size": 15.14471074848434,
+            "examples": 28,
+            "mean_absolute_error": 0.25485468286606355,
+            "pearson_correlation": 0.0059090265354210915,
+            "r2": -3.133842481149319,
+            "root_mean_squared_error": 0.33580188026555513,
+            "spearman_correlation": 0.0673494453303786,
+            "weight_sum": 25.85
+          },
+          {
+            "alpha": 10.0,
+            "effective_sample_size": 15.14471074848434,
+            "examples": 28,
+            "mean_absolute_error": 0.20145998091074602,
+            "pearson_correlation": 0.08414565445671401,
+            "r2": -1.5037344339228849,
+            "root_mean_squared_error": 0.2613366337599062,
+            "spearman_correlation": 0.2506024121890618,
+            "weight_sum": 25.85
+          },
+          {
+            "alpha": 100.0,
+            "effective_sample_size": 15.14471074848434,
+            "examples": 28,
+            "mean_absolute_error": 0.1688086162578496,
+            "pearson_correlation": 0.0922313028028711,
+            "r2": -0.3544735988803578,
+            "root_mean_squared_error": 0.19221684020285307,
+            "spearman_correlation": 0.2628175797695879,
+            "weight_sum": 25.85
+          },
+          {
+            "alpha": 1000.0,
+            "effective_sample_size": 15.14471074848434,
+            "examples": 28,
+            "mean_absolute_error": 0.14619581685289,
+            "pearson_correlation": 0.11441955776544005,
+            "r2": 0.0021086413401337767,
+            "root_mean_squared_error": 0.16498626557917292,
+            "spearman_correlation": 0.15663296022902248,
+            "weight_sum": 25.85
+          },
+          {
+            "alpha": 10000.0,
+            "effective_sample_size": 15.14471074848434,
+            "examples": 28,
+            "mean_absolute_error": 0.13992776251661784,
+            "pearson_correlation": 0.1321773273520527,
+            "r2": 0.004534096164896528,
+            "root_mean_squared_error": 0.16478563743179386,
+            "spearman_correlation": 0.1599637441422117,
+            "weight_sum": 25.85
+          }
+        ]
+      }
+    },
+    "genetic": {
+      "aligned_feature_count": 26,
+      "aligned_feature_names": [
+        "genes_trusted_both_available",
+        "genes_trusted_jaccard",
+        "genes_trusted_overlap_coefficient",
+        "genes_trusted_size_balance",
+        "genes_trusted_log1p_shared",
+        "genes_trusted_log1p_union",
+        "genes_high_confidence_ot_both_available",
+        "genes_high_confidence_ot_jaccard",
+        "genes_high_confidence_ot_overlap_coefficient",
+        "genes_high_confidence_ot_size_balance",
+        "genes_high_confidence_ot_log1p_shared",
+        "genes_high_confidence_ot_log1p_union",
+        "genes_curated_union_both_available",
+        "genes_curated_union_jaccard",
+        "genes_curated_union_overlap_coefficient",
+        "genes_curated_union_size_balance",
+        "genes_curated_union_log1p_shared",
+        "genes_curated_union_log1p_union",
+        "inheritance_both_available",
+        "inheritance_jaccard",
+        "inheritance_overlap_coefficient",
+        "inheritance_size_balance",
+        "inheritance_log1p_shared",
+        "inheritance_log1p_union",
+        "disorder_type_match",
+        "disorder_group_match"
+      ],
+      "aligned_selected_alpha": 100.0,
+      "counts": {
+        "test": 17,
+        "train": 166,
+        "validation": 18
+      },
+      "current_feature_count": 76,
+      "current_selected_alpha": 1000.0,
+      "paired_bootstrap": {
+        "examples": 17,
+        "interpretation": "Positive RMSE deltas favor aligned semantic features.",
+        "repetitions": 10000,
+        "rmse_delta": -0.018493377639142466,
+        "rmse_delta_95_percentile_interval": [
+          -0.0539743733941479,
+          0.009996892569384038
+        ],
+        "rmse_probability_improved": 0.1083
+      },
+      "paper_blocked_removed_pairs": 4,
+      "paper_blocked_test": {
+        "aligned_semantic_ridge": {
+          "effective_sample_size": 10.633165829145726,
+          "examples": 13,
+          "mean_absolute_error": 0.2109260058844978,
+          "pearson_correlation": 0.02234559528264851,
+          "r2": -0.1081850708970249,
+          "root_mean_squared_error": 0.23455301986960675,
+          "spearman_correlation": -0.09000809308573558,
+          "weight_sum": 9.2
+        },
+        "current_ridge": {
+          "effective_sample_size": 10.633165829145726,
+          "examples": 13,
+          "mean_absolute_error": 0.1777485836446367,
+          "pearson_correlation": 0.09796292247808955,
+          "r2": 0.00880842310277874,
+          "root_mean_squared_error": 0.22182663062022467,
+          "spearman_correlation": 0.09754878528708909,
+          "weight_sum": 9.2
+        },
+        "mean_baseline": {
+          "effective_sample_size": 10.633165829145726,
+          "examples": 13,
+          "mean_absolute_error": 0.18212118197194307,
+          "pearson_correlation": null,
+          "r2": -0.000224839740356364,
+          "root_mean_squared_error": 0.22283515083155478,
+          "spearman_correlation": 4.4397053729786504e-16,
+          "weight_sum": 9.2
+        }
+      },
+      "test": {
+        "aligned_semantic_ridge": {
+          "effective_sample_size": 14.397003745318354,
+          "examples": 17,
+          "mean_absolute_error": 0.198387816979884,
+          "pearson_correlation": 0.03347426675794477,
+          "r2": -0.19104158423484052,
+          "root_mean_squared_error": 0.2262364215154727,
+          "spearman_correlation": -0.030502359645119687,
+          "weight_sum": 12.4
+        },
+        "current_ridge": {
+          "effective_sample_size": 14.397003745318354,
+          "examples": 17,
+          "mean_absolute_error": 0.15955861348170375,
+          "pearson_correlation": 0.12389043641056605,
+          "r2": -0.004280108069545818,
+          "root_mean_squared_error": 0.20774304387633025,
+          "spearman_correlation": 0.23842052694165486,
+          "weight_sum": 12.4
+        },
+        "mean_baseline": {
+          "effective_sample_size": 14.397003745318354,
+          "examples": 17,
+          "mean_absolute_error": 0.16307521960581672,
+          "pearson_correlation": null,
+          "r2": -0.012586418124416854,
+          "root_mean_squared_error": 0.2086003867504424,
+          "spearman_correlation": null,
+          "weight_sum": 12.4
+        }
+      },
+      "validation_trials": {
+        "aligned_semantic_ridge": [
+          {
+            "alpha": 0.01,
+            "effective_sample_size": 12.147436394830542,
+            "examples": 18,
+            "mean_absolute_error": 0.19490887650438893,
+            "pearson_correlation": 0.3458575417712802,
+            "r2": -1.1318806294475046,
+            "root_mean_squared_error": 0.21957959382010006,
+            "spearman_correlation": 0.10377483554952677,
+            "weight_sum": 11.87
+          },
+          {
+            "alpha": 0.1,
+            "effective_sample_size": 12.147436394830542,
+            "examples": 18,
+            "mean_absolute_error": 0.19046783721441732,
+            "pearson_correlation": 0.35447797491389443,
+            "r2": -1.0527499968280076,
+            "root_mean_squared_error": 0.21546590889224276,
+            "spearman_correlation": 0.11510370521516768,
+            "weight_sum": 11.87
+          },
+          {
+            "alpha": 1.0,
+            "effective_sample_size": 12.147436394830542,
+            "examples": 18,
+            "mean_absolute_error": 0.16365875296701654,
+            "pearson_correlation": 0.40924792347199895,
+            "r2": -0.628327423419865,
+            "root_mean_squared_error": 0.19190284096373325,
+            "spearman_correlation": 0.19764394627853205,
+            "weight_sum": 11.87
+          },
+          {
+            "alpha": 10.0,
+            "effective_sample_size": 12.147436394830542,
+            "examples": 18,
+            "mean_absolute_error": 0.12677724066288187,
+            "pearson_correlation": 0.5101501831389176,
+            "r2": -0.04852438327344655,
+            "root_mean_squared_error": 0.15399258268052443,
+            "spearman_correlation": 0.31850294384052724,
+            "weight_sum": 11.87
+          },
+          {
+            "alpha": 100.0,
+            "effective_sample_size": 12.147436394830542,
+            "examples": 18,
+            "mean_absolute_error": 0.11783339527418496,
+            "pearson_correlation": 0.5102021216873465,
+            "r2": 0.15846632212961442,
+            "root_mean_squared_error": 0.1379578082574697,
+            "spearman_correlation": 0.3668578301916585,
+            "weight_sum": 11.87
+          },
+          {
+            "alpha": 1000.0,
+            "effective_sample_size": 12.147436394830542,
+            "examples": 18,
+            "mean_absolute_error": 0.10719066377072807,
+            "pearson_correlation": 0.4317335380522186,
+            "r2": 0.15127966963688022,
+            "root_mean_squared_error": 0.13854563207268655,
+            "spearman_correlation": 0.22184135952936168,
+            "weight_sum": 11.87
+          },
+          {
+            "alpha": 10000.0,
+            "effective_sample_size": 12.147436394830542,
+            "examples": 18,
+            "mean_absolute_error": 0.1256595527426745,
+            "pearson_correlation": 0.40126145862482243,
+            "r2": -0.014407024913597688,
+            "root_mean_squared_error": 0.15146652425750415,
+            "spearman_correlation": 0.20506057418558227,
+            "weight_sum": 11.87
+          }
+        ],
+        "current_ridge": [
+          {
+            "alpha": 0.01,
+            "effective_sample_size": 12.147436394830542,
+            "examples": 18,
+            "mean_absolute_error": 0.28435826410880494,
+            "pearson_correlation": 0.2961540723188946,
+            "r2": -4.170624525255418,
+            "root_mean_squared_error": 0.34196529769167283,
+            "spearman_correlation": 0.3895670716909601,
+            "weight_sum": 11.87
+          },
+          {
+            "alpha": 0.1,
+            "effective_sample_size": 12.147436394830542,
+            "examples": 18,
+            "mean_absolute_error": 0.2836700182795494,
+            "pearson_correlation": 0.2946926713450762,
+            "r2": -4.138047325179977,
+            "root_mean_squared_error": 0.3408863299082029,
+            "spearman_correlation": 0.3895670716909601,
+            "weight_sum": 11.87
+          },
+          {
+            "alpha": 1.0,
+            "effective_sample_size": 12.147436394830542,
+            "examples": 18,
+            "mean_absolute_error": 0.2766904837464784,
+            "pearson_correlation": 0.2842341152800195,
+            "r2": -3.8278599249590206,
+            "root_mean_squared_error": 0.33043638790985586,
+            "spearman_correlation": 0.3541726442154519,
+            "weight_sum": 11.87
+          },
+          {
+            "alpha": 10.0,
+            "effective_sample_size": 12.147436394830542,
+            "examples": 18,
+            "mean_absolute_error": 0.22598038157708442,
+            "pearson_correlation": 0.2628826536590967,
+            "r2": -2.126615666229603,
+            "root_mean_squared_error": 0.26591803042411977,
+            "spearman_correlation": 0.32302639545662687,
+            "weight_sum": 11.87
+          },
+          {
+            "alpha": 100.0,
+            "effective_sample_size": 12.147436394830542,
+            "examples": 18,
+            "mean_absolute_error": 0.1415502744825072,
+            "pearson_correlation": 0.24486496638109598,
+            "r2": -0.3182737228927115,
+            "root_mean_squared_error": 0.1726685863021639,
+            "spearman_correlation": 0.14896463676925326,
+            "weight_sum": 11.87
+          },
+          {
+            "alpha": 1000.0,
+            "effective_sample_size": 12.147436394830542,
+            "examples": 18,
+            "mean_absolute_error": 0.12746061462057443,
+            "pearson_correlation": 0.19303343170119003,
+            "r2": -0.052625878953895366,
+            "root_mean_squared_error": 0.15429347385343312,
+            "spearman_correlation": 0.04525926025769556,
+            "weight_sum": 11.87
+          },
+          {
+            "alpha": 10000.0,
+            "effective_sample_size": 12.147436394830542,
+            "examples": 18,
+            "mean_absolute_error": 0.12873790349244962,
+            "pearson_correlation": 0.1678247690109874,
+            "r2": -0.06996744947856848,
+            "root_mean_squared_error": 0.15555924208197386,
+            "spearman_correlation": -0.06404800597161156,
+            "weight_sum": 11.87
+          }
+        ]
+      }
+    },
+    "mechanism": {
+      "aligned_feature_count": 44,
+      "aligned_feature_names": [
+        "genes_trusted_both_available",
+        "genes_trusted_jaccard",
+        "genes_trusted_overlap_coefficient",
+        "genes_trusted_size_balance",
+        "genes_trusted_log1p_shared",
+        "genes_trusted_log1p_union",
+        "genes_high_confidence_ot_both_available",
+        "genes_high_confidence_ot_jaccard",
+        "genes_high_confidence_ot_overlap_coefficient",
+        "genes_high_confidence_ot_size_balance",
+        "genes_high_confidence_ot_log1p_shared",
+        "genes_high_confidence_ot_log1p_union",
+        "genes_curated_union_both_available",
+        "genes_curated_union_jaccard",
+        "genes_curated_union_overlap_coefficient",
+        "genes_curated_union_size_balance",
+        "genes_curated_union_log1p_shared",
+        "genes_curated_union_log1p_union",
+        "categories_both_available",
+        "categories_jaccard",
+        "categories_overlap_coefficient",
+        "categories_size_balance",
+        "categories_log1p_shared",
+        "categories_log1p_union",
+        "ontology_parents_both_available",
+        "ontology_parents_jaccard",
+        "ontology_parents_overlap_coefficient",
+        "ontology_parents_size_balance",
+        "ontology_parents_log1p_shared",
+        "ontology_parents_log1p_union",
+        "preferential_parents_both_available",
+        "preferential_parents_jaccard",
+        "preferential_parents_overlap_coefficient",
+        "preferential_parents_size_balance",
+        "preferential_parents_log1p_shared",
+        "preferential_parents_log1p_union",
+        "body_systems_both_available",
+        "body_systems_jaccard",
+        "body_systems_overlap_coefficient",
+        "body_systems_size_balance",
+        "body_systems_log1p_shared",
+        "body_systems_log1p_union",
+        "disorder_type_match",
+        "disorder_group_match"
+      ],
+      "aligned_selected_alpha": 10000.0,
+      "counts": {
+        "test": 19,
+        "train": 164,
+        "validation": 23
+      },
+      "current_feature_count": 128,
+      "current_selected_alpha": 10000.0,
+      "paired_bootstrap": {
+        "examples": 19,
+        "interpretation": "Positive RMSE deltas favor aligned semantic features.",
+        "repetitions": 10000,
+        "rmse_delta": 0.0005108798746776277,
+        "rmse_delta_95_percentile_interval": [
+          -0.0010772774511495172,
+          0.0020123324867385942
+        ],
+        "rmse_probability_improved": 0.7386
+      },
+      "paper_blocked_removed_pairs": 2,
+      "paper_blocked_test": {
+        "aligned_semantic_ridge": {
+          "effective_sample_size": 10.285344082925423,
+          "examples": 17,
+          "mean_absolute_error": 0.14865741381876071,
+          "pearson_correlation": 0.4323775270444762,
+          "r2": -0.05374172069352401,
+          "root_mean_squared_error": 0.1777590644832726,
+          "spearman_correlation": 0.5156778192572615,
+          "weight_sum": 18.9
+        },
+        "current_ridge": {
+          "effective_sample_size": 10.285344082925423,
+          "examples": 17,
+          "mean_absolute_error": 0.14795238849230596,
+          "pearson_correlation": 0.2200114007585297,
+          "r2": -0.0635384949148392,
+          "root_mean_squared_error": 0.17858347735209956,
+          "spearman_correlation": 0.019966676514314587,
+          "weight_sum": 18.9
+        },
+        "mean_baseline": {
+          "effective_sample_size": 10.285344082925423,
+          "examples": 17,
+          "mean_absolute_error": 0.1486983637359577,
+          "pearson_correlation": 3.222607122529805e-16,
+          "r2": -0.07220258845502747,
+          "root_mean_squared_error": 0.17930941512600385,
+          "spearman_correlation": -2.5030768112946525e-16,
+          "weight_sum": 18.9
+        }
+      },
+      "test": {
+        "aligned_semantic_ridge": {
+          "effective_sample_size": 11.482028420172751,
+          "examples": 19,
+          "mean_absolute_error": 0.14454722650897164,
+          "pearson_correlation": 0.40115820495103816,
+          "r2": -0.061839001666625926,
+          "root_mean_squared_error": 0.17611454836348528,
+          "spearman_correlation": 0.4363973673965023,
+          "weight_sum": 20.299999999999997
+        },
+        "current_ridge": {
+          "effective_sample_size": 11.482028420172751,
+          "examples": 19,
+          "mean_absolute_error": 0.14418709279039485,
+          "pearson_correlation": 0.2532209402508303,
+          "r2": -0.06800838396074371,
+          "root_mean_squared_error": 0.1766254282381629,
+          "spearman_correlation": 0.07816996666648512,
+          "weight_sum": 20.299999999999997
+        },
+        "mean_baseline": {
+          "effective_sample_size": 11.482028420172751,
+          "examples": 19,
+          "mean_absolute_error": 0.14493414285999195,
+          "pearson_correlation": 7.999968992988536e-17,
+          "r2": -0.07848636013041377,
+          "root_mean_squared_error": 0.1774897285790385,
+          "spearman_correlation": 2.2246157659954543e-16,
+          "weight_sum": 20.299999999999997
+        }
+      },
+      "validation_trials": {
+        "aligned_semantic_ridge": [
+          {
+            "alpha": 0.01,
+            "effective_sample_size": 12.940646882294093,
+            "examples": 23,
+            "mean_absolute_error": 0.16659217901022969,
+            "pearson_correlation": 0.06822113678079475,
+            "r2": -0.48220762981371634,
+            "root_mean_squared_error": 0.19631640596573663,
+            "spearman_correlation": 0.20400351991996757,
+            "weight_sum": 19.699999999999996
+          },
+          {
+            "alpha": 0.1,
+            "effective_sample_size": 12.940646882294093,
+            "examples": 23,
+            "mean_absolute_error": 0.16625422502310774,
+            "pearson_correlation": 0.06039471652813723,
+            "r2": -0.4712792128744836,
+            "root_mean_squared_error": 0.19559133994429176,
+            "spearman_correlation": 0.2204492093760044,
+            "weight_sum": 19.699999999999996
+          },
+          {
+            "alpha": 1.0,
+            "effective_sample_size": 12.940646882294093,
+            "examples": 23,
+            "mean_absolute_error": 0.16560117220658607,
+            "pearson_correlation": 0.04196571782330902,
+            "r2": -0.42764970184892515,
+            "root_mean_squared_error": 0.1926694696390288,
+            "spearman_correlation": 0.14514581403684435,
+            "weight_sum": 19.699999999999996
+          },
+          {
+            "alpha": 10.0,
+            "effective_sample_size": 12.940646882294093,
+            "examples": 23,
+            "mean_absolute_error": 0.16421928140893474,
+            "pearson_correlation": 0.016388056094304822,
+            "r2": -0.382360826916772,
+            "root_mean_squared_error": 0.18958884534613218,
+            "spearman_correlation": 0.12626842697836926,
+            "weight_sum": 19.699999999999996
+          },
+          {
+            "alpha": 100.0,
+            "effective_sample_size": 12.940646882294093,
+            "examples": 23,
+            "mean_absolute_error": 0.15869420205288665,
+            "pearson_correlation": -0.027757288859304837,
+            "r2": -0.4254398359841751,
+            "root_mean_squared_error": 0.192520294888559,
+            "spearman_correlation": -0.002522243081528512,
+            "weight_sum": 19.699999999999996
+          },
+          {
+            "alpha": 1000.0,
+            "effective_sample_size": 12.940646882294093,
+            "examples": 23,
+            "mean_absolute_error": 0.14496570340420678,
+            "pearson_correlation": 0.016615863821202077,
+            "r2": -0.2759557497166931,
+            "root_mean_squared_error": 0.1821461009302932,
+            "spearman_correlation": -0.0047994853026021925,
+            "weight_sum": 19.699999999999996
+          },
+          {
+            "alpha": 10000.0,
+            "effective_sample_size": 12.940646882294093,
+            "examples": 23,
+            "mean_absolute_error": 0.14618876396727112,
+            "pearson_correlation": 0.06079557957970914,
+            "r2": -0.20772568733193997,
+            "root_mean_squared_error": 0.1772091833409247,
+            "spearman_correlation": 0.10358847618680207,
+            "weight_sum": 19.699999999999996
+          }
+        ],
+        "current_ridge": [
+          {
+            "alpha": 0.01,
+            "effective_sample_size": 12.940646882294093,
+            "examples": 23,
+            "mean_absolute_error": 0.31009171068830294,
+            "pearson_correlation": -0.2573333239627473,
+            "r2": -4.512598806257728,
+            "root_mean_squared_error": 0.37859970024339845,
+            "spearman_correlation": -0.18430961002552584,
+            "weight_sum": 19.699999999999996
+          },
+          {
+            "alpha": 0.1,
+            "effective_sample_size": 12.940646882294093,
+            "examples": 23,
+            "mean_absolute_error": 0.3027878028452191,
+            "pearson_correlation": -0.23804001746118655,
+            "r2": -4.251102744121769,
+            "root_mean_squared_error": 0.36951096501408726,
+            "spearman_correlation": -0.16033298034782306,
+            "weight_sum": 19.699999999999996
+          },
+          {
+            "alpha": 1.0,
+            "effective_sample_size": 12.940646882294093,
+            "examples": 23,
+            "mean_absolute_error": 0.2669225990567547,
+            "pearson_correlation": -0.14816524809681436,
+            "r2": -3.091147722060141,
+            "root_mean_squared_error": 0.3261554598366799,
+            "spearman_correlation": -0.03963037865707683,
+            "weight_sum": 19.699999999999996
+          },
+          {
+            "alpha": 10.0,
+            "effective_sample_size": 12.940646882294093,
+            "examples": 23,
+            "mean_absolute_error": 0.20985243133289602,
+            "pearson_correlation": -0.009768673925766618,
+            "r2": -1.4150796208690326,
+            "root_mean_squared_error": 0.25059234432961797,
+            "spearman_correlation": 0.09238150837148394,
+            "weight_sum": 19.699999999999996
+          },
+          {
+            "alpha": 100.0,
+            "effective_sample_size": 12.940646882294093,
+            "examples": 23,
+            "mean_absolute_error": 0.16687234447198682,
+            "pearson_correlation": 0.14385376982032874,
+            "r2": -0.46192734789085255,
+            "root_mean_squared_error": 0.194968732182306,
+            "spearman_correlation": 0.1464747016976446,
+            "weight_sum": 19.699999999999996
+          },
+          {
+            "alpha": 1000.0,
+            "effective_sample_size": 12.940646882294093,
+            "examples": 23,
+            "mean_absolute_error": 0.14584253535146863,
+            "pearson_correlation": 0.13434316535297894,
+            "r2": -0.200745436768049,
+            "root_mean_squared_error": 0.176696336338919,
+            "spearman_correlation": 0.12054265166925873,
+            "weight_sum": 19.699999999999996
+          },
+          {
+            "alpha": 10000.0,
+            "effective_sample_size": 12.940646882294093,
+            "examples": 23,
+            "mean_absolute_error": 0.1471815295278603,
+            "pearson_correlation": 0.123243211789794,
+            "r2": -0.19932673211051566,
+            "root_mean_squared_error": 0.1765919203664493,
+            "spearman_correlation": 0.022615676900821547,
+            "weight_sum": 19.699999999999996
+          }
+        ]
+      }
+    },
+    "phenotype": {
+      "aligned_feature_count": 28,
+      "aligned_feature_names": [
+        "phenotypes_exact_both_available",
+        "phenotypes_exact_jaccard",
+        "phenotypes_exact_overlap_coefficient",
+        "phenotypes_exact_size_balance",
+        "phenotypes_exact_log1p_shared",
+        "phenotypes_exact_log1p_union",
+        "phenotypes_ancestors_both_available",
+        "phenotypes_ancestors_jaccard",
+        "phenotypes_ancestors_overlap_coefficient",
+        "phenotypes_ancestors_size_balance",
+        "phenotypes_ancestors_log1p_shared",
+        "phenotypes_ancestors_log1p_union",
+        "body_systems_both_available",
+        "body_systems_jaccard",
+        "body_systems_overlap_coefficient",
+        "body_systems_size_balance",
+        "body_systems_log1p_shared",
+        "body_systems_log1p_union",
+        "onset_both_available",
+        "onset_jaccard",
+        "onset_overlap_coefficient",
+        "onset_size_balance",
+        "onset_log1p_shared",
+        "onset_log1p_union",
+        "phenotypes_ic_weighted_jaccard",
+        "phenotypes_ic_cosine",
+        "disorder_type_match",
+        "disorder_group_match"
+      ],
+      "aligned_selected_alpha": 100.0,
+      "counts": {
+        "test": 41,
+        "train": 349,
+        "validation": 48
+      },
+      "current_feature_count": 104,
+      "current_selected_alpha": 1000.0,
+      "paired_bootstrap": {
+        "examples": 41,
+        "interpretation": "Positive RMSE deltas favor aligned semantic features.",
+        "repetitions": 10000,
+        "rmse_delta": -0.005935735907350165,
+        "rmse_delta_95_percentile_interval": [
+          -0.01265081822006075,
+          0.0013965062489898548
+        ],
+        "rmse_probability_improved": 0.0535
+      },
+      "paper_blocked_removed_pairs": 6,
+      "paper_blocked_test": {
+        "aligned_semantic_ridge": {
+          "effective_sample_size": 25.33377520946215,
+          "examples": 35,
+          "mean_absolute_error": 0.12009604263920846,
+          "pearson_correlation": -0.039603181308462826,
+          "r2": -0.09672767346245781,
+          "root_mean_squared_error": 0.13407206075284384,
+          "spearman_correlation": -0.011084157591636662,
+          "weight_sum": 28.06
+        },
+        "current_ridge": {
+          "effective_sample_size": 25.33377520946215,
+          "examples": 35,
+          "mean_absolute_error": 0.11074414720083965,
+          "pearson_correlation": 0.13600890691404952,
+          "r2": 0.013134107162590558,
+          "root_mean_squared_error": 0.12717974605999247,
+          "spearman_correlation": 0.19551660277112953,
+          "weight_sum": 28.06
+        },
+        "mean_baseline": {
+          "effective_sample_size": 25.33377520946215,
+          "examples": 35,
+          "mean_absolute_error": 0.11033086376417035,
+          "pearson_correlation": null,
+          "r2": -0.0035182299541924866,
+          "root_mean_squared_error": 0.12824827042813805,
+          "spearman_correlation": null,
+          "weight_sum": 28.06
+        }
+      },
+      "test": {
+        "aligned_semantic_ridge": {
+          "effective_sample_size": 30.502593249641237,
+          "examples": 41,
+          "mean_absolute_error": 0.10910140647185533,
+          "pearson_correlation": 0.0264051969257739,
+          "r2": -0.07122821208130303,
+          "root_mean_squared_error": 0.12714010385790406,
+          "spearman_correlation": 0.03893035963272636,
+          "weight_sum": 32.86
+        },
+        "current_ridge": {
+          "effective_sample_size": 30.502593249641237,
+          "examples": 41,
+          "mean_absolute_error": 0.1022932706045655,
+          "pearson_correlation": 0.16877632177595503,
+          "r2": 0.026460851172467215,
+          "root_mean_squared_error": 0.12120436795055389,
+          "spearman_correlation": 0.19989382665117067,
+          "weight_sum": 32.86
+        },
+        "mean_baseline": {
+          "effective_sample_size": 30.502593249641237,
+          "examples": 41,
+          "mean_absolute_error": 0.10428071456485967,
+          "pearson_correlation": null,
+          "r2": -0.0034240323657837024,
+          "root_mean_squared_error": 0.12305062108842295,
+          "spearman_correlation": -2.6631141395374076e-16,
+          "weight_sum": 32.86
+        }
+      },
+      "validation_trials": {
+        "aligned_semantic_ridge": [
+          {
+            "alpha": 0.01,
+            "effective_sample_size": 30.203600719020333,
+            "examples": 48,
+            "mean_absolute_error": 0.12564990425039863,
+            "pearson_correlation": 0.17561903131821913,
+            "r2": -0.14753805849664103,
+            "root_mean_squared_error": 0.14761083367223402,
+            "spearman_correlation": 0.16871724674872005,
+            "weight_sum": 41.48
+          },
+          {
+            "alpha": 0.1,
+            "effective_sample_size": 30.203600719020333,
+            "examples": 48,
+            "mean_absolute_error": 0.12555932899897063,
+            "pearson_correlation": 0.1779762024129285,
+            "r2": -0.14335188845346858,
+            "root_mean_squared_error": 0.14734134865786488,
+            "spearman_correlation": 0.16828129742810602,
+            "weight_sum": 41.48
+          },
+          {
+            "alpha": 1.0,
+            "effective_sample_size": 30.203600719020333,
+            "examples": 48,
+            "mean_absolute_error": 0.1243008702304004,
+            "pearson_correlation": 0.2028841660291538,
+            "r2": -0.10568087122493308,
+            "root_mean_squared_error": 0.1448937265046884,
+            "spearman_correlation": 0.19516983613926878,
+            "weight_sum": 41.48
+          },
+          {
+            "alpha": 10.0,
+            "effective_sample_size": 30.203600719020333,
+            "examples": 48,
+            "mean_absolute_error": 0.12126702202563153,
+            "pearson_correlation": 0.24818112291668942,
+            "r2": -0.03647020838850312,
+            "root_mean_squared_error": 0.14028560059796158,
+            "spearman_correlation": 0.23179205313945156,
+            "weight_sum": 41.48
+          },
+          {
+            "alpha": 100.0,
+            "effective_sample_size": 30.203600719020333,
+            "examples": 48,
+            "mean_absolute_error": 0.12001799874982177,
+            "pearson_correlation": 0.22031543331029138,
+            "r2": -0.02194370413097002,
+            "root_mean_squared_error": 0.1392990550265624,
+            "spearman_correlation": 0.17688517360778278,
+            "weight_sum": 41.48
+          },
+          {
+            "alpha": 1000.0,
+            "effective_sample_size": 30.203600719020333,
+            "examples": 48,
+            "mean_absolute_error": 0.12006491282427006,
+            "pearson_correlation": 0.10171687688466068,
+            "r2": -0.05473509730566439,
+            "root_mean_squared_error": 0.14151627318487223,
+            "spearman_correlation": 0.0887855194222247,
+            "weight_sum": 41.48
+          },
+          {
+            "alpha": 10000.0,
+            "effective_sample_size": 30.203600719020333,
+            "examples": 48,
+            "mean_absolute_error": 0.12096732638644839,
+            "pearson_correlation": 0.007438069124657289,
+            "r2": -0.07090904413902277,
+            "root_mean_squared_error": 0.1425971932043985,
+            "spearman_correlation": 0.0086617119159181,
+            "weight_sum": 41.48
+          }
+        ],
+        "current_ridge": [
+          {
+            "alpha": 0.01,
+            "effective_sample_size": 30.203600719020333,
+            "examples": 48,
+            "mean_absolute_error": 0.13021752052510985,
+            "pearson_correlation": 0.35781438363811097,
+            "r2": -0.39044201202332607,
+            "root_mean_squared_error": 0.162484195623631,
+            "spearman_correlation": 0.34646858341855763,
+            "weight_sum": 41.48
+          },
+          {
+            "alpha": 0.1,
+            "effective_sample_size": 30.203600719020333,
+            "examples": 48,
+            "mean_absolute_error": 0.13024553983803386,
+            "pearson_correlation": 0.3576648735633241,
+            "r2": -0.38950176575305284,
+            "root_mean_squared_error": 0.16242924870970865,
+            "spearman_correlation": 0.34646858341855763,
+            "weight_sum": 41.48
+          },
+          {
+            "alpha": 1.0,
+            "effective_sample_size": 30.203600719020333,
+            "examples": 48,
+            "mean_absolute_error": 0.13046687618289976,
+            "pearson_correlation": 0.3562699728832271,
+            "r2": -0.38071551803982384,
+            "root_mean_squared_error": 0.16191488921817465,
+            "spearman_correlation": 0.34205500591898425,
+            "weight_sum": 41.48
+          },
+          {
+            "alpha": 10.0,
+            "effective_sample_size": 30.203600719020333,
+            "examples": 48,
+            "mean_absolute_error": 0.13082685792493765,
+            "pearson_correlation": 0.3491960489584655,
+            "r2": -0.31641335702292306,
+            "root_mean_squared_error": 0.1580996193002451,
+            "spearman_correlation": 0.36249924032523567,
+            "weight_sum": 41.48
+          },
+          {
+            "alpha": 100.0,
+            "effective_sample_size": 30.203600719020333,
+            "examples": 48,
+            "mean_absolute_error": 0.12533534775774088,
+            "pearson_correlation": 0.3526977702357662,
+            "r2": -0.06649970833040375,
+            "root_mean_squared_error": 0.14230332723193717,
+            "spearman_correlation": 0.2964787658656529,
+            "weight_sum": 41.48
+          },
+          {
+            "alpha": 1000.0,
+            "effective_sample_size": 30.203600719020333,
+            "examples": 48,
+            "mean_absolute_error": 0.12042188541316375,
+            "pearson_correlation": 0.3254900484678327,
+            "r2": 0.031380981959503784,
+            "root_mean_squared_error": 0.13561607783630694,
+            "spearman_correlation": 0.2607493546930418,
+            "weight_sum": 41.48
+          },
+          {
+            "alpha": 10000.0,
+            "effective_sample_size": 30.203600719020333,
+            "examples": 48,
+            "mean_absolute_error": 0.12056009976497085,
+            "pearson_correlation": 0.2442208808754454,
+            "r2": -0.04662101504362259,
+            "root_mean_squared_error": 0.1409708795398588,
+            "spearman_correlation": 0.2283048302491414,
+            "weight_sum": 41.48
+          }
+        ]
+      }
+    }
+  },
+  "experiment": "dimension_aligned_v1",
+  "limitations": [
+    "Dimension scores remain subjective literature annotations.",
+    "Dimension weights are reused as sample weights for production comparability.",
+    "Test sets contain only 17-41 pairs per included dimension.",
+    "Mechanism remains a proxy based on genes and ontology; no pathway graph is available."
+  ],
+  "method": {
+    "alpha_grid": [
+      0.01,
+      0.1,
+      1.0,
+      10.0,
+      100.0,
+      1000.0,
+      10000.0
+    ],
+    "model": "standardized ridge regression",
+    "paper_blocked_sensitivity": "Remove test pairs sharing any paper_id with train or validation.",
+    "sample_weight": "sum of source dimension weights",
+    "selection": "validation weighted RMSE, then weighted MAE",
+    "target": "dimension-specific confidence-weighted pair consensus",
+    "test": "single evaluation after train+validation refit"
+  },
+  "schema_version": "1.0.0",
+  "source_feature_manifest": {
+    "annotated_hpo_diseases": 6315,
+    "description_nonempty_diseases": 6898,
+    "description_vocabulary_size": 34582,
+    "diseases_in_catalog": 11645,
+    "high_confidence_ot_gene_diseases": 432,
+    "high_confidence_ot_rows": 3823,
+    "hpo_terms_with_information_content": 12753,
+    "open_targets_high_confidence_threshold": 0.5,
+    "required_diseases": 595,
+    "trusted_evidence_rows": 5020,
+    "trusted_gene_diseases": 415,
+    "trusted_gene_sources": [
+      "clingen_gene_validity",
+      "clinvar_gene_condition",
+      "hpo_genes_to_disease",
+      "orphadata_product6"
+    ]
+  },
+  "summary": {
+    "aligned_macro_rmse": 0.18635916385083276,
+    "aligned_macro_spearman": 0.22488649051013565,
+    "current_macro_rmse": 0.1800753146570513,
+    "current_macro_spearman": 0.2720334668351627,
+    "dimensions": [
+      "phenotype",
+      "genetic",
+      "mechanism",
+      "diagnostic_confusability"
+    ],
+    "dimensions_with_lower_aligned_rmse": 1,
+    "rmse_delta_current_minus_aligned": -0.006283849193781471,
+    "spearman_delta_aligned_minus_current": -0.04714697632502707
+  }
+}

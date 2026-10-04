@@ -1,0 +1,2225 @@
+{
+  "experiment": "semantic_similarity_v1",
+  "feature_variants": {
+    "combined_full": {
+      "count": 344,
+      "names": [
+        "phenotypes_similarity",
+        "phenotypes_available",
+        "phenotypes_overlap_coefficient",
+        "phenotypes_size_balance",
+        "genes_similarity",
+        "genes_available",
+        "genes_overlap_coefficient",
+        "genes_size_balance",
+        "classifications_similarity",
+        "classifications_available",
+        "classifications_overlap_coefficient",
+        "classifications_size_balance",
+        "body_systems_similarity",
+        "body_systems_available",
+        "body_systems_overlap_coefficient",
+        "body_systems_size_balance",
+        "inheritance_similarity",
+        "inheritance_available",
+        "inheritance_overlap_coefficient",
+        "inheritance_size_balance",
+        "onset_similarity",
+        "onset_available",
+        "onset_overlap_coefficient",
+        "onset_size_balance",
+        "approved_drugs_similarity",
+        "approved_drugs_available",
+        "approved_drugs_overlap_coefficient",
+        "approved_drugs_size_balance",
+        "prevalence_similarity",
+        "prevalence_available",
+        "prevalence_log10_difference",
+        "prevalence_class_match",
+        "prevalence_region_match",
+        "phenotypes_shared_hash_00",
+        "phenotypes_shared_hash_01",
+        "phenotypes_shared_hash_02",
+        "phenotypes_shared_hash_03",
+        "phenotypes_shared_hash_04",
+        "phenotypes_shared_hash_05",
+        "phenotypes_shared_hash_06",
+        "phenotypes_shared_hash_07",
+        "phenotypes_shared_hash_08",
+        "phenotypes_shared_hash_09",
+        "phenotypes_shared_hash_10",
+        "phenotypes_shared_hash_11",
+        "phenotypes_shared_hash_12",
+        "phenotypes_shared_hash_13",
+        "phenotypes_shared_hash_14",
+        "phenotypes_shared_hash_15",
+        "phenotypes_shared_hash_16",
+        "phenotypes_shared_hash_17",
+        "phenotypes_shared_hash_18",
+        "phenotypes_shared_hash_19",
+        "phenotypes_shared_hash_20",
+        "phenotypes_shared_hash_21",
+        "phenotypes_shared_hash_22",
+        "phenotypes_shared_hash_23",
+        "phenotypes_shared_hash_24",
+        "phenotypes_shared_hash_25",
+        "phenotypes_shared_hash_26",
+        "phenotypes_shared_hash_27",
+        "phenotypes_shared_hash_28",
+        "phenotypes_shared_hash_29",
+        "phenotypes_shared_hash_30",
+        "phenotypes_shared_hash_31",
+        "phenotypes_different_hash_00",
+        "phenotypes_different_hash_01",
+        "phenotypes_different_hash_02",
+        "phenotypes_different_hash_03",
+        "phenotypes_different_hash_04",
+        "phenotypes_different_hash_05",
+        "phenotypes_different_hash_06",
+        "phenotypes_different_hash_07",
+        "phenotypes_different_hash_08",
+        "phenotypes_different_hash_09",
+        "phenotypes_different_hash_10",
+        "phenotypes_different_hash_11",
+        "phenotypes_different_hash_12",
+        "phenotypes_different_hash_13",
+        "phenotypes_different_hash_14",
+        "phenotypes_different_hash_15",
+        "phenotypes_different_hash_16",
+        "phenotypes_different_hash_17",
+        "phenotypes_different_hash_18",
+        "phenotypes_different_hash_19",
+        "phenotypes_different_hash_20",
+        "phenotypes_different_hash_21",
+        "phenotypes_different_hash_22",
+        "phenotypes_different_hash_23",
+        "genes_shared_hash_00",
+        "genes_shared_hash_01",
+        "genes_shared_hash_02",
+        "genes_shared_hash_03",
+        "genes_shared_hash_04",
+        "genes_shared_hash_05",
+        "genes_shared_hash_06",
+        "genes_shared_hash_07",
+        "genes_shared_hash_08",
+        "genes_shared_hash_09",
+        "genes_shared_hash_10",
+        "genes_shared_hash_11",
+        "genes_shared_hash_12",
+        "genes_shared_hash_13",
+        "genes_shared_hash_14",
+        "genes_shared_hash_15",
+        "genes_shared_hash_16",
+        "genes_shared_hash_17",
+        "genes_shared_hash_18",
+        "genes_shared_hash_19",
+        "genes_shared_hash_20",
+        "genes_shared_hash_21",
+        "genes_shared_hash_22",
+        "genes_shared_hash_23",
+        "genes_shared_hash_24",
+        "genes_shared_hash_25",
+        "genes_shared_hash_26",
+        "genes_shared_hash_27",
+        "genes_shared_hash_28",
+        "genes_shared_hash_29",
+        "genes_shared_hash_30",
+        "genes_shared_hash_31",
+        "genes_different_hash_00",
+        "genes_different_hash_01",
+        "genes_different_hash_02",
+        "genes_different_hash_03",
+        "genes_different_hash_04",
+        "genes_different_hash_05",
+        "genes_different_hash_06",
+        "genes_different_hash_07",
+        "genes_different_hash_08",
+        "genes_different_hash_09",
+        "genes_different_hash_10",
+        "genes_different_hash_11",
+        "genes_different_hash_12",
+        "genes_different_hash_13",
+        "genes_different_hash_14",
+        "genes_different_hash_15",
+        "genes_different_hash_16",
+        "genes_different_hash_17",
+        "genes_different_hash_18",
+        "genes_different_hash_19",
+        "genes_different_hash_20",
+        "genes_different_hash_21",
+        "genes_different_hash_22",
+        "genes_different_hash_23",
+        "classifications_shared_hash_00",
+        "classifications_shared_hash_01",
+        "classifications_shared_hash_02",
+        "classifications_shared_hash_03",
+        "classifications_shared_hash_04",
+        "classifications_shared_hash_05",
+        "classifications_shared_hash_06",
+        "classifications_shared_hash_07",
+        "classifications_shared_hash_08",
+        "classifications_shared_hash_09",
+        "classifications_shared_hash_10",
+        "classifications_shared_hash_11",
+        "classifications_shared_hash_12",
+        "classifications_shared_hash_13",
+        "classifications_shared_hash_14",
+        "classifications_shared_hash_15",
+        "classifications_shared_hash_16",
+        "classifications_shared_hash_17",
+        "classifications_shared_hash_18",
+        "classifications_shared_hash_19",
+        "classifications_shared_hash_20",
+        "classifications_shared_hash_21",
+        "classifications_shared_hash_22",
+        "classifications_shared_hash_23",
+        "classifications_different_hash_00",
+        "classifications_different_hash_01",
+        "classifications_different_hash_02",
+        "classifications_different_hash_03",
+        "classifications_different_hash_04",
+        "classifications_different_hash_05",
+        "classifications_different_hash_06",
+        "classifications_different_hash_07",
+        "classifications_different_hash_08",
+        "classifications_different_hash_09",
+        "classifications_different_hash_10",
+        "classifications_different_hash_11",
+        "body_systems_shared_hash_00",
+        "body_systems_shared_hash_01",
+        "body_systems_shared_hash_02",
+        "body_systems_shared_hash_03",
+        "body_systems_shared_hash_04",
+        "body_systems_shared_hash_05",
+        "body_systems_shared_hash_06",
+        "body_systems_shared_hash_07",
+        "body_systems_shared_hash_08",
+        "body_systems_shared_hash_09",
+        "body_systems_shared_hash_10",
+        "body_systems_shared_hash_11",
+        "body_systems_shared_hash_12",
+        "body_systems_shared_hash_13",
+        "body_systems_shared_hash_14",
+        "body_systems_shared_hash_15",
+        "body_systems_different_hash_00",
+        "body_systems_different_hash_01",
+        "body_systems_different_hash_02",
+        "body_systems_different_hash_03",
+        "body_systems_different_hash_04",
+        "body_systems_different_hash_05",
+        "body_systems_different_hash_06",
+        "body_systems_different_hash_07",
+        "inheritance_shared_hash_00",
+        "inheritance_shared_hash_01",
+        "inheritance_shared_hash_02",
+        "inheritance_shared_hash_03",
+        "inheritance_shared_hash_04",
+        "inheritance_shared_hash_05",
+        "inheritance_shared_hash_06",
+        "inheritance_shared_hash_07",
+        "inheritance_different_hash_00",
+        "inheritance_different_hash_01",
+        "inheritance_different_hash_02",
+        "inheritance_different_hash_03",
+        "onset_shared_hash_00",
+        "onset_shared_hash_01",
+        "onset_shared_hash_02",
+        "onset_shared_hash_03",
+        "onset_shared_hash_04",
+        "onset_shared_hash_05",
+        "onset_shared_hash_06",
+        "onset_shared_hash_07",
+        "onset_different_hash_00",
+        "onset_different_hash_01",
+        "onset_different_hash_02",
+        "onset_different_hash_03",
+        "approved_drugs_shared_hash_00",
+        "approved_drugs_shared_hash_01",
+        "approved_drugs_shared_hash_02",
+        "approved_drugs_shared_hash_03",
+        "approved_drugs_shared_hash_04",
+        "approved_drugs_shared_hash_05",
+        "approved_drugs_shared_hash_06",
+        "approved_drugs_shared_hash_07",
+        "approved_drugs_shared_hash_08",
+        "approved_drugs_shared_hash_09",
+        "approved_drugs_shared_hash_10",
+        "approved_drugs_shared_hash_11",
+        "approved_drugs_shared_hash_12",
+        "approved_drugs_shared_hash_13",
+        "approved_drugs_shared_hash_14",
+        "approved_drugs_shared_hash_15",
+        "approved_drugs_different_hash_00",
+        "approved_drugs_different_hash_01",
+        "approved_drugs_different_hash_02",
+        "approved_drugs_different_hash_03",
+        "phenotypes_exact_both_available",
+        "phenotypes_exact_jaccard",
+        "phenotypes_exact_overlap_coefficient",
+        "phenotypes_exact_size_balance",
+        "phenotypes_exact_log1p_shared",
+        "phenotypes_exact_log1p_union",
+        "phenotypes_ancestors_both_available",
+        "phenotypes_ancestors_jaccard",
+        "phenotypes_ancestors_overlap_coefficient",
+        "phenotypes_ancestors_size_balance",
+        "phenotypes_ancestors_log1p_shared",
+        "phenotypes_ancestors_log1p_union",
+        "genes_trusted_both_available",
+        "genes_trusted_jaccard",
+        "genes_trusted_overlap_coefficient",
+        "genes_trusted_size_balance",
+        "genes_trusted_log1p_shared",
+        "genes_trusted_log1p_union",
+        "genes_high_confidence_ot_both_available",
+        "genes_high_confidence_ot_jaccard",
+        "genes_high_confidence_ot_overlap_coefficient",
+        "genes_high_confidence_ot_size_balance",
+        "genes_high_confidence_ot_log1p_shared",
+        "genes_high_confidence_ot_log1p_union",
+        "genes_curated_union_both_available",
+        "genes_curated_union_jaccard",
+        "genes_curated_union_overlap_coefficient",
+        "genes_curated_union_size_balance",
+        "genes_curated_union_log1p_shared",
+        "genes_curated_union_log1p_union",
+        "categories_both_available",
+        "categories_jaccard",
+        "categories_overlap_coefficient",
+        "categories_size_balance",
+        "categories_log1p_shared",
+        "categories_log1p_union",
+        "ontology_parents_both_available",
+        "ontology_parents_jaccard",
+        "ontology_parents_overlap_coefficient",
+        "ontology_parents_size_balance",
+        "ontology_parents_log1p_shared",
+        "ontology_parents_log1p_union",
+        "preferential_parents_both_available",
+        "preferential_parents_jaccard",
+        "preferential_parents_overlap_coefficient",
+        "preferential_parents_size_balance",
+        "preferential_parents_log1p_shared",
+        "preferential_parents_log1p_union",
+        "body_systems_both_available",
+        "body_systems_jaccard",
+        "body_systems_overlap_coefficient",
+        "body_systems_size_balance",
+        "body_systems_log1p_shared",
+        "body_systems_log1p_union",
+        "inheritance_both_available",
+        "inheritance_jaccard",
+        "inheritance_overlap_coefficient",
+        "inheritance_size_balance",
+        "inheritance_log1p_shared",
+        "inheritance_log1p_union",
+        "onset_both_available",
+        "onset_jaccard",
+        "onset_overlap_coefficient",
+        "onset_size_balance",
+        "onset_log1p_shared",
+        "onset_log1p_union",
+        "approved_drugs_both_available",
+        "approved_drugs_jaccard",
+        "approved_drugs_overlap_coefficient",
+        "approved_drugs_size_balance",
+        "approved_drugs_log1p_shared",
+        "approved_drugs_log1p_union",
+        "all_drugs_both_available",
+        "all_drugs_jaccard",
+        "all_drugs_overlap_coefficient",
+        "all_drugs_size_balance",
+        "all_drugs_log1p_shared",
+        "all_drugs_log1p_union",
+        "treatment_types_both_available",
+        "treatment_types_jaccard",
+        "treatment_types_overlap_coefficient",
+        "treatment_types_size_balance",
+        "treatment_types_log1p_shared",
+        "treatment_types_log1p_union",
+        "phenotypes_ic_weighted_jaccard",
+        "phenotypes_ic_cosine",
+        "prevalence_both_available",
+        "prevalence_log10_difference",
+        "prevalence_similarity",
+        "prevalence_class_match",
+        "prevalence_region_match",
+        "disorder_type_match",
+        "disorder_group_match",
+        "description_both_available",
+        "description_tfidf_cosine"
+      ]
+    },
+    "current_249": {
+      "count": 249,
+      "names": [
+        "phenotypes_similarity",
+        "phenotypes_available",
+        "phenotypes_overlap_coefficient",
+        "phenotypes_size_balance",
+        "genes_similarity",
+        "genes_available",
+        "genes_overlap_coefficient",
+        "genes_size_balance",
+        "classifications_similarity",
+        "classifications_available",
+        "classifications_overlap_coefficient",
+        "classifications_size_balance",
+        "body_systems_similarity",
+        "body_systems_available",
+        "body_systems_overlap_coefficient",
+        "body_systems_size_balance",
+        "inheritance_similarity",
+        "inheritance_available",
+        "inheritance_overlap_coefficient",
+        "inheritance_size_balance",
+        "onset_similarity",
+        "onset_available",
+        "onset_overlap_coefficient",
+        "onset_size_balance",
+        "approved_drugs_similarity",
+        "approved_drugs_available",
+        "approved_drugs_overlap_coefficient",
+        "approved_drugs_size_balance",
+        "prevalence_similarity",
+        "prevalence_available",
+        "prevalence_log10_difference",
+        "prevalence_class_match",
+        "prevalence_region_match",
+        "phenotypes_shared_hash_00",
+        "phenotypes_shared_hash_01",
+        "phenotypes_shared_hash_02",
+        "phenotypes_shared_hash_03",
+        "phenotypes_shared_hash_04",
+        "phenotypes_shared_hash_05",
+        "phenotypes_shared_hash_06",
+        "phenotypes_shared_hash_07",
+        "phenotypes_shared_hash_08",
+        "phenotypes_shared_hash_09",
+        "phenotypes_shared_hash_10",
+        "phenotypes_shared_hash_11",
+        "phenotypes_shared_hash_12",
+        "phenotypes_shared_hash_13",
+        "phenotypes_shared_hash_14",
+        "phenotypes_shared_hash_15",
+        "phenotypes_shared_hash_16",
+        "phenotypes_shared_hash_17",
+        "phenotypes_shared_hash_18",
+        "phenotypes_shared_hash_19",
+        "phenotypes_shared_hash_20",
+        "phenotypes_shared_hash_21",
+        "phenotypes_shared_hash_22",
+        "phenotypes_shared_hash_23",
+        "phenotypes_shared_hash_24",
+        "phenotypes_shared_hash_25",
+        "phenotypes_shared_hash_26",
+        "phenotypes_shared_hash_27",
+        "phenotypes_shared_hash_28",
+        "phenotypes_shared_hash_29",
+        "phenotypes_shared_hash_30",
+        "phenotypes_shared_hash_31",
+        "phenotypes_different_hash_00",
+        "phenotypes_different_hash_01",
+        "phenotypes_different_hash_02",
+        "phenotypes_different_hash_03",
+        "phenotypes_different_hash_04",
+        "phenotypes_different_hash_05",
+        "phenotypes_different_hash_06",
+        "phenotypes_different_hash_07",
+        "phenotypes_different_hash_08",
+        "phenotypes_different_hash_09",
+        "phenotypes_different_hash_10",
+        "phenotypes_different_hash_11",
+        "phenotypes_different_hash_12",
+        "phenotypes_different_hash_13",
+        "phenotypes_different_hash_14",
+        "phenotypes_different_hash_15",
+        "phenotypes_different_hash_16",
+        "phenotypes_different_hash_17",
+        "phenotypes_different_hash_18",
+        "phenotypes_different_hash_19",
+        "phenotypes_different_hash_20",
+        "phenotypes_different_hash_21",
+        "phenotypes_different_hash_22",
+        "phenotypes_different_hash_23",
+        "genes_shared_hash_00",
+        "genes_shared_hash_01",
+        "genes_shared_hash_02",
+        "genes_shared_hash_03",
+        "genes_shared_hash_04",
+        "genes_shared_hash_05",
+        "genes_shared_hash_06",
+        "genes_shared_hash_07",
+        "genes_shared_hash_08",
+        "genes_shared_hash_09",
+        "genes_shared_hash_10",
+        "genes_shared_hash_11",
+        "genes_shared_hash_12",
+        "genes_shared_hash_13",
+        "genes_shared_hash_14",
+        "genes_shared_hash_15",
+        "genes_shared_hash_16",
+        "genes_shared_hash_17",
+        "genes_shared_hash_18",
+        "genes_shared_hash_19",
+        "genes_shared_hash_20",
+        "genes_shared_hash_21",
+        "genes_shared_hash_22",
+        "genes_shared_hash_23",
+        "genes_shared_hash_24",
+        "genes_shared_hash_25",
+        "genes_shared_hash_26",
+        "genes_shared_hash_27",
+        "genes_shared_hash_28",
+        "genes_shared_hash_29",
+        "genes_shared_hash_30",
+        "genes_shared_hash_31",
+        "genes_different_hash_00",
+        "genes_different_hash_01",
+        "genes_different_hash_02",
+        "genes_different_hash_03",
+        "genes_different_hash_04",
+        "genes_different_hash_05",
+        "genes_different_hash_06",
+        "genes_different_hash_07",
+        "genes_different_hash_08",
+        "genes_different_hash_09",
+        "genes_different_hash_10",
+        "genes_different_hash_11",
+        "genes_different_hash_12",
+        "genes_different_hash_13",
+        "genes_different_hash_14",
+        "genes_different_hash_15",
+        "genes_different_hash_16",
+        "genes_different_hash_17",
+        "genes_different_hash_18",
+        "genes_different_hash_19",
+        "genes_different_hash_20",
+        "genes_different_hash_21",
+        "genes_different_hash_22",
+        "genes_different_hash_23",
+        "classifications_shared_hash_00",
+        "classifications_shared_hash_01",
+        "classifications_shared_hash_02",
+        "classifications_shared_hash_03",
+        "classifications_shared_hash_04",
+        "classifications_shared_hash_05",
+        "classifications_shared_hash_06",
+        "classifications_shared_hash_07",
+        "classifications_shared_hash_08",
+        "classifications_shared_hash_09",
+        "classifications_shared_hash_10",
+        "classifications_shared_hash_11",
+        "classifications_shared_hash_12",
+        "classifications_shared_hash_13",
+        "classifications_shared_hash_14",
+        "classifications_shared_hash_15",
+        "classifications_shared_hash_16",
+        "classifications_shared_hash_17",
+        "classifications_shared_hash_18",
+        "classifications_shared_hash_19",
+        "classifications_shared_hash_20",
+        "classifications_shared_hash_21",
+        "classifications_shared_hash_22",
+        "classifications_shared_hash_23",
+        "classifications_different_hash_00",
+        "classifications_different_hash_01",
+        "classifications_different_hash_02",
+        "classifications_different_hash_03",
+        "classifications_different_hash_04",
+        "classifications_different_hash_05",
+        "classifications_different_hash_06",
+        "classifications_different_hash_07",
+        "classifications_different_hash_08",
+        "classifications_different_hash_09",
+        "classifications_different_hash_10",
+        "classifications_different_hash_11",
+        "body_systems_shared_hash_00",
+        "body_systems_shared_hash_01",
+        "body_systems_shared_hash_02",
+        "body_systems_shared_hash_03",
+        "body_systems_shared_hash_04",
+        "body_systems_shared_hash_05",
+        "body_systems_shared_hash_06",
+        "body_systems_shared_hash_07",
+        "body_systems_shared_hash_08",
+        "body_systems_shared_hash_09",
+        "body_systems_shared_hash_10",
+        "body_systems_shared_hash_11",
+        "body_systems_shared_hash_12",
+        "body_systems_shared_hash_13",
+        "body_systems_shared_hash_14",
+        "body_systems_shared_hash_15",
+        "body_systems_different_hash_00",
+        "body_systems_different_hash_01",
+        "body_systems_different_hash_02",
+        "body_systems_different_hash_03",
+        "body_systems_different_hash_04",
+        "body_systems_different_hash_05",
+        "body_systems_different_hash_06",
+        "body_systems_different_hash_07",
+        "inheritance_shared_hash_00",
+        "inheritance_shared_hash_01",
+        "inheritance_shared_hash_02",
+        "inheritance_shared_hash_03",
+        "inheritance_shared_hash_04",
+        "inheritance_shared_hash_05",
+        "inheritance_shared_hash_06",
+        "inheritance_shared_hash_07",
+        "inheritance_different_hash_00",
+        "inheritance_different_hash_01",
+        "inheritance_different_hash_02",
+        "inheritance_different_hash_03",
+        "onset_shared_hash_00",
+        "onset_shared_hash_01",
+        "onset_shared_hash_02",
+        "onset_shared_hash_03",
+        "onset_shared_hash_04",
+        "onset_shared_hash_05",
+        "onset_shared_hash_06",
+        "onset_shared_hash_07",
+        "onset_different_hash_00",
+        "onset_different_hash_01",
+        "onset_different_hash_02",
+        "onset_different_hash_03",
+        "approved_drugs_shared_hash_00",
+        "approved_drugs_shared_hash_01",
+        "approved_drugs_shared_hash_02",
+        "approved_drugs_shared_hash_03",
+        "approved_drugs_shared_hash_04",
+        "approved_drugs_shared_hash_05",
+        "approved_drugs_shared_hash_06",
+        "approved_drugs_shared_hash_07",
+        "approved_drugs_shared_hash_08",
+        "approved_drugs_shared_hash_09",
+        "approved_drugs_shared_hash_10",
+        "approved_drugs_shared_hash_11",
+        "approved_drugs_shared_hash_12",
+        "approved_drugs_shared_hash_13",
+        "approved_drugs_shared_hash_14",
+        "approved_drugs_shared_hash_15",
+        "approved_drugs_different_hash_00",
+        "approved_drugs_different_hash_01",
+        "approved_drugs_different_hash_02",
+        "approved_drugs_different_hash_03"
+      ]
+    },
+    "improved_full": {
+      "count": 95,
+      "names": [
+        "phenotypes_exact_both_available",
+        "phenotypes_exact_jaccard",
+        "phenotypes_exact_overlap_coefficient",
+        "phenotypes_exact_size_balance",
+        "phenotypes_exact_log1p_shared",
+        "phenotypes_exact_log1p_union",
+        "phenotypes_ancestors_both_available",
+        "phenotypes_ancestors_jaccard",
+        "phenotypes_ancestors_overlap_coefficient",
+        "phenotypes_ancestors_size_balance",
+        "phenotypes_ancestors_log1p_shared",
+        "phenotypes_ancestors_log1p_union",
+        "genes_trusted_both_available",
+        "genes_trusted_jaccard",
+        "genes_trusted_overlap_coefficient",
+        "genes_trusted_size_balance",
+        "genes_trusted_log1p_shared",
+        "genes_trusted_log1p_union",
+        "genes_high_confidence_ot_both_available",
+        "genes_high_confidence_ot_jaccard",
+        "genes_high_confidence_ot_overlap_coefficient",
+        "genes_high_confidence_ot_size_balance",
+        "genes_high_confidence_ot_log1p_shared",
+        "genes_high_confidence_ot_log1p_union",
+        "genes_curated_union_both_available",
+        "genes_curated_union_jaccard",
+        "genes_curated_union_overlap_coefficient",
+        "genes_curated_union_size_balance",
+        "genes_curated_union_log1p_shared",
+        "genes_curated_union_log1p_union",
+        "categories_both_available",
+        "categories_jaccard",
+        "categories_overlap_coefficient",
+        "categories_size_balance",
+        "categories_log1p_shared",
+        "categories_log1p_union",
+        "ontology_parents_both_available",
+        "ontology_parents_jaccard",
+        "ontology_parents_overlap_coefficient",
+        "ontology_parents_size_balance",
+        "ontology_parents_log1p_shared",
+        "ontology_parents_log1p_union",
+        "preferential_parents_both_available",
+        "preferential_parents_jaccard",
+        "preferential_parents_overlap_coefficient",
+        "preferential_parents_size_balance",
+        "preferential_parents_log1p_shared",
+        "preferential_parents_log1p_union",
+        "body_systems_both_available",
+        "body_systems_jaccard",
+        "body_systems_overlap_coefficient",
+        "body_systems_size_balance",
+        "body_systems_log1p_shared",
+        "body_systems_log1p_union",
+        "inheritance_both_available",
+        "inheritance_jaccard",
+        "inheritance_overlap_coefficient",
+        "inheritance_size_balance",
+        "inheritance_log1p_shared",
+        "inheritance_log1p_union",
+        "onset_both_available",
+        "onset_jaccard",
+        "onset_overlap_coefficient",
+        "onset_size_balance",
+        "onset_log1p_shared",
+        "onset_log1p_union",
+        "approved_drugs_both_available",
+        "approved_drugs_jaccard",
+        "approved_drugs_overlap_coefficient",
+        "approved_drugs_size_balance",
+        "approved_drugs_log1p_shared",
+        "approved_drugs_log1p_union",
+        "all_drugs_both_available",
+        "all_drugs_jaccard",
+        "all_drugs_overlap_coefficient",
+        "all_drugs_size_balance",
+        "all_drugs_log1p_shared",
+        "all_drugs_log1p_union",
+        "treatment_types_both_available",
+        "treatment_types_jaccard",
+        "treatment_types_overlap_coefficient",
+        "treatment_types_size_balance",
+        "treatment_types_log1p_shared",
+        "treatment_types_log1p_union",
+        "phenotypes_ic_weighted_jaccard",
+        "phenotypes_ic_cosine",
+        "prevalence_both_available",
+        "prevalence_log10_difference",
+        "prevalence_similarity",
+        "prevalence_class_match",
+        "prevalence_region_match",
+        "disorder_type_match",
+        "disorder_group_match",
+        "description_both_available",
+        "description_tfidf_cosine"
+      ]
+    },
+    "improved_structured": {
+      "count": 93,
+      "names": [
+        "phenotypes_exact_both_available",
+        "phenotypes_exact_jaccard",
+        "phenotypes_exact_overlap_coefficient",
+        "phenotypes_exact_size_balance",
+        "phenotypes_exact_log1p_shared",
+        "phenotypes_exact_log1p_union",
+        "phenotypes_ancestors_both_available",
+        "phenotypes_ancestors_jaccard",
+        "phenotypes_ancestors_overlap_coefficient",
+        "phenotypes_ancestors_size_balance",
+        "phenotypes_ancestors_log1p_shared",
+        "phenotypes_ancestors_log1p_union",
+        "genes_trusted_both_available",
+        "genes_trusted_jaccard",
+        "genes_trusted_overlap_coefficient",
+        "genes_trusted_size_balance",
+        "genes_trusted_log1p_shared",
+        "genes_trusted_log1p_union",
+        "genes_high_confidence_ot_both_available",
+        "genes_high_confidence_ot_jaccard",
+        "genes_high_confidence_ot_overlap_coefficient",
+        "genes_high_confidence_ot_size_balance",
+        "genes_high_confidence_ot_log1p_shared",
+        "genes_high_confidence_ot_log1p_union",
+        "genes_curated_union_both_available",
+        "genes_curated_union_jaccard",
+        "genes_curated_union_overlap_coefficient",
+        "genes_curated_union_size_balance",
+        "genes_curated_union_log1p_shared",
+        "genes_curated_union_log1p_union",
+        "categories_both_available",
+        "categories_jaccard",
+        "categories_overlap_coefficient",
+        "categories_size_balance",
+        "categories_log1p_shared",
+        "categories_log1p_union",
+        "ontology_parents_both_available",
+        "ontology_parents_jaccard",
+        "ontology_parents_overlap_coefficient",
+        "ontology_parents_size_balance",
+        "ontology_parents_log1p_shared",
+        "ontology_parents_log1p_union",
+        "preferential_parents_both_available",
+        "preferential_parents_jaccard",
+        "preferential_parents_overlap_coefficient",
+        "preferential_parents_size_balance",
+        "preferential_parents_log1p_shared",
+        "preferential_parents_log1p_union",
+        "body_systems_both_available",
+        "body_systems_jaccard",
+        "body_systems_overlap_coefficient",
+        "body_systems_size_balance",
+        "body_systems_log1p_shared",
+        "body_systems_log1p_union",
+        "inheritance_both_available",
+        "inheritance_jaccard",
+        "inheritance_overlap_coefficient",
+        "inheritance_size_balance",
+        "inheritance_log1p_shared",
+        "inheritance_log1p_union",
+        "onset_both_available",
+        "onset_jaccard",
+        "onset_overlap_coefficient",
+        "onset_size_balance",
+        "onset_log1p_shared",
+        "onset_log1p_union",
+        "approved_drugs_both_available",
+        "approved_drugs_jaccard",
+        "approved_drugs_overlap_coefficient",
+        "approved_drugs_size_balance",
+        "approved_drugs_log1p_shared",
+        "approved_drugs_log1p_union",
+        "all_drugs_both_available",
+        "all_drugs_jaccard",
+        "all_drugs_overlap_coefficient",
+        "all_drugs_size_balance",
+        "all_drugs_log1p_shared",
+        "all_drugs_log1p_union",
+        "treatment_types_both_available",
+        "treatment_types_jaccard",
+        "treatment_types_overlap_coefficient",
+        "treatment_types_size_balance",
+        "treatment_types_log1p_shared",
+        "treatment_types_log1p_union",
+        "phenotypes_ic_weighted_jaccard",
+        "phenotypes_ic_cosine",
+        "prevalence_both_available",
+        "prevalence_log10_difference",
+        "prevalence_similarity",
+        "prevalence_class_match",
+        "prevalence_region_match",
+        "disorder_type_match",
+        "disorder_group_match"
+      ]
+    }
+  },
+  "global_regression": {
+    "paired_bootstrap": {
+      "interpretation": "Positive deltas favor the selected improved variant.",
+      "mae_delta": 0.0056077462977254175,
+      "mae_delta_95_percentile_interval": [
+        -0.003809581182665745,
+        0.015077793186229795
+      ],
+      "mae_probability_improved": 0.8754,
+      "repetitions": 20000,
+      "rmse_delta": 0.006170612682920934,
+      "rmse_delta_95_percentile_interval": [
+        -0.004286845877543848,
+        0.01560794975502559
+      ],
+      "rmse_probability_improved": 0.87965,
+      "test_examples": 59
+    },
+    "target": "paper-averaged literature similarity",
+    "variants": {
+      "combined_full": {
+        "feature_count": 344,
+        "selected_model": "extra_trees",
+        "selected_parameters": {
+          "max_depth": null,
+          "max_features": "sqrt",
+          "min_samples_leaf": 2
+        },
+        "test": {
+          "examples": 59,
+          "mean_absolute_error": 0.1783387101936884,
+          "pearson_correlation": 0.21290743027082817,
+          "r2": 0.04058327760996494,
+          "root_mean_squared_error": 0.19974843027812672,
+          "spearman_correlation": 0.24625753772385095
+        },
+        "validation": {
+          "examples": 62,
+          "mean_absolute_error": 0.16360698757421133,
+          "pearson_correlation": 0.278705839747087,
+          "r2": 0.07612303911520013,
+          "root_mean_squared_error": 0.18537108502374186,
+          "spearman_correlation": 0.2904083343803363
+        },
+        "validation_trials": [
+          {
+            "examples": 62,
+            "mean_absolute_error": 0.21244720567727088,
+            "model": "ridge",
+            "parameters": {
+              "alpha": 0.1
+            },
+            "pearson_correlation": 0.12611186987372586,
+            "r2": -1.1483630660473092,
+            "root_mean_squared_error": 0.28267588609225897,
+            "spearman_correlation": 0.2173632543479126
+          },
+          {
+            "examples": 62,
+            "mean_absolute_error": 0.20895670260414767,
+            "model": "ridge",
+            "parameters": {
+              "alpha": 1.0
+            },
+            "pearson_correlation": 0.13094191669373142,
+            "r2": -1.0987597267114166,
+            "root_mean_squared_error": 0.27939349113466866,
+            "spearman_correlation": 0.22367196485367416
+          },
+          {
+            "examples": 62,
+            "mean_absolute_error": 0.2042923034685337,
+            "model": "ridge",
+            "parameters": {
+              "alpha": 10.0
+            },
+            "pearson_correlation": 0.09438087723049182,
+            "r2": -0.9941640646130441,
+            "root_mean_squared_error": 0.2723424665059704,
+            "spearman_correlation": 0.14204649341734818
+          },
+          {
+            "examples": 62,
+            "mean_absolute_error": 0.18881739744058798,
+            "model": "ridge",
+            "parameters": {
+              "alpha": 100.0
+            },
+            "pearson_correlation": 0.044865220446328034,
+            "r2": -0.5906869567067341,
+            "root_mean_squared_error": 0.24323568108217003,
+            "spearman_correlation": 0.11017477618871191
+          },
+          {
+            "examples": 62,
+            "mean_absolute_error": 0.17353135127750904,
+            "model": "ridge",
+            "parameters": {
+              "alpha": 1000.0
+            },
+            "pearson_correlation": 0.09272037816879936,
+            "r2": -0.0821015946530903,
+            "root_mean_squared_error": 0.2006175590504834,
+            "spearman_correlation": 0.05681788196119436
+          },
+          {
+            "examples": 62,
+            "mean_absolute_error": 0.1747581438738267,
+            "model": "ridge",
+            "parameters": {
+              "alpha": 10000.0
+            },
+            "pearson_correlation": 0.06675303186350245,
+            "r2": -0.0033223641670225845,
+            "root_mean_squared_error": 0.19317688994779322,
+            "spearman_correlation": 0.11077782708170106
+          },
+          {
+            "examples": 62,
+            "mean_absolute_error": 0.16360698757421133,
+            "model": "extra_trees",
+            "parameters": {
+              "max_depth": null,
+              "max_features": "sqrt",
+              "min_samples_leaf": 2
+            },
+            "pearson_correlation": 0.278705839747087,
+            "r2": 0.07612303911520013,
+            "root_mean_squared_error": 0.18537108502374186,
+            "spearman_correlation": 0.2904083343803363
+          },
+          {
+            "examples": 62,
+            "mean_absolute_error": 0.16482097106620203,
+            "model": "extra_trees",
+            "parameters": {
+              "max_depth": 12,
+              "max_features": "sqrt",
+              "min_samples_leaf": 2
+            },
+            "pearson_correlation": 0.24643166584046514,
+            "r2": 0.05737391237845979,
+            "root_mean_squared_error": 0.18724259478445526,
+            "spearman_correlation": 0.2518392968330742
+          },
+          {
+            "examples": 62,
+            "mean_absolute_error": 0.1679618284299476,
+            "model": "extra_trees",
+            "parameters": {
+              "max_depth": null,
+              "max_features": "sqrt",
+              "min_samples_leaf": 5
+            },
+            "pearson_correlation": 0.19279072734265632,
+            "r2": 0.03429489555370113,
+            "root_mean_squared_error": 0.18952093352727808,
+            "spearman_correlation": 0.2002391160764381
+          },
+          {
+            "examples": 62,
+            "mean_absolute_error": 0.1682796538209076,
+            "model": "extra_trees",
+            "parameters": {
+              "max_depth": 12,
+              "max_features": "sqrt",
+              "min_samples_leaf": 5
+            },
+            "pearson_correlation": 0.19645912645388322,
+            "r2": 0.036401274013637575,
+            "root_mean_squared_error": 0.18931413088563256,
+            "spearman_correlation": 0.2057714525295124
+          },
+          {
+            "examples": 62,
+            "mean_absolute_error": 0.16379639471658158,
+            "model": "extra_trees",
+            "parameters": {
+              "max_depth": null,
+              "max_features": 0.5,
+              "min_samples_leaf": 2
+            },
+            "pearson_correlation": 0.24494888304707096,
+            "r2": 0.03885136073229023,
+            "root_mean_squared_error": 0.1890732986580059,
+            "spearman_correlation": 0.23754961262963586
+          },
+          {
+            "examples": 62,
+            "mean_absolute_error": 0.16546651770574325,
+            "model": "extra_trees",
+            "parameters": {
+              "max_depth": 12,
+              "max_features": 0.5,
+              "min_samples_leaf": 2
+            },
+            "pearson_correlation": 0.2118806640665085,
+            "r2": 0.02483230011493609,
+            "root_mean_squared_error": 0.19044719361630752,
+            "spearman_correlation": 0.19229457605140723
+          },
+          {
+            "examples": 62,
+            "mean_absolute_error": 0.16618218780868224,
+            "model": "extra_trees",
+            "parameters": {
+              "max_depth": null,
+              "max_features": 0.5,
+              "min_samples_leaf": 5
+            },
+            "pearson_correlation": 0.18541280375941166,
+            "r2": 0.010945992689773809,
+            "root_mean_squared_error": 0.19179837658219492,
+            "spearman_correlation": 0.19321226219291243
+          },
+          {
+            "examples": 62,
+            "mean_absolute_error": 0.16670402528485437,
+            "model": "extra_trees",
+            "parameters": {
+              "max_depth": 12,
+              "max_features": 0.5,
+              "min_samples_leaf": 5
+            },
+            "pearson_correlation": 0.1841468590025338,
+            "r2": 0.014273870390477894,
+            "root_mean_squared_error": 0.19147543195600436,
+            "spearman_correlation": 0.18060063264822648
+          },
+          {
+            "examples": 62,
+            "mean_absolute_error": 0.16364000132745124,
+            "model": "extra_trees",
+            "parameters": {
+              "max_depth": null,
+              "max_features": 1.0,
+              "min_samples_leaf": 2
+            },
+            "pearson_correlation": 0.2241758468119182,
+            "r2": 0.0180780293745606,
+            "root_mean_squared_error": 0.1911055994570844,
+            "spearman_correlation": 0.22208004624426222
+          },
+          {
+            "examples": 62,
+            "mean_absolute_error": 0.16442066970071859,
+            "model": "extra_trees",
+            "parameters": {
+              "max_depth": 12,
+              "max_features": 1.0,
+              "min_samples_leaf": 2
+            },
+            "pearson_correlation": 0.19580864070684012,
+            "r2": 0.008158403385683188,
+            "root_mean_squared_error": 0.1920684725050585,
+            "spearman_correlation": 0.17674635085390455
+          },
+          {
+            "examples": 62,
+            "mean_absolute_error": 0.16430290756976987,
+            "model": "extra_trees",
+            "parameters": {
+              "max_depth": null,
+              "max_features": 1.0,
+              "min_samples_leaf": 5
+            },
+            "pearson_correlation": 0.19279520605665817,
+            "r2": 0.0070174920943602,
+            "root_mean_squared_error": 0.19217890854090447,
+            "spearman_correlation": 0.1807055110643985
+          },
+          {
+            "examples": 62,
+            "mean_absolute_error": 0.1663132808488186,
+            "model": "extra_trees",
+            "parameters": {
+              "max_depth": 12,
+              "max_features": 1.0,
+              "min_samples_leaf": 5
+            },
+            "pearson_correlation": 0.17608880897330548,
+            "r2": -0.004871838911369553,
+            "root_mean_squared_error": 0.1933259981744719,
+            "spearman_correlation": 0.17383597480513088
+          },
+          {
+            "examples": 62,
+            "mean_absolute_error": 0.17980816442280173,
+            "model": "hist_gradient_boosting",
+            "parameters": {
+              "l2_regularization": 1.0,
+              "learning_rate": 0.05,
+              "max_leaf_nodes": 15
+            },
+            "pearson_correlation": 0.033733599220620566,
+            "r2": -0.1980179870248695,
+            "root_mean_squared_error": 0.21108948131020097,
+            "spearman_correlation": 0.029837909400941016
+          },
+          {
+            "examples": 62,
+            "mean_absolute_error": 0.1771638254521982,
+            "model": "hist_gradient_boosting",
+            "parameters": {
+              "l2_regularization": 10.0,
+              "learning_rate": 0.05,
+              "max_leaf_nodes": 31
+            },
+            "pearson_correlation": 0.05869514840019082,
+            "r2": -0.1320892504429685,
+            "root_mean_squared_error": 0.20519900792922258,
+            "spearman_correlation": 0.0854496895761571
+          },
+          {
+            "examples": 62,
+            "mean_absolute_error": 0.17494721868730612,
+            "model": "hist_gradient_boosting",
+            "parameters": {
+              "l2_regularization": 10.0,
+              "learning_rate": 0.1,
+              "max_leaf_nodes": 15
+            },
+            "pearson_correlation": 0.10972723571993384,
+            "r2": -0.0954086621962209,
+            "root_mean_squared_error": 0.201847329943297,
+            "spearman_correlation": 0.11497296372858204
+          },
+          {
+            "examples": 62,
+            "mean_absolute_error": 0.1678490200547006,
+            "model": "hist_gradient_boosting",
+            "parameters": {
+              "l2_regularization": 30.0,
+              "learning_rate": 0.1,
+              "max_leaf_nodes": 31
+            },
+            "pearson_correlation": 0.15222985323486546,
+            "r2": -0.04753484654832296,
+            "root_mean_squared_error": 0.19738728016111667,
+            "spearman_correlation": 0.13117667902715985
+          }
+        ]
+      },
+      "current_249": {
+        "feature_count": 249,
+        "selected_model": "extra_trees",
+        "selected_parameters": {
+          "max_depth": null,
+          "max_features": "sqrt",
+          "min_samples_leaf": 2
+        },
+        "test": {
+          "examples": 59,
+          "mean_absolute_error": 0.17894679452864315,
+          "pearson_correlation": 0.1767078930830462,
+          "r2": 0.026044469445788976,
+          "root_mean_squared_error": 0.20125621337649702,
+          "spearman_correlation": 0.15067534374535982
+        },
+        "validation": {
+          "examples": 62,
+          "mean_absolute_error": 0.1659496183966753,
+          "pearson_correlation": 0.22967754224333095,
+          "r2": 0.04833629594537825,
+          "root_mean_squared_error": 0.18813806646820003,
+          "spearman_correlation": 0.2581582214074387
+        },
+        "validation_trials": [
+          {
+            "examples": 62,
+            "mean_absolute_error": 0.21441026831437354,
+            "model": "ridge",
+            "parameters": {
+              "alpha": 0.1
+            },
+            "pearson_correlation": 0.037461279952198966,
+            "r2": -1.0380238128864017,
+            "root_mean_squared_error": 0.27532113453470336,
+            "spearman_correlation": 0.09281739831224183
+          },
+          {
+            "examples": 62,
+            "mean_absolute_error": 0.21453392089228984,
+            "model": "ridge",
+            "parameters": {
+              "alpha": 1.0
+            },
+            "pearson_correlation": 0.02928864792207787,
+            "r2": -1.0413288821921327,
+            "root_mean_squared_error": 0.2755442886521121,
+            "spearman_correlation": 0.08529237195189907
+          },
+          {
+            "examples": 62,
+            "mean_absolute_error": 0.20633002395276073,
+            "model": "ridge",
+            "parameters": {
+              "alpha": 10.0
+            },
+            "pearson_correlation": 0.0458518502936195,
+            "r2": -0.8975093887763217,
+            "root_mean_squared_error": 0.2656604415647322,
+            "spearman_correlation": 0.11877480631481793
+          },
+          {
+            "examples": 62,
+            "mean_absolute_error": 0.1822363995770246,
+            "model": "ridge",
+            "parameters": {
+              "alpha": 100.0
+            },
+            "pearson_correlation": 0.08212457222597777,
+            "r2": -0.37734294934378787,
+            "root_mean_squared_error": 0.22633721541805604,
+            "spearman_correlation": 0.15105113889175853
+          },
+          {
+            "examples": 62,
+            "mean_absolute_error": 0.17256837635676728,
+            "model": "ridge",
+            "parameters": {
+              "alpha": 1000.0
+            },
+            "pearson_correlation": 0.08592998295847301,
+            "r2": -0.043921782671342946,
+            "root_mean_squared_error": 0.19704658081829418,
+            "spearman_correlation": 0.05894166988867786
+          },
+          {
+            "examples": 62,
+            "mean_absolute_error": 0.17572584569162386,
+            "model": "ridge",
+            "parameters": {
+              "alpha": 10000.0
+            },
+            "pearson_correlation": 0.07584386918710663,
+            "r2": 0.005289921413004772,
+            "root_mean_squared_error": 0.19234601036190843,
+            "spearman_correlation": 0.10149608725047687
+          },
+          {
+            "examples": 62,
+            "mean_absolute_error": 0.1659496183966753,
+            "model": "extra_trees",
+            "parameters": {
+              "max_depth": null,
+              "max_features": "sqrt",
+              "min_samples_leaf": 2
+            },
+            "pearson_correlation": 0.22967754224333095,
+            "r2": 0.04833629594537825,
+            "root_mean_squared_error": 0.18813806646820003,
+            "spearman_correlation": 0.2581582214074387
+          },
+          {
+            "examples": 62,
+            "mean_absolute_error": 0.1681785452436935,
+            "model": "extra_trees",
+            "parameters": {
+              "max_depth": 12,
+              "max_features": "sqrt",
+              "min_samples_leaf": 2
+            },
+            "pearson_correlation": 0.1959541092406249,
+            "r2": 0.03391934632920679,
+            "root_mean_squared_error": 0.18955778096701034,
+            "spearman_correlation": 0.19412994833441766
+          },
+          {
+            "examples": 62,
+            "mean_absolute_error": 0.17018769570239556,
+            "model": "extra_trees",
+            "parameters": {
+              "max_depth": null,
+              "max_features": "sqrt",
+              "min_samples_leaf": 5
+            },
+            "pearson_correlation": 0.17595539768534565,
+            "r2": 0.02918342243092642,
+            "root_mean_squared_error": 0.19002183833883096,
+            "spearman_correlation": 0.22037577198146682
+          },
+          {
+            "examples": 62,
+            "mean_absolute_error": 0.1705678183610791,
+            "model": "extra_trees",
+            "parameters": {
+              "max_depth": 12,
+              "max_features": "sqrt",
+              "min_samples_leaf": 5
+            },
+            "pearson_correlation": 0.17809244789524795,
+            "r2": 0.03072351175895449,
+            "root_mean_squared_error": 0.1898710545716379,
+            "spearman_correlation": 0.21922210940357456
+          },
+          {
+            "examples": 62,
+            "mean_absolute_error": 0.1623637657817096,
+            "model": "extra_trees",
+            "parameters": {
+              "max_depth": null,
+              "max_features": 0.5,
+              "min_samples_leaf": 2
+            },
+            "pearson_correlation": 0.23113448032497055,
+            "r2": 0.027174310395672197,
+            "root_mean_squared_error": 0.19021836250914334,
+            "spearman_correlation": 0.2473819641457632
+          },
+          {
+            "examples": 62,
+            "mean_absolute_error": 0.16612036487070042,
+            "model": "extra_trees",
+            "parameters": {
+              "max_depth": 12,
+              "max_features": 0.5,
+              "min_samples_leaf": 2
+            },
+            "pearson_correlation": 0.19203463479100197,
+            "r2": 0.013720836598123842,
+            "root_mean_squared_error": 0.19152913730718774,
+            "spearman_correlation": 0.20726596995996374
+          },
+          {
+            "examples": 62,
+            "mean_absolute_error": 0.16709194440004604,
+            "model": "extra_trees",
+            "parameters": {
+              "max_depth": null,
+              "max_features": 0.5,
+              "min_samples_leaf": 5
+            },
+            "pearson_correlation": 0.18421934782162136,
+            "r2": 0.013646685345669929,
+            "root_mean_squared_error": 0.19153633702254766,
+            "spearman_correlation": 0.20844585214189904
+          },
+          {
+            "examples": 62,
+            "mean_absolute_error": 0.16662161599584166,
+            "model": "extra_trees",
+            "parameters": {
+              "max_depth": 12,
+              "max_features": 0.5,
+              "min_samples_leaf": 5
+            },
+            "pearson_correlation": 0.19989786568844153,
+            "r2": 0.027588632229285537,
+            "root_mean_squared_error": 0.19017785164746226,
+            "spearman_correlation": 0.20999280878043639
+          },
+          {
+            "examples": 62,
+            "mean_absolute_error": 0.16497513883126314,
+            "model": "extra_trees",
+            "parameters": {
+              "max_depth": null,
+              "max_features": 1.0,
+              "min_samples_leaf": 2
+            },
+            "pearson_correlation": 0.17377010253127895,
+            "r2": -0.037708748241096046,
+            "root_mean_squared_error": 0.19645933173832908,
+            "spearman_correlation": 0.19397263071015963
+          },
+          {
+            "examples": 62,
+            "mean_absolute_error": 0.16454067443034018,
+            "model": "extra_trees",
+            "parameters": {
+              "max_depth": 12,
+              "max_features": 1.0,
+              "min_samples_leaf": 2
+            },
+            "pearson_correlation": 0.18797091857097156,
+            "r2": -0.003493519359673014,
+            "root_mean_squared_error": 0.19319336611690127,
+            "spearman_correlation": 0.19824642616916963
+          },
+          {
+            "examples": 62,
+            "mean_absolute_error": 0.1660117732534661,
+            "model": "extra_trees",
+            "parameters": {
+              "max_depth": null,
+              "max_features": 1.0,
+              "min_samples_leaf": 5
+            },
+            "pearson_correlation": 0.15425219743876425,
+            "r2": -0.021693327228323067,
+            "root_mean_squared_error": 0.19493741464209546,
+            "spearman_correlation": 0.16657314448521818
+          },
+          {
+            "examples": 62,
+            "mean_absolute_error": 0.16731274312818756,
+            "model": "extra_trees",
+            "parameters": {
+              "max_depth": 12,
+              "max_features": 1.0,
+              "min_samples_leaf": 5
+            },
+            "pearson_correlation": 0.1484910163363008,
+            "r2": -0.020843062615012675,
+            "root_mean_squared_error": 0.19485628321066006,
+            "spearman_correlation": 0.1645804545779497
+          },
+          {
+            "examples": 62,
+            "mean_absolute_error": 0.17859986050407287,
+            "model": "hist_gradient_boosting",
+            "parameters": {
+              "l2_regularization": 1.0,
+              "learning_rate": 0.05,
+              "max_leaf_nodes": 15
+            },
+            "pearson_correlation": 0.07107663083372028,
+            "r2": -0.1807909691006664,
+            "root_mean_squared_error": 0.20956629476130956,
+            "spearman_correlation": 0.07973381589478175
+          },
+          {
+            "examples": 62,
+            "mean_absolute_error": 0.17076586472718258,
+            "model": "hist_gradient_boosting",
+            "parameters": {
+              "l2_regularization": 10.0,
+              "learning_rate": 0.05,
+              "max_leaf_nodes": 31
+            },
+            "pearson_correlation": 0.1272459483242053,
+            "r2": -0.10353587379816886,
+            "root_mean_squared_error": 0.20259473339092288,
+            "spearman_correlation": 0.14819320205107087
+          },
+          {
+            "examples": 62,
+            "mean_absolute_error": 0.17705158304341412,
+            "model": "hist_gradient_boosting",
+            "parameters": {
+              "l2_regularization": 10.0,
+              "learning_rate": 0.1,
+              "max_leaf_nodes": 15
+            },
+            "pearson_correlation": 0.10869247558098288,
+            "r2": -0.1251578651031977,
+            "root_mean_squared_error": 0.20456986267119756,
+            "spearman_correlation": 0.1305211889260847
+          },
+          {
+            "examples": 62,
+            "mean_absolute_error": 0.1649446551562557,
+            "model": "hist_gradient_boosting",
+            "parameters": {
+              "l2_regularization": 30.0,
+              "learning_rate": 0.1,
+              "max_leaf_nodes": 31
+            },
+            "pearson_correlation": 0.18678121089898206,
+            "r2": -0.018880887669030733,
+            "root_mean_squared_error": 0.19466892531310895,
+            "spearman_correlation": 0.2325941074655077
+          }
+        ]
+      },
+      "improved_full": {
+        "feature_count": 95,
+        "selected_model": "extra_trees",
+        "selected_parameters": {
+          "max_depth": null,
+          "max_features": "sqrt",
+          "min_samples_leaf": 2
+        },
+        "test": {
+          "examples": 59,
+          "mean_absolute_error": 0.17450473485329873,
+          "pearson_correlation": 0.2893542104529789,
+          "r2": 0.07663155773316188,
+          "root_mean_squared_error": 0.19595991708595206,
+          "spearman_correlation": 0.3329370201738829
+        },
+        "validation": {
+          "examples": 62,
+          "mean_absolute_error": 0.16207893758256703,
+          "pearson_correlation": 0.34150337470195147,
+          "r2": 0.11444725162619984,
+          "root_mean_squared_error": 0.1814855872514223,
+          "spearman_correlation": 0.33099628143890986
+        },
+        "validation_trials": [
+          {
+            "examples": 62,
+            "mean_absolute_error": 0.18296449006624485,
+            "model": "ridge",
+            "parameters": {
+              "alpha": 0.1
+            },
+            "pearson_correlation": 0.04598991655000761,
+            "r2": -0.44516559569907455,
+            "root_mean_squared_error": 0.23184286259215894,
+            "spearman_correlation": 0.12732239723283795
+          },
+          {
+            "examples": 62,
+            "mean_absolute_error": 0.1829968373366354,
+            "model": "ridge",
+            "parameters": {
+              "alpha": 1.0
+            },
+            "pearson_correlation": 0.04248384913850302,
+            "r2": -0.43776998976281445,
+            "root_mean_squared_error": 0.2312488760904377,
+            "spearman_correlation": 0.14145476381201827
+          },
+          {
+            "examples": 62,
+            "mean_absolute_error": 0.1853801651988107,
+            "model": "ridge",
+            "parameters": {
+              "alpha": 10.0
+            },
+            "pearson_correlation": 0.01071600989820382,
+            "r2": -0.4251402980217711,
+            "root_mean_squared_error": 0.23023096496010867,
+            "spearman_correlation": 0.11405527758707683
+          },
+          {
+            "examples": 62,
+            "mean_absolute_error": 0.18057854756988337,
+            "model": "ridge",
+            "parameters": {
+              "alpha": 100.0
+            },
+            "pearson_correlation": 0.05456177749574045,
+            "r2": -0.1570935522675596,
+            "root_mean_squared_error": 0.20745273280347826,
+            "spearman_correlation": 0.05238676887792632
+          },
+          {
+            "examples": 62,
+            "mean_absolute_error": 0.17491622591979747,
+            "model": "ridge",
+            "parameters": {
+              "alpha": 1000.0
+            },
+            "pearson_correlation": 0.08943351648581575,
+            "r2": -0.031083156016539215,
+            "root_mean_squared_error": 0.1958311478666354,
+            "spearman_correlation": 0.09578021356910153
+          },
+          {
+            "examples": 62,
+            "mean_absolute_error": 0.17595325843431203,
+            "model": "ridge",
+            "parameters": {
+              "alpha": 10000.0
+            },
+            "pearson_correlation": 0.049309194334833294,
+            "r2": -0.003965166890441463,
+            "root_mean_squared_error": 0.19323876176132648,
+            "spearman_correlation": 0.09166373573434956
+          },
+          {
+            "examples": 62,
+            "mean_absolute_error": 0.16207893758256703,
+            "model": "extra_trees",
+            "parameters": {
+              "max_depth": null,
+              "max_features": "sqrt",
+              "min_samples_leaf": 2
+            },
+            "pearson_correlation": 0.34150337470195147,
+            "r2": 0.11444725162619984,
+            "root_mean_squared_error": 0.1814855872514223,
+            "spearman_correlation": 0.33099628143890986
+          },
+          {
+            "examples": 62,
+            "mean_absolute_error": 0.16204667640816844,
+            "model": "extra_trees",
+            "parameters": {
+              "max_depth": 12,
+              "max_features": "sqrt",
+              "min_samples_leaf": 2
+            },
+            "pearson_correlation": 0.3292475178106078,
+            "r2": 0.10754350717153849,
+            "root_mean_squared_error": 0.18219164210779085,
+            "spearman_correlation": 0.3304718893580497
+          },
+          {
+            "examples": 62,
+            "mean_absolute_error": 0.16585596804792896,
+            "model": "extra_trees",
+            "parameters": {
+              "max_depth": null,
+              "max_features": "sqrt",
+              "min_samples_leaf": 5
+            },
+            "pearson_correlation": 0.2711923378055564,
+            "r2": 0.07302159424958199,
+            "root_mean_squared_error": 0.18568196868782713,
+            "spearman_correlation": 0.28715710347900353
+          },
+          {
+            "examples": 62,
+            "mean_absolute_error": 0.16609659244683678,
+            "model": "extra_trees",
+            "parameters": {
+              "max_depth": 12,
+              "max_features": "sqrt",
+              "min_samples_leaf": 5
+            },
+            "pearson_correlation": 0.2673153629825198,
+            "r2": 0.07089216417307442,
+            "root_mean_squared_error": 0.18589511818141244,
+            "spearman_correlation": 0.27910768503780065
+          },
+          {
+            "examples": 62,
+            "mean_absolute_error": 0.16498457230213803,
+            "model": "extra_trees",
+            "parameters": {
+              "max_depth": null,
+              "max_features": 0.5,
+              "min_samples_leaf": 2
+            },
+            "pearson_correlation": 0.2821520066290671,
+            "r2": 0.0654509285891054,
+            "root_mean_squared_error": 0.18643866246954013,
+            "spearman_correlation": 0.24032889065819452
+          },
+          {
+            "examples": 62,
+            "mean_absolute_error": 0.16850832334334734,
+            "model": "extra_trees",
+            "parameters": {
+              "max_depth": 12,
+              "max_features": 0.5,
+              "min_samples_leaf": 2
+            },
+            "pearson_correlation": 0.23645728489780893,
+            "r2": 0.033715343193202574,
+            "root_mean_squared_error": 0.18957779396508403,
+            "spearman_correlation": 0.21240501235239295
+          },
+          {
+            "examples": 62,
+            "mean_absolute_error": 0.16732156425785907,
+            "model": "extra_trees",
+            "parameters": {
+              "max_depth": null,
+              "max_features": 0.5,
+              "min_samples_leaf": 5
+            },
+            "pearson_correlation": 0.22761624272668907,
+            "r2": 0.038988328800588334,
+            "root_mean_squared_error": 0.18905982627397397,
+            "spearman_correlation": 0.20469644876374915
+          },
+          {
+            "examples": 62,
+            "mean_absolute_error": 0.16637234509524298,
+            "model": "extra_trees",
+            "parameters": {
+              "max_depth": 12,
+              "max_features": 0.5,
+              "min_samples_leaf": 5
+            },
+            "pearson_correlation": 0.24729487382452936,
+            "r2": 0.05182113514529585,
+            "root_mean_squared_error": 0.18779328489705682,
+            "spearman_correlation": 0.21720319989226308
+          },
+          {
+            "examples": 62,
+            "mean_absolute_error": 0.17096897445259363,
+            "model": "extra_trees",
+            "parameters": {
+              "max_depth": null,
+              "max_features": 1.0,
+              "min_samples_leaf": 2
+            },
+            "pearson_correlation": 0.20703029131461514,
+            "r2": 0.002339287315678118,
+            "root_mean_squared_error": 0.19263107957595318,
+            "spearman_correlation": 0.20178607271497545
+          },
+          {
+            "examples": 62,
+            "mean_absolute_error": 0.17117897388335274,
+            "model": "extra_trees",
+            "parameters": {
+              "max_depth": 12,
+              "max_features": 1.0,
+              "min_samples_leaf": 2
+            },
+            "pearson_correlation": 0.20315178795514527,
+            "r2": 0.000977777999303986,
+            "root_mean_squared_error": 0.19276247674705219,
+            "spearman_correlation": 0.165786556363928
+          },
+          {
+            "examples": 62,
+            "mean_absolute_error": 0.1715384055322287,
+            "model": "extra_trees",
+            "parameters": {
+              "max_depth": null,
+              "max_features": 1.0,
+              "min_samples_leaf": 5
+            },
+            "pearson_correlation": 0.18257297897329594,
+            "r2": -0.0006907789588821434,
+            "root_mean_squared_error": 0.19292338457214522,
+            "spearman_correlation": 0.16020178070276767
+          },
+          {
+            "examples": 62,
+            "mean_absolute_error": 0.17168899865454665,
+            "model": "extra_trees",
+            "parameters": {
+              "max_depth": 12,
+              "max_features": 1.0,
+              "min_samples_leaf": 5
+            },
+            "pearson_correlation": 0.18578551059015436,
+            "r2": 0.0037071660681210483,
+            "root_mean_squared_error": 0.19249897738011404,
+            "spearman_correlation": 0.17585488431644236
+          },
+          {
+            "examples": 62,
+            "mean_absolute_error": 0.17648790946396495,
+            "model": "hist_gradient_boosting",
+            "parameters": {
+              "l2_regularization": 1.0,
+              "learning_rate": 0.05,
+              "max_leaf_nodes": 15
+            },
+            "pearson_correlation": 0.14571547015450018,
+            "r2": -0.11246839818596377,
+            "root_mean_squared_error": 0.20341302805952063,
+            "spearman_correlation": 0.08369297610527568
+          },
+          {
+            "examples": 62,
+            "mean_absolute_error": 0.1710028954399201,
+            "model": "hist_gradient_boosting",
+            "parameters": {
+              "l2_regularization": 10.0,
+              "learning_rate": 0.05,
+              "max_leaf_nodes": 31
+            },
+            "pearson_correlation": 0.13890627673575787,
+            "r2": -0.09530374827404531,
+            "root_mean_squared_error": 0.2018376636411794,
+            "spearman_correlation": 0.07005878200291248
+          },
+          {
+            "examples": 62,
+            "mean_absolute_error": 0.16407474712403886,
+            "model": "hist_gradient_boosting",
+            "parameters": {
+              "l2_regularization": 10.0,
+              "learning_rate": 0.1,
+              "max_leaf_nodes": 15
+            },
+            "pearson_correlation": 0.2769195073808562,
+            "r2": 0.010052649874891628,
+            "root_mean_squared_error": 0.1918849760133688,
+            "spearman_correlation": 0.22986726864503507
+          },
+          {
+            "examples": 62,
+            "mean_absolute_error": 0.1690691136865908,
+            "model": "hist_gradient_boosting",
+            "parameters": {
+              "l2_regularization": 30.0,
+              "learning_rate": 0.1,
+              "max_leaf_nodes": 31
+            },
+            "pearson_correlation": 0.1651841488342881,
+            "r2": -0.04473593139328558,
+            "root_mean_squared_error": 0.19712340360238972,
+            "spearman_correlation": 0.1667566817135192
+          }
+        ]
+      },
+      "improved_structured": {
+        "feature_count": 93,
+        "selected_model": "extra_trees",
+        "selected_parameters": {
+          "max_depth": null,
+          "max_features": "sqrt",
+          "min_samples_leaf": 2
+        },
+        "test": {
+          "examples": 59,
+          "mean_absolute_error": 0.17333904823091772,
+          "pearson_correlation": 0.3100099291960032,
+          "r2": 0.08485278145896813,
+          "root_mean_squared_error": 0.19508560069357608,
+          "spearman_correlation": 0.35147417294546907
+        },
+        "validation": {
+          "examples": 62,
+          "mean_absolute_error": 0.16083585236887718,
+          "pearson_correlation": 0.36588085022329,
+          "r2": 0.13193912766599136,
+          "root_mean_squared_error": 0.1796842511083524,
+          "spearman_correlation": 0.3587628421204534
+        },
+        "validation_trials": [
+          {
+            "examples": 62,
+            "mean_absolute_error": 0.1826671710453648,
+            "model": "ridge",
+            "parameters": {
+              "alpha": 0.1
+            },
+            "pearson_correlation": 0.05606423820756517,
+            "r2": -0.42795246953151334,
+            "root_mean_squared_error": 0.23045800572225966,
+            "spearman_correlation": 0.15039564879068337
+          },
+          {
+            "examples": 62,
+            "mean_absolute_error": 0.1827262825285983,
+            "model": "ridge",
+            "parameters": {
+              "alpha": 1.0
+            },
+            "pearson_correlation": 0.05189929578471855,
+            "r2": -0.4220814927737586,
+            "root_mean_squared_error": 0.22998375773169594,
+            "spearman_correlation": 0.15600664405588668
+          },
+          {
+            "examples": 62,
+            "mean_absolute_error": 0.18507606838728527,
+            "model": "ridge",
+            "parameters": {
+              "alpha": 10.0
+            },
+            "pearson_correlation": 0.020909441190510334,
+            "r2": -0.4083461469640999,
+            "root_mean_squared_error": 0.2288703998864407,
+            "spearman_correlation": 0.12451689960023629
+          },
+          {
+            "examples": 62,
+            "mean_absolute_error": 0.1794811825854759,
+            "model": "ridge",
+            "parameters": {
+              "alpha": 100.0
+            },
+            "pearson_correlation": 0.06993678519512045,
+            "r2": -0.14201178957817695,
+            "root_mean_squared_error": 0.2060963104776944,
+            "spearman_correlation": 0.08175272540609323
+          },
+          {
+            "examples": 62,
+            "mean_absolute_error": 0.17443006202475572,
+            "model": "ridge",
+            "parameters": {
+              "alpha": 1000.0
+            },
+            "pearson_correlation": 0.09993906654121268,
+            "r2": -0.02519193593385416,
+            "root_mean_squared_error": 0.1952708938083631,
+            "spearman_correlation": 0.0965405820863487
+          },
+          {
+            "examples": 62,
+            "mean_absolute_error": 0.17592549791412707,
+            "model": "ridge",
+            "parameters": {
+              "alpha": 10000.0
+            },
+            "pearson_correlation": 0.050463894139611325,
+            "r2": -0.003643809658814945,
+            "root_mean_squared_error": 0.1932078325789073,
+            "spearman_correlation": 0.09119178286157545
+          },
+          {
+            "examples": 62,
+            "mean_absolute_error": 0.16083585236887718,
+            "model": "extra_trees",
+            "parameters": {
+              "max_depth": null,
+              "max_features": "sqrt",
+              "min_samples_leaf": 2
+            },
+            "pearson_correlation": 0.36588085022329,
+            "r2": 0.13193912766599136,
+            "root_mean_squared_error": 0.1796842511083524,
+            "spearman_correlation": 0.3587628421204534
+          },
+          {
+            "examples": 62,
+            "mean_absolute_error": 0.16171526157969346,
+            "model": "extra_trees",
+            "parameters": {
+              "max_depth": 12,
+              "max_features": "sqrt",
+              "min_samples_leaf": 2
+            },
+            "pearson_correlation": 0.34563778011364915,
+            "r2": 0.11838509909543937,
+            "root_mean_squared_error": 0.1810816255349891,
+            "spearman_correlation": 0.3533616036875941
+          },
+          {
+            "examples": 62,
+            "mean_absolute_error": 0.16564125065874347,
+            "model": "extra_trees",
+            "parameters": {
+              "max_depth": null,
+              "max_features": "sqrt",
+              "min_samples_leaf": 5
+            },
+            "pearson_correlation": 0.26402632577264207,
+            "r2": 0.06933935345244469,
+            "root_mean_squared_error": 0.18605039586458497,
+            "spearman_correlation": 0.2642149499413731
+          },
+          {
+            "examples": 62,
+            "mean_absolute_error": 0.16516812037856438,
+            "model": "extra_trees",
+            "parameters": {
+              "max_depth": 12,
+              "max_features": "sqrt",
+              "min_samples_leaf": 5
+            },
+            "pearson_correlation": 0.2717604945307115,
+            "r2": 0.07351134008422822,
+            "root_mean_squared_error": 0.18563291199761112,
+            "spearman_correlation": 0.2826735511876495
+          },
+          {
+            "examples": 62,
+            "mean_absolute_error": 0.16640133625148773,
+            "model": "extra_trees",
+            "parameters": {
+              "max_depth": null,
+              "max_features": 0.5,
+              "min_samples_leaf": 2
+            },
+            "pearson_correlation": 0.27125026784251854,
+            "r2": 0.058383617799313114,
+            "root_mean_squared_error": 0.187142284321468,
+            "spearman_correlation": 0.2615929895370725
+          },
+          {
+            "examples": 62,
+            "mean_absolute_error": 0.16657014136296647,
+            "model": "extra_trees",
+            "parameters": {
+              "max_depth": 12,
+              "max_features": 0.5,
+              "min_samples_leaf": 2
+            },
+            "pearson_correlation": 0.25556526454091216,
+            "r2": 0.050190114126502205,
+            "root_mean_squared_error": 0.1879547329108353,
+            "spearman_correlation": 0.22331236763428353
+          },
+          {
+            "examples": 62,
+            "mean_absolute_error": 0.16663007390201462,
+            "model": "extra_trees",
+            "parameters": {
+              "max_depth": null,
+              "max_features": 0.5,
+              "min_samples_leaf": 5
+            },
+            "pearson_correlation": 0.24401950524545846,
+            "r2": 0.050461948653656497,
+            "root_mean_squared_error": 0.1879278347689594,
+            "spearman_correlation": 0.22003491712890774
+          },
+          {
+            "examples": 62,
+            "mean_absolute_error": 0.16494279869797435,
+            "model": "extra_trees",
+            "parameters": {
+              "max_depth": 12,
+              "max_features": 0.5,
+              "min_samples_leaf": 5
+            },
+            "pearson_correlation": 0.2593515589503408,
+            "r2": 0.06085797405619242,
+            "root_mean_squared_error": 0.18689623864221488,
+            "spearman_correlation": 0.2270617710124334
+          },
+          {
+            "examples": 62,
+            "mean_absolute_error": 0.16904454829538026,
+            "model": "extra_trees",
+            "parameters": {
+              "max_depth": null,
+              "max_features": 1.0,
+              "min_samples_leaf": 2
+            },
+            "pearson_correlation": 0.2207798946848566,
+            "r2": 0.008873786678539886,
+            "root_mean_squared_error": 0.191999193619331,
+            "spearman_correlation": 0.19753849686000846
+          },
+          {
+            "examples": 62,
+            "mean_absolute_error": 0.1715284081234289,
+            "model": "extra_trees",
+            "parameters": {
+              "max_depth": 12,
+              "max_features": 1.0,
+              "min_samples_leaf": 2
+            },
+            "pearson_correlation": 0.17235294071568766,
+            "r2": -0.024513404940134098,
+            "root_mean_squared_error": 0.1952062623574971,
+            "spearman_correlation": 0.13086204377864377
+          },
+          {
+            "examples": 62,
+            "mean_absolute_error": 0.17038796441499066,
+            "model": "extra_trees",
+            "parameters": {
+              "max_depth": null,
+              "max_features": 1.0,
+              "min_samples_leaf": 5
+            },
+            "pearson_correlation": 0.20147604667836327,
+            "r2": 0.011601266018608336,
+            "root_mean_squared_error": 0.1917348304142086,
+            "spearman_correlation": 0.17328536312022774
+          },
+          {
+            "examples": 62,
+            "mean_absolute_error": 0.1707474062294524,
+            "model": "extra_trees",
+            "parameters": {
+              "max_depth": 12,
+              "max_features": 1.0,
+              "min_samples_leaf": 5
+            },
+            "pearson_correlation": 0.19412624610892665,
+            "r2": 0.009273131278621172,
+            "root_mean_squared_error": 0.19196050956220786,
+            "spearman_correlation": 0.16180117654939105
+          },
+          {
+            "examples": 62,
+            "mean_absolute_error": 0.1715409318953267,
+            "model": "hist_gradient_boosting",
+            "parameters": {
+              "l2_regularization": 1.0,
+              "learning_rate": 0.05,
+              "max_leaf_nodes": 15
+            },
+            "pearson_correlation": 0.18469513298619802,
+            "r2": -0.061664448230932756,
+            "root_mean_squared_error": 0.19871404352967623,
+            "spearman_correlation": 0.17873904076117303
+          },
+          {
+            "examples": 62,
+            "mean_absolute_error": 0.16835193020386546,
+            "model": "hist_gradient_boosting",
+            "parameters": {
+              "l2_regularization": 10.0,
+              "learning_rate": 0.05,
+              "max_leaf_nodes": 31
+            },
+            "pearson_correlation": 0.19210653103034928,
+            "r2": -0.049494026269598645,
+            "root_mean_squared_error": 0.1975717783234928,
+            "spearman_correlation": 0.13885902301176065
+          },
+          {
+            "examples": 62,
+            "mean_absolute_error": 0.16600229962257332,
+            "model": "hist_gradient_boosting",
+            "parameters": {
+              "l2_regularization": 10.0,
+              "learning_rate": 0.1,
+              "max_leaf_nodes": 15
+            },
+            "pearson_correlation": 0.25374118342704566,
+            "r2": 0.0013286843444585417,
+            "root_mean_squared_error": 0.1927286198840494,
+            "spearman_correlation": 0.2046177899516201
+          },
+          {
+            "examples": 62,
+            "mean_absolute_error": 0.16822938158811385,
+            "model": "hist_gradient_boosting",
+            "parameters": {
+              "l2_regularization": 30.0,
+              "learning_rate": 0.1,
+              "max_leaf_nodes": 31
+            },
+            "pearson_correlation": 0.22373881460174827,
+            "r2": -0.005844783767427364,
+            "root_mean_squared_error": 0.19341956733442878,
+            "spearman_correlation": 0.21253611037260797
+          }
+        ]
+      },
+      "mean_baseline": {
+        "final_train_validation_mean": 0.5640840695699273,
+        "test": {
+          "examples": 59,
+          "mean_absolute_error": 0.18761373694160874,
+          "pearson_correlation": -6.874399350242616e-16,
+          "r2": -0.0005360850983360255,
+          "root_mean_squared_error": 0.20398400357448582,
+          "spearman_correlation": null
+        },
+        "validation": {
+          "examples": 62,
+          "mean_absolute_error": 0.17720613508023905,
+          "pearson_correlation": 6.499525573154256e-17,
+          "r2": -0.0005798620204653382,
+          "root_mean_squared_error": 0.1929126924259787,
+          "spearman_correlation": null
+        }
+      },
+      "primary_comparison": {
+        "current_variant": "current_249",
+        "selected_improved_variant": "improved_structured",
+        "selection_rule": "Lower validation RMSE between improved_structured and improved_full; test metrics were not used for this choice."
+      }
+    }
+  },
+  "inputs": {
+    "feature_directory": "C:\\Users\\gag20\\Desktop\\Example\\Hackathons\\Hack-Nation 2026 2\\05_rare_disease\\.data\\features",
+    "hpo_obo": "C:\\Users\\gag20\\Desktop\\Example\\Hackathons\\Hack-Nation 2026 2\\05_rare_disease\\.data\\databases\\hpo\\hp.obo",
+    "pair_counts": {
+      "test": 59,
+      "train": 486,
+      "validation": 62
+    },
+    "split_directory": "C:\\Users\\gag20\\Desktop\\Example\\Hackathons\\Hack-Nation 2026 2\\05_rare_disease\\.data\\splits",
+    "split_manifest_sha256": "efc2acf9dbaf907bbf5d1c440b4e5d7656dae5631294d723e7be5f47f029767c"
+  },
+  "isolation": "All generated artifacts are below the root experiments directory.",
+  "limitations": [
+    "Existing literature scores are retained for direct comparability.",
+    "Most source labels were derived from abstracts rather than expert full-text review.",
+    "Unobserved matched controls are ranking decoys, not verified unrelated pairs.",
+    "The test split has only 59 pairs, so paired uncertainty is reported.",
+    "TF-IDF and HPO information content are unsupervised and fit over the full disease catalog."
+  ],
+  "matched_control_ranking": {
+    "control_definition": "Same broad body-system when available, annotation-count matched, and absent from all literature pairs. Controls are unobserved, not clinically verified negatives.",
+    "controls_per_query": 10,
+    "methods": {
+      "current_249_model": {
+        "hits_at_1": 0.2222222222222222,
+        "hits_at_5": 0.7222222222222222,
+        "mean_rank": 4.777777777777778,
+        "mean_reciprocal_rank": 0.37683381433381435,
+        "median_rank": 5.0,
+        "queries": 18
+      },
+      "current_heuristic": {
+        "hits_at_1": 0.16666666666666666,
+        "hits_at_5": 0.4444444444444444,
+        "mean_rank": 6.388888888888889,
+        "mean_reciprocal_rank": 0.327324835658169,
+        "median_rank": 7.5,
+        "queries": 18
+      },
+      "selected_improved_model": {
+        "hits_at_1": 0.3888888888888889,
+        "hits_at_5": 0.7222222222222222,
+        "mean_rank": 3.7777777777777777,
+        "mean_reciprocal_rank": 0.5246031746031746,
+        "median_rank": 3.5,
+        "queries": 18
+      }
+    },
+    "paired_bootstrap": {
+      "interpretation": "Positive MRR deltas favor the selected improved model.",
+      "mrr_delta": 0.14776936026936027,
+      "mrr_delta_95_percentile_interval": [
+        -0.03413465007215008,
+        0.32747294372294306
+      ],
+      "mrr_probability_improved": 0.9479,
+      "queries": 18,
+      "repetitions": 20000
+    },
+    "positive_definition": "test literature target >= 0.8"
+  },
+  "schema_version": "1.0.0",
+  "source_feature_manifest": {
+    "annotated_hpo_diseases": 6315,
+    "description_nonempty_diseases": 6898,
+    "description_vocabulary_size": 34582,
+    "diseases_in_catalog": 11645,
+    "high_confidence_ot_gene_diseases": 432,
+    "high_confidence_ot_rows": 3823,
+    "hpo_terms_with_information_content": 12753,
+    "open_targets_high_confidence_threshold": 0.5,
+    "required_diseases": 595,
+    "trusted_evidence_rows": 5020,
+    "trusted_gene_diseases": 415,
+    "trusted_gene_sources": [
+      "clingen_gene_validity",
+      "clinvar_gene_condition",
+      "hpo_genes_to_disease",
+      "orphadata_product6"
+    ]
+  }
+}

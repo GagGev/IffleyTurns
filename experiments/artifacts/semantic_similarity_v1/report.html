@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Semantic similarity experiment</title>
+<style>
+:root { color-scheme: light dark; font-family: Inter, system-ui, sans-serif; }
+body { margin: 0; background: Canvas; color: CanvasText; }
+main { max-width: 1040px; margin: 0 auto; padding: 40px 28px 64px; }
+h1 { font-size: 28px; margin: 0 0 8px; }
+h2 { font-size: 18px; margin: 32px 0 12px; }
+p { line-height: 1.55; max-width: 780px; }
+.lede { color: GrayText; margin-top: 0; }
+.verdict { display: grid; grid-template-columns: 1fr auto; gap: 20px;
+  align-items: end; border-top: 1px solid GrayText; border-bottom: 1px solid GrayText;
+  padding: 22px 0; margin: 28px 0; }
+.verdict strong { font-size: 24px; }
+.metric { font-variant-numeric: tabular-nums; text-align: right; }
+.bar-row { display: grid; grid-template-columns: 190px 1fr 64px; gap: 12px;
+  align-items: center; margin: 12px 0; }
+.track { height: 18px; background: color-mix(in srgb, CanvasText 10%, Canvas); }
+.fill { height: 100%; background: AccentColor; }
+.bar-value { font-variant-numeric: tabular-nums; text-align: right; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(220px,1fr));
+  gap: 18px; margin-top: 18px; }
+.stat { padding: 16px 0; border-top: 1px solid color-mix(in srgb, CanvasText 24%, Canvas); }
+.stat b { display: block; font-size: 22px; margin-top: 4px; }
+.note { color: GrayText; font-size: 13px; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden;
+  clip: rect(0,0,0,0); }
+code { font-family: ui-monospace, monospace; }
+@media (max-width: 640px) {
+  .bar-row { grid-template-columns: 1fr 54px; }
+  .bar-label { grid-column: 1 / -1; }
+  .verdict { grid-template-columns: 1fr; }
+  .metric { text-align: left; }
+}
+</style>
+</head>
+<body><main>
+<h1>Semantic disease-similarity experiment</h1>
+<p class="lede">Current split · 486 train, 62 validation, 59 untouched test pairs</p>
+<section class="verdict">
+  <div><span>Primary held-out result</span><br>
+  <strong>Improved test RMSE</strong></div>
+  <div class="metric">Δ RMSE (current − improved)<br><strong>+0.0062</strong></div>
+</section>
+<p>The improved representation was selected between structured-only and
+structured-plus-description variants using validation RMSE. The test set was
+then evaluated once. Positive deltas favor the improved representation.</p>
+<h2>Held-out regression RMSE</h2>
+<div class="bar-row"><div class="bar-label">Mean baseline</div><div class="track"><div class="fill" style="width:81.6%"></div></div><div class="bar-value">0.204</div><div class="sr-only">lower is better</div></div><div class="bar-row"><div class="bar-label">Current 249 features</div><div class="track"><div class="fill" style="width:80.5%"></div></div><div class="bar-value">0.201</div><div class="sr-only">lower is better</div></div><div class="bar-row"><div class="bar-label">Improved Structured</div><div class="track"><div class="fill" style="width:78.0%"></div></div><div class="bar-value">0.195</div><div class="sr-only">lower is better</div></div>
+<p class="note">Target: paper-averaged literature similarity in [0, 1].
+Lower RMSE is better. Source: current deterministic pair split.</p>
+<div class="grid">
+  <div class="stat">Selected representation<b>improved_structured</b></div>
+  <div class="stat">Current test R²<b>0.026</b></div>
+  <div class="stat">Improved test R²<b>0.085</b></div>
+  <div class="stat">Bootstrap P(Δ RMSE &gt; 0)<b>88.0%</b></div>
+</div>
+<p class="note">Paired bootstrap 95% interval for Δ RMSE:
+[-0.0043, +0.0156] across
+20,000 resamples.</p>
+<h2>Matched-control retrieval</h2>
+<div class="bar-row"><div class="bar-label">Current Heuristic</div><div class="track"><div class="fill" style="width:32.7%"></div></div><div class="bar-value">0.327</div><div class="sr-only">higher is better</div></div><div class="bar-row"><div class="bar-label">Current 249 Model</div><div class="track"><div class="fill" style="width:37.7%"></div></div><div class="bar-value">0.377</div><div class="sr-only">higher is better</div></div><div class="bar-row"><div class="bar-label">Selected Improved Model</div><div class="track"><div class="fill" style="width:52.5%"></div></div><div class="bar-value">0.525</div><div class="sr-only">higher is better</div></div>
+<p class="note">Mean reciprocal rank; higher is better. Each known test edge
+with target ≥ 0.8 is ranked against 10
+body-system-matched unobserved candidates. These candidates are not verified
+clinical negatives. Paired bootstrap P(Δ MRR &gt; 0):
+94.8%; 95% interval:
+[-0.034,
++0.327].</p>
+<h2>What changed</h2>
+<p>Exact HPO overlap was augmented with HPO ancestor expansion and
+information-content weighting. Broad low-score Open Targets genes were replaced
+by curated sources plus associations scoring at least
+0.5. The compact representation also adds
+ontology parents, all treatments, disease type, and full TF-IDF cosine over
+Orphanet descriptions without lossy SVD compression.</p>
+<h2>Interpretation boundary</h2>
+<p>This experiment can test whether better representations recover the existing
+literature labels and rank known edges. It cannot repair subjective abstract-only
+annotations, create expert labels, or prove that an unobserved control is
+biologically unrelated.</p>
+</main></body></html>

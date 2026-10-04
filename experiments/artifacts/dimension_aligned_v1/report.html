@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Dimension-aligned ablation</title>
+<style>
+:root{color-scheme:light dark;font-family:Inter,system-ui,sans-serif}
+body{margin:0;background:Canvas;color:CanvasText}
+main{max-width:980px;margin:auto;padding:40px 28px 64px}
+h1{font-size:28px;margin-bottom:6px}p{line-height:1.55;max-width:780px}
+.lede,.note{color:GrayText}.verdict{border-block:1px solid GrayText;
+padding:20px 0;margin:28px 0;display:flex;justify-content:space-between;gap:24px}
+.verdict strong{font-size:24px}table{width:100%;border-collapse:collapse;margin-top:24px}
+th,td{text-align:right;padding:11px 8px;border-bottom:1px solid
+color-mix(in srgb,CanvasText 20%,Canvas);font-variant-numeric:tabular-nums}
+th:first-child,td:first-child{text-align:left}th{font-size:12px;color:GrayText}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:20px}
+.stat{border-top:1px solid GrayText;padding-top:12px}.stat b{display:block;font-size:22px}
+</style></head><body><main>
+<h1>Dimension-aligned feature ablation</h1>
+<p class="lede">Same weighted targets, ridge estimator, alpha grid, and untouched
+test pairs as the production seven-dimension model.</p>
+<section class="verdict"><div>Macro held-out result<br><strong>Did not improve
+macro RMSE</strong></div><div><strong>-0.0063</strong>
+<br>current − aligned</div></section>
+<div class="grid">
+<div class="stat">Current macro RMSE<b>0.180</b></div>
+<div class="stat">Aligned macro RMSE<b>0.186</b></div>
+<div class="stat">Current macro Spearman<b>0.272</b></div>
+<div class="stat">Aligned macro Spearman<b>0.225</b></div>
+</div>
+<table><thead><tr><th>Dimension</th><th>Current RMSE</th><th>Aligned RMSE</th>
+<th>Current ρ</th><th>Aligned ρ</th><th>P(ΔRMSE&gt;0)</th><th>Paper-overlap removed</th>
+</tr></thead><tbody><tr><td>phenotype</td><td>0.121</td><td>0.127</td><td>0.200</td><td>0.039</td><td>5.3%</td><td>6</td></tr><tr><td>genetic</td><td>0.208</td><td>0.226</td><td>0.238</td><td>-0.031</td><td>10.8%</td><td>4</td></tr><tr><td>mechanism</td><td>0.177</td><td>0.176</td><td>0.078</td><td>0.436</td><td>73.9%</td><td>2</td></tr><tr><td>diagnostic confusability</td><td>0.215</td><td>0.216</td><td>0.572</td><td>0.455</td><td>10.7%</td><td>1</td></tr></tbody></table>
+<p class="note">Bootstrap probabilities are descriptive, not multiplicity-adjusted.
+The paper-blocked sensitivity removes any test pair sharing a source identifier
+with train or validation. Sparse therapeutic, natural-history, and comorbidity
+dimensions are excluded from macro claims.</p>
+</main></body></html>
