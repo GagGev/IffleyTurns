@@ -65,11 +65,23 @@ class ProductionModel:
     _sim: Optional[StaticSimilarity] = field(default=None, repr=False)
     _features: Optional[TemporalFeatures] = field(default=None, repr=False)
     _masked_z: dict[str, list[np.ndarray]] = field(default_factory=dict, repr=False)
+    _drug_names: Optional[dict[str, str]] = field(default=None, repr=False)
 
     def __getstate__(self):
         state = dict(self.__dict__)
-        state.update(_world=None, _sim=None, _features=None, _masked_z={})
+        state.update(_world=None, _sim=None, _features=None, _masked_z={}, _drug_names=None)
         return state
+
+    def drug_label(self, drug: str) -> str:
+        """ChEMBL preferred name, else the most common name used in the designations."""
+
+        label = self.world.bundle.knowledge.drug_labels.get(drug)
+        if label:
+            return label
+        if self._drug_names is None:
+            names = self.world.regulatory.designations.groupby("drug_id")["drug_name"]
+            self._drug_names = names.agg(lambda s: s.mode().iat[0]).to_dict()
+        return self._drug_names.get(drug, drug.removeprefix("NAME:"))
 
     # ------------------------------------------------------------------ runtime
 
@@ -209,10 +221,9 @@ class ProductionModel:
         genes_n = set(world.bundle.records[world.ids[neighbor]].get("genes", {}))
         targets_q = {g for d in drugs_q for g in knowledge.drug_targets.get(d, ())}
         targets_n = {g for d in drugs_n for g in knowledge.drug_targets.get(d, ())}
-        label = lambda d: knowledge.drug_labels.get(d, d.removeprefix("NAME:"))
         out: dict[str, Any] = {
             "designations": [len(drugs_q), len(drugs_n)],
-            "shared_designated_drugs": sorted(label(d) for d in set(drugs_q) & set(drugs_n))[:5],
+            "shared_designated_drugs": sorted(self.drug_label(d) for d in set(drugs_q) & set(drugs_n))[:5],
             "shared_drug_targets": sorted(targets_q & targets_n)[:5],
             "gene_is_target_of_other": sorted((genes_q & targets_n) | (genes_n & targets_q))[:5],
         }

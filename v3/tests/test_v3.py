@@ -209,6 +209,17 @@ def test_task_labels_start_at_the_cutoff_and_exclude_known_and_nested(world) -> 
     assert not ((task.positives[queries].toarray() > 0) & known).any()
 
 
+def test_nested_candidates_match_the_relation_rule(world) -> None:
+    catalog = world.regulatory.catalog
+    for row in world.regulatory.relations.itertuples(index=False):
+        assert world.nested[world.index[row.a], world.index[row.b]] == 0
+    rng = np.random.default_rng(0)
+    rows, cols = world.nested.nonzero()
+    for k in rng.choice(len(rows), 200, replace=False):
+        assert catalog.nested(world.ids[rows[k]], world.ids[cols[k]])
+    assert world.nested[world.index["ORPHA:589"], world.index["ORPHA:391490"]] == 1
+
+
 def test_designated_groups_are_not_the_only_groups(world) -> None:
     designated = {o for ids in world.regulatory.designations["orpha_ids"] for o in ids}
     groups = {world.ids[i] for i in np.flatnonzero(world.is_group)}

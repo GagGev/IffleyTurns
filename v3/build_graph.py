@@ -57,12 +57,11 @@ EXAMPLE_DISEASES = (
 
 
 def known_relations(model: ProductionModel) -> dict[tuple[str, str], dict[str, Any]]:
-    labels = model.world.bundle.knowledge.drug_labels
     out = {}
     for row in model.world.regulatory.relations.itertuples(index=False):
         out[pair_key(row.a, row.b)] = {
             "year": int(row.year),
-            "drugs": "; ".join(labels.get(d, d.removeprefix("NAME:")) for d in row.drugs[:4]),
+            "drugs": "; ".join(model.drug_label(d) for d in row.drugs[:4]),
             "approved_both": bool(row.approved_both),
         }
     return out
@@ -106,7 +105,7 @@ def score_all(model: ProductionModel, k: int) -> dict[str, Any]:
             top = np.argpartition(-values, FORECAST_PAIRS)[:FORECAST_PAIRS]
             candidates.extend((float(values[j]), int(row), int(j)) for j in top if np.isfinite(values[j]))
         if (start // CHUNK) % 25 == 0:
-            print(f"[v3]   scored {min(start + CHUNK, n):,}/{n:,} nodes")
+            print(f"[v3]   scored {min(start + CHUNK, n):,}/{n:,} nodes", flush=True)
     best_pairs: dict[tuple[int, int], float] = {}
     for value, a, b in candidates:
         key = (min(a, b), max(a, b))
@@ -120,8 +119,9 @@ def support_level(model: ProductionModel, a: int, b: int, known: Optional[dict[s
         return "regulatory"
     world = model.world
     ra, rb = world.bundle.records[world.ids[a]], world.bundle.records[world.ids[b]]
-    shared_parent = set(ra.get("ontology_parents", ())) & set(rb.get("ontology_parents", ()))
-    if shared_parent or set(ra.get("genes", {})) & set(rb.get("genes", {})) or regulatory["shared_drug_targets"] or regulatory["gene_is_target_of_other"]:
+    parents_a, parents_b = set(ra.get("ontology_parents", ())), set(rb.get("ontology_parents", ()))
+    ontology = parents_a & parents_b or world.ids[a] in parents_b or world.ids[b] in parents_a
+    if ontology or set(ra.get("genes", {})) & set(rb.get("genes", {})) or regulatory["shared_drug_targets"] or regulatory["gene_is_target_of_other"]:
         return "plausible"
     return "novel"
 
@@ -210,8 +210,10 @@ def build_forecasts(model: ProductionModel, scored: dict[str, Any]) -> pd.DataFr
     ranked = scored["forecast_pairs"]
     values = np.array([v for _, v in ranked])
     percentiles = model.forecast_percentile(values)
+    drugs = world.snapshot(None).drugs
     rows = []
     for rank, (((a, b), value), pct) in enumerate(zip(ranked, percentiles), start=1):
+        joint = set(drugs.get(ids[a], {})) & set(drugs.get(ids[b], {}))
         record = {
             "rank": rank,
             "a": ids[a],
@@ -222,6 +224,8 @@ def build_forecasts(model: ProductionModel, scored: dict[str, Any]) -> pd.DataFr
             "forecast_percentile": round(float(pct), 6),
             "a_category": world.top_category[a],
             "b_category": world.top_category[b],
+            # Only possible through one joint designation record, which is not a relation.
+            "joint_designation_drugs": "; ".join(sorted(model.drug_label(d) for d in joint)[:3]),
         }
         if rank <= EXPLAINED_FORECASTS:
             record["regulatory_evidence"] = format_regulatory(model.regulatory_evidence(a, b))
@@ -329,12 +333,16 @@ def write_review_markdown(sheet: list[dict[str, Any]], forecasts: pd.DataFrame) 
             f"| {row['rank']} | {row['neighbor_name']} ({row['neighbor']}) | {row['similarity_percentile']:.4f} | "
             f"{row['forecast_percentile']:.4f} | {row['support']} | {evidence} |"
         )
-    lines.append("\n# Top 25 forecast pairs (not yet linked by a designation)\n")
-    lines.append("| # | Disease A | Disease B | Forecast pct | Evidence |")
+    lines.append("\n# Top 25 forecast pairs (not yet linked by two separate designations)\n")
+    lines.append(
+        "`joint record`: the pair already shares a drug through a single designation that names both diseases, "
+        "which does not count as a relation.\n"
+    )
+    lines.append("| # | Disease A | Disease B | Joint record | Evidence |")
     lines.append("|---|---|---|---|---|")
     for row in forecasts.head(25).itertuples(index=False):
         evidence = str(getattr(row, "regulatory_evidence", "")).replace("|", "/")
-        lines.append(f"| {row.rank} | {row.a_name} | {row.b_name} | {row.forecast_percentile:.4f} | {evidence} |")
+        lines.append(f"| {row.rank} | {row.a_name} | {row.b_name} | {row.joint_designation_drugs} | {evidence} |")
     (GRAPH_DIR / "review.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
@@ -433,6 +441,10 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     edges = build_edges(model, scored, args.k)
     forecasts = build_forecasts(model, scored)
     nodes = build_nodes(model, edges)
+    user_diseases = GRAPH_DIR / "user_diseases.jsonl"
+    if user_diseases.is_file():
+        user_diseases.unlink()
+        print("[v3] the rebuilt graph drops user-added diseases; re-run place_disease.py --add to insert them again")
     edges.to_csv(GRAPH_DIR / "edges.csv", index=False, quoting=csv.QUOTE_MINIMAL)
     nodes.to_csv(GRAPH_DIR / "nodes.csv", index=False)
     forecasts.to_csv(GRAPH_DIR / "forecast_pairs.csv", index=False)

@@ -39,6 +39,9 @@ from features import StaticSimilarity
 from modalities import MODALITIES
 from world import Snapshot, World, gene_pairs, sibling_pairs
 
+# Inputs come from scipy CSR matrices, which are always valid sparse tensors.
+torch.sparse.check_sparse_tensor_invariants.disable()
+
 TASKS = ("therapeutic", "sibling", "gene")
 TASK_MASKS = {"therapeutic": (), "sibling": ("ontology", "name"), "gene": ("gene", "pathway")}
 

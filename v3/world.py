@@ -8,7 +8,8 @@ A ``Snapshot`` is the state of regulatory knowledge just before a date: the
 drugs designated for each node and the relations already established.  A
 ``Task`` asks which new relations appear in a time window, given the snapshot
 at its start.  Candidates for a query exclude the query itself, its already
-known relatives, and nodes nested with it (a group and its own members).
+known relatives, and nodes nested with it (a group and its members, a
+disorder and its subtypes).
 """
 
 from __future__ import annotations
@@ -117,6 +118,20 @@ def pair_matrix(n: int, a: Sequence[int], b: Sequence[int]) -> sp.csr_matrix:
     return matrix
 
 
+def nested_matrix(ids: Sequence[str], index: dict[str, int], catalog) -> sp.csr_matrix:
+    """Symmetric node pairs where one is an Orphanet descendant of the other
+    (a group and its members, a disorder and its subtypes).  ``build_relations``
+    never relates such pairs, so they are not candidates either."""
+
+    a, b = [], []
+    for node in ids:
+        for other in catalog.descendants(node):
+            if other in index and other != node:
+                a.append(index[node])
+                b.append(index[other])
+    return pair_matrix(len(ids), a, b)
+
+
 def build_world(rebuild_regulatory: bool = False) -> World:
     bundle = load_bundle()
     regulatory = load_regulatory(bundle, rebuild=rebuild_regulatory)
@@ -137,16 +152,7 @@ def build_world(rebuild_regulatory: bool = False) -> World:
     group_size = np.array([len(bundle.group_members.get(d, ())) or 1 for d in ids], dtype=np.float32)
     top_category = meta["top_category"].to_numpy()
 
-    catalog = regulatory.catalog
-    a, b = [], []
-    for group in bundle.group_members:
-        if group not in index:
-            continue
-        for node in catalog.descendants(group):
-            if node in index and node != group:
-                a.append(index[group])
-                b.append(index[node])
-    nested = pair_matrix(len(ids), a, b)
+    nested = nested_matrix(ids, index, regulatory.catalog)
     return World(
         bundle=bundle,
         regulatory=regulatory,

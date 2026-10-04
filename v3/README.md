@@ -5,18 +5,24 @@ built next to, it checks that the graph **anticipated regulatory decisions made 
 diseases count as related on the date the same drug first holds FDA or EMA orphan designations for both. Models trained
 on knowledge before 2018 are scored on the 1,123 relations that regulators established from 2018 to September 2026.
 
-Inputs are `.data/features/` and `.data/databases/` only (including `databases/regulatory/`). v3 does not read
-`literature_review/`, `.data/literature_acquisition/`, `.data/splits/` or `.data/models/`.
+![How v3 works](docs/model_schematic.png)
+
+Inputs are `.data/features/` and `.data/databases/` only (including `databases/regulatory/`). No v3 model reads
+`literature_review/`, `.data/literature_acquisition/`, `.data/splits/` or `.data/models/`. The one exception is
+`evaluate_literature.py`, an external check that scores the finished model against the scraped paper pairs and
+fits nothing.
 
 ## Run
 
 ```bash
-python v3/regulatory.py        # ~1 min: parse FDA + EMA designations, map them to Orphanet, write dated relations
+python v3/regulatory.py        # parse FDA + EMA designations, map them to Orphanet, write dated relations + audit
 python v3/run_evaluation.py    # ~30 min (GPU): validation + test folds, report, figure, production stacker choice
-python v3/build_graph.py       # fit on everything up to the end of the data, write the graph and figures
+python v3/build_graph.py       # ~45 min: fit on everything up to the end of the data, write the graph and figures
 python v3/place_disease.py --json v3/examples/new_disease_example.json        # place a new disease
 python v3/place_disease.py --json v3/examples/new_disease_example.json --add  # ... and insert it into the graph
 python v3/place_disease.py --orpha ORPHA:558 --hide ontology,name             # re-place a known disease as if new
+python v3/evaluate_literature.py  # ~3 min: external check against the scraped paper pairs (needs build_graph.py)
+python v3/make_schematic.py       # redraw docs/model_schematic.png
 python -m pytest v3/tests -q
 ```
 
@@ -88,7 +94,9 @@ Leakage controls:
   one-sided Wilcoxon tests. Also reported: strata (warm/cold, group/disease, oncology) and the global precision@K of
   new pairs among designated diseases.
 
-The production stacker variant is chosen on validation MAP only; the test fold is reported once.
+The production stacker variant and the neural settings were chosen on validation only, and no modelling choice used
+the test fold. Both folds were re-run once after a benchmark fix: disorder–subtype pairs, like group–member pairs,
+can never become relations, so they are now excluded from the candidates too. No model setting changed.
 
 ## Models
 
@@ -134,43 +142,119 @@ Test fold (knowledge before 2018, relations from 2018 to 2026-09), all 9,525 nod
 | Model | MAP [95% CI] | AUROC | Hits@10 | Recall@50 |
 |---|---|---|---|---|
 | random | 0.001 | 0.497 | 0.000 | 0.003 |
-| v1 weighted Jaccard | 0.013 [0.010, 0.017] | 0.767 | 0.065 | 0.088 |
-| drug mechanism | 0.040 [0.029, 0.054] | 0.674 | 0.159 | 0.136 |
-| Adamic–Adar | 0.051 [0.041, 0.064] | 0.597 | 0.251 | 0.164 |
+| v1 weighted Jaccard | 0.014 [0.011, 0.018] | 0.767 | 0.067 | 0.089 |
+| drug mechanism | 0.038 [0.027, 0.049] | 0.674 | 0.159 | 0.136 |
+| Adamic–Adar | 0.050 [0.040, 0.062] | 0.597 | 0.251 | 0.165 |
 | degree | 0.070 [0.060, 0.080] | 0.899 | 0.385 | 0.295 |
-| v2 shipped | 0.057 [0.045, 0.069] | 0.807 | 0.233 | 0.216 |
-| v2 retrained | 0.056 [0.046, 0.067] | 0.841 | 0.262 | 0.250 |
-| v3 neural | 0.062 [0.051, 0.073] | 0.859 | 0.284 | 0.264 |
-| v3 static (graph similarity) | 0.060 [0.049, 0.071] | 0.860 | 0.289 | 0.265 |
-| v3 stacker, all features | 0.113 [0.098, 0.130] | 0.936 | 0.432 | 0.394 |
-| **v3 stacker without history (production)** | **0.109 [0.093, 0.126]** | **0.921** | **0.405** | **0.378** |
+| v2 shipped | 0.060 [0.048, 0.073] | 0.807 | 0.233 | 0.218 |
+| v2 retrained | 0.061 [0.049, 0.072] | 0.841 | 0.277 | 0.251 |
+| v3 neural | 0.066 [0.055, 0.079] | 0.859 | 0.300 | 0.265 |
+| v3 static (graph similarity) | 0.064 [0.053, 0.076] | 0.860 | 0.293 | 0.267 |
+| v3 stacker, all features | 0.107 [0.092, 0.123] | 0.934 | 0.414 | 0.382 |
+| **v3 stacker without history (production)** | **0.103 [0.088, 0.120]** | **0.922** | **0.409** | **0.367** |
 
-- **The production forecast beats v2 on future relations.** Its test MAP is +0.052 higher than v2 shipped
-  [+0.037, +0.068] (p = 1e-24) and +0.053 higher than v2 retrained. It also beats the degree baseline by +0.039
-  [+0.021, +0.058]. That baseline is hard to beat: "diseases that already attract drugs attract more" reaches AUROC
-  0.90. The "no history" variant won validation narrowly (0.085 vs 0.080, not significant) and ranks pairs without
-  using designation counts.
-- **The static similarity improves modestly.** v3 static beats v2 retrained on the test fold: MAP +0.004
-  [+0.001, +0.006], AUROC +0.019, both p < 1e-14. On validation it trails on MAP (−0.006) but leads on AUROC (+0.017).
-  Against v2 shipped, the mean MAP gain is +0.003 [−0.003, +0.009], an interval that includes zero, while the AUROC
-  gain is +0.053. In the warm gallery, where every candidate was already designated, v3 static leads v2 shipped by
-  0.148 vs 0.134. In other words, the multi-task network alone does not improve much on the logistic fusion. The large
+- **The production forecast beats v2 on future relations.** Its test MAP is higher than v2 shipped by +0.043
+  [+0.029, +0.058] (p = 1e-20) and higher than v2 retrained by the same amount. It also beats the degree baseline by
+  +0.034 [+0.015, +0.052]. That baseline is hard to beat, since "diseases that already attract drugs attract more"
+  reaches AUROC 0.90. The "no history" variant won validation narrowly over the full stacker (0.088 vs 0.084, not
+  significant) and ranks pairs without using designation counts.
+- **The static similarity improves only modestly.** On the test fold, v3 static beats v2 retrained by +0.004 MAP
+  [+0.001, +0.006] and +0.019 AUROC, both p < 1e-14. On validation it trails on MAP (−0.004) and leads on AUROC
+  (+0.017). Against v2 shipped, the test MAP gain is +0.004 [−0.002, +0.010], an interval that includes zero, while
+  the AUROC gain is +0.053. In the warm gallery, where every candidate was already designated, v3 static leads v2
+  shipped (0.148 vs 0.134). In short, the multi-task network on its own adds little over logistic fusion. The large
   gain comes from combining static similarity with time-sliced regulatory evidence.
-- **Static similarity matters most inside the stacker.** Removing it drops test MAP from 0.113 to 0.078, and
+- **Static similarity matters most inside the stacker.** Removing it lowers test MAP from 0.107 to 0.072, and
   permutation importance ranks it first (AUC drop 0.28, versus 0.04 for history).
-- **Global precision.** Among the 201,423 pairs of already-designated diseases, 0.42% become related after 2018.
-  The production model's top 100 pairs have 27% precision (about 65× the base rate), and its top 500 have 16%.
-- **Strata.** On test queries never designated before the cutoff ("cold", 94), static similarity is as good as the
-  stacker (0.084–0.089 MAP). History and graph features help most for oncology (stacker 0.156 vs static 0.042) and
-  for Orphanet groups.
-- **Approved-both relations** (46 test queries): MAP is 0.144 for the production model and 0.171 for the full
+- **Global precision.** Among the 201,410 pairs of already-designated diseases, 0.42% become related after 2018.
+  The production model's top 100 pairs have 19% precision (45× the base rate), and its top 500 have 16% (38×).
+  Adamic–Adar on the known relation graph is as precise at the very top (26% of its top 100).
+- **Strata.** On test queries never designated before the cutoff ("cold", 94 queries), the production model matches
+  static similarity (0.095 vs 0.085 MAP). The full stacker, which relies on designation history, drops to 0.066.
+  History and graph features help most for oncology (0.143 vs 0.043 for static) and for Orphanet groups (0.094 vs
+  0.041).
+- **Approved-both relations** (46 test queries): MAP is 0.126 for the production model and 0.177 for the full
   stacker, versus 0.046 for v2 shipped. The intervals are wide.
+- **Resampling noise.** The stackers' negatives are sampled, so their test MAP moves by about ±0.005 between
+  reruns. That is well inside the margins above.
 
 The full tables (all galleries, both folds, strata, paired tests) are in `.data/evaluation/report.md`.
 
+### External check: scraped paper pairs
+
+`evaluate_literature.py` takes the 4,810 disease pairs from `.data/literature_acquisition/papers.sqlite`, each a
+pair that a paper discusses together, with automated 0–4 scores on five similarity dimensions. It aggregates them
+as `v2/evaluate_literature.py` does and scores the frozen production model on the 4,688 pairs that are v3 nodes,
+the same pairs v2 was scored on. Results are in `.data/literature_validation/`.
+
+| Share of paper pairs | v2 similarity | v3 similarity | v3 forecast |
+|---|---|---|---|
+| in the top 10% of random pairs | 79.7% | 69.5% | 82.1% |
+| in the top 1% of random pairs | 43.2% | 34.9% | 50.9% |
+| direct top-10 graph edge | 24.8% (131×) | 21.0% (141×) | – |
+| Spearman with paper score strength | 0.039 | 0.043 | −0.001 |
+
+- **Which pairs are related: yes.** Paper pairs sit far above random pairs in every v3 score. 199 of them (4.2%)
+  are already v3 regulatory relations, against 0.0055% of random pairs, so the paper benchmark and the designation
+  ground truth largely agree on which diseases go together.
+- **v3's similarity ranks paper pairs lower than v2 did, and drug data explains most of the gap.** On the 2,153 pairs
+  where v2 had drug data for both diseases, 88.8% are in v2's top decile, 72.2% in v3's drug-free similarity and
+  91.2% in v3's forecast. Without drug data the figures are 72.0%, 67.3% and 74.3%. v3 removed drugs from similarity
+  because shared drugs are now the target. Separately, the 87 disorder–subtype pairs are all in the top 1% but are
+  excluded from v3's graph edges by design.
+- **How strongly related: no.** Neither version ranks the papers' high-strength pairs above their low-strength ones.
+  Correlations with each paper dimension stay below 0.08: phenotype similarity 0.05, gene and inheritance 0.08,
+  pathway 0.01, onset −0.05, and forecast against therapeutic similarity 0.02. v2 and v3 agree with each other on
+  these pairs (Spearman 0.92), so the low numbers come from the paper scores rather than from one model. Those scores
+  carry little strength information: all 14,097 are automated and unverified, and 97% are 1 ("weak or broad
+  relationship") or 2; only 1.1% are 3 or 4.
+
 ## The graph
 
-GRAPH_SECTION
+`build_graph.py` refits everything on the full history up to 2026-09-30:
+- the static model on all 2,473 relations;
+- the production stacker on origins 2018, 2020, 2022 and 2024.
+
+It then links each of the 9,525 nodes to its 10 most similar nodes by the drug-free similarity. A node's own
+Orphanet ancestors and descendants are not linked, since they are trivially similar. The result is 67,892 edges,
+27,358 of them mutual, forming a single connected component. Each edge in `graph/edges.csv` records:
+- the similarity and its percentile among random pairs;
+- the forecast that the pair will be linked by a future designation, with its percentile;
+- per-modality cosines and neural occlusion values;
+- the shared items behind the top modalities;
+- regulatory evidence: shared drug targets, genes targeted by the other disease's drugs, and common regulatory
+  relatives;
+- any existing designation relation, with its year and drugs.
+
+| Support | Edges | Meaning |
+|---|---|---|
+| regulatory | 352 | The pair already shares a drug through two separate designations |
+| plausible | 43,785 | Shared Orphanet parent (or parent–child), curated gene, drug target, or a gene targeted by the other's drugs |
+| novel | 23,755 | None of these; a hypothesis to review |
+
+The graph is a similarity graph, and most regulatory relations are not similarity edges. Of the 2,473 relations,
+352 are among the top-10 edges. The others link diseases that are related but are not each other's nearest
+neighbours; the forecast score is meant to find those.
+
+In the production fusion, the largest similarity weights are ontology (6.2), phenotype (3.8) and pathway (2.9). The
+gene weight is small (0.3) because the pathway modality already carries most of the gene signal. The production
+stacker relies mainly on the static scores (permutation AUC drop 0.33) and the relation graph (0.07).
+
+Other files:
+- `forecast_pairs.csv`: the 2,000 pairs not yet linked that the stacker ranks highest, the top 300 with
+  explanations. 44 of them, 11 in the top 100, already share a drug through one joint designation record, flagged in
+  `joint_designation_drugs`.
+  
+  Examples from the top 10: Takayasu arteritis with giant cell arteritis, microscopic polyangiitis with granulomatosis
+  with polyangiitis, Dravet syndrome with early-infantile developmental and epileptic encephalopathy, and mild
+  hemophilia A with von Willebrand disease.
+- `rare_disease_graph.graphml` (Gephi/Cytoscape) and `nodes.csv`.
+- `embeddings.parquet`: the 128-d neural disease embedding, averaged over the ensemble.
+- `review.md` and `review_top5.csv`: the top-5 neighbours of 16 well-known diseases for manual review (80
+  neighbours: 9 regulatory, 56 plausible, 15 novel), plus the top 25 forecasts.
+- `graph_overview.png` (t-SNE of the embeddings), `ego_duchenne_muscular_dystrophy.png`, `ego_cystic_fibrosis.png`.
+
+![graph overview](.data/graph/graph_overview.png)
 
 ## Placing a new disease
 
@@ -196,7 +280,19 @@ targeted by the other disease's drugs; the similarity stays drug-free. Neighbour
 `--add` appends the disease and its edges to `nodes.csv`, `edges.csv` and the GraphML, and records it in
 `user_diseases.jsonl`. Later placements are compared against it as well.
 
-PLACEMENT_EXAMPLE
+**Example.** `examples/new_disease_example.json` describes a CDKL5 epileptic encephalopathy by phenotypes, gene,
+inheritance, onset and description, with one drug (ganaxolone). It has no Orphanet classification.
+- **Similarity.** The nearest node is CDKL5-deficiency disorder (above 99.6% of random pairs), explained by shared
+  phenotypes (epileptic spasms, cerebral visual impairment), onset, name terms and the gene CDKL5. Next come
+  infantile epileptic spasms syndrome, two infantile epileptic encephalopathies and atypical Rett syndrome.
+- **Forecast.** Ganaxolone's GABA-A receptor targets match drugs already designated for several of these neighbours.
+  That raises their forecast above the 99.6th percentile; Lennox-Gastaut syndrome is at 99.97%. Atypical Rett
+  syndrome, with no such drugs, stays at the 60th percentile.
+
+**Re-placing a known disease.** `--orpha ORPHA:558 --hide ontology,name` re-places Marfan syndrome as if it were
+new and unclassified. Its own subtypes are excluded as nested. From phenotypes, TGF-β/elastic-fibre pathways and FBN1
+alone, it finds Loeys-Dietz syndrome, aneurysm-osteoarthritis syndrome, neonatal Marfan syndrome, Weill-Marchesani
+syndrome and familial thoracic aortic aneurysm in the top 6.
 
 ## Limitations
 
