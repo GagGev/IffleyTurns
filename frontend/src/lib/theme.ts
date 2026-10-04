@@ -3,17 +3,15 @@
 // OS colour scheme changes.
 
 import { useEffect, useState } from 'react'
-import type { Relationship } from '../data/types'
+import type { Support } from '../data/types'
 
 export interface CanvasColours {
   surface: string
   ink: string
-  inkSecondary: string
   muted: string
   node: string
   selection: string
-  computed: string
-  relationship: Record<Relationship, string>
+  support: Record<Support, string>
 }
 
 function read(): CanvasColours {
@@ -22,15 +20,13 @@ function read(): CanvasColours {
   return {
     surface: v('--surface-1'),
     ink: v('--text-primary'),
-    inkSecondary: v('--text-secondary'),
     muted: v('--text-muted'),
     node: v('--node'),
     selection: v('--text-primary'),
-    computed: v('--edge-computed'),
-    relationship: {
-      similar: v('--edge-similar'),
-      'related but distinct': v('--edge-related'),
-      unrelated: v('--edge-unrelated'),
+    support: {
+      curated: v('--support-curated'),
+      plausible: v('--support-plausible'),
+      novel: v('--support-novel'),
     },
   }
 }

@@ -1,54 +1,31 @@
-import type { Disease } from '../data/types'
-import type { EdgeView } from './graph'
+import type { GraphEdge, GraphNode } from '../data/types'
+import { download } from './format'
 
-/** Download the given pairs as CSV. */
-export function exportCsv(edges: EdgeView[], diseases: Map<string, Disease>, measure: string) {
-  const header = [
-    'disease_a',
-    'disease_a_orpha_id',
-    'disease_b',
-    'disease_b_orpha_id',
-    'relationship',
-    'overall_similarity',
-    `${measure}_score`,
-    'n_papers',
-    'evidence_score',
-    'best_study_design',
-    'caveats',
-    'pmids',
-  ]
+/** Download the given edges as CSV. */
+export function exportCsv(edges: GraphEdge[], nodes: Map<string, GraphNode>) {
+  const header = ['source', 'source_name', 'target', 'target_name', 'support', 'score', 'percentile', 'mutual', 'main_modality', 'origin']
   const quote = (v: unknown) => {
     const s = v === null || v === undefined ? '' : String(v)
     return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s
   }
   const lines = [header.join(',')]
-  for (const { edge, agg, value, papers } of edges) {
-    const a = diseases.get(edge.source)
-    const b = diseases.get(edge.target)
+  for (const e of edges) {
     lines.push(
       [
-        a?.name ?? edge.source,
-        a?.orphaId ?? '',
-        b?.name ?? edge.target,
-        b?.orphaId ?? '',
-        agg.relationship,
-        agg.similarity,
-        value,
-        agg.nPapers,
-        agg.evidenceScore,
-        agg.bestDesign,
-        agg.flags.join('; '),
-        [...new Set(papers.map((p) => p.pmid).filter(Boolean))].join(' '),
+        e.source,
+        nodes.get(e.source)?.name ?? '',
+        e.target,
+        nodes.get(e.target)?.name ?? '',
+        e.support,
+        e.score,
+        e.percentile,
+        e.mutual,
+        e.mainModality ?? '',
+        e.origin,
       ]
         .map(quote)
         .join(','),
     )
   }
-  const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8' })
-  const url = URL.createObjectURL(blob)
-  const link = document.createElement('a')
-  link.href = url
-  link.download = 'rare-disease-pairs.csv'
-  link.click()
-  URL.revokeObjectURL(url)
+  download('rare-disease-similarity-edges.csv', lines.join('\n'), 'text/csv;charset=utf-8')
 }

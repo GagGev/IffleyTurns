@@ -23,5 +23,5 @@ dist-ssr
 *.sln
 *.sw?
 
-# Generated from literature_review/ by scripts/build_literature_graph.py
+# Generated from v2/.data/graph by scripts/build_graph_data.py
 public/data/

@@ -1,125 +1,135 @@
-import { useMemo } from 'react'
-import { type FeatureCatalogue, type FeatureFamily, type FeatureProfile, FAMILY_COLUMNS, SET_FAMILIES } from '../data/features'
-import type { Disease, Edge, LiteratureGraph } from '../data/types'
-import { type EdgeView, type Filters, otherEnd, pairId, viewEdge } from '../lib/graph'
-import { capitalise, displayName, measureLabel, orphanetUrl, plural, score } from '../lib/format'
+import { useEffect, useMemo, useState } from 'react'
+import { loadEdgeDetail } from '../data/source'
+import type { ApiHealth, EdgeDetail, GraphData, GraphEdge, GraphNode } from '../data/types'
+import { MODALITY_LABELS, SUPPORT_MEANING } from '../data/types'
+import { findEdge, otherEnd } from '../lib/graph'
+import {
+  capitalise,
+  displayName,
+  download,
+  isOrpha,
+  modalityLabel,
+  orphanetUrl,
+  percentile,
+  percentileSentence,
+  plural,
+  score,
+} from '../lib/format'
 import type { Selection } from '../lib/selection'
-import { computeSimilarity, rankNeighbours, type Weights } from '../lib/similarity'
-import type { FamilyColumn, UserDisease } from '../lib/userDiseases'
-import { ComputedSimilarityCard } from './ComputedSimilarityCard'
-import { DimensionBars } from './DimensionBars'
-import { NeighbourList } from './NeighbourList'
-import { PaperList } from './PaperList'
+import { FREQUENCIES, phenotypeWeights, type UserDisease } from '../lib/userDiseases'
+import { EdgeExplanation } from './EdgeExplanation'
 
-/** Everything the panel needs for feature-based similarity. */
-export interface FeatureContext {
-  /** undefined while loading, null when no profiles have been generated. */
-  catalogue: FeatureCatalogue | null | undefined
-  /** Catalogue profiles plus the user's diseases. */
-  profiles: FeatureProfile[]
-  profileFor: (diseaseId: string) => FeatureProfile | undefined
-  weights: Weights
-  userDiseases: Map<string, UserDisease>
-  onEditUser: (disease: UserDisease) => void
-  onRemoveUser: (disease: UserDisease) => void
+/** What the panel needs to show and act on the user's added diseases. */
+export interface UserContext {
+  diseases: Map<string, UserDisease>
+  api: ApiHealth
+  placing: Set<string>
+  errors: Map<string, string>
+  /** Explanations for edges from added diseases, taken from their placements. */
+  edgeDetails: Map<string, EdgeDetail>
+  onEdit: (disease: UserDisease) => void
+  onRemove: (disease: UserDisease) => void
+  onPlace: (id: string) => void
 }
 
 interface Props {
-  graph: LiteratureGraph
-  diseases: Map<string, Disease>
-  edgesById: Map<string, Edge>
-  edgesByDisease: Map<string, Edge[]>
-  visible: EdgeView[]
+  graph: GraphData
+  nodes: Map<string, GraphNode>
+  edgesById: Map<string, GraphEdge>
+  edgesByNode: Map<string, GraphEdge[]>
+  visible: GraphEdge[]
   visibleIds: Set<string>
-  filters: Filters
   selection: Selection
-  features: FeatureContext
+  user: UserContext
   onSelectDisease: (id: string) => void
   onSelectPair: (a: string, b: string) => void
-}
-
-const FAMILY_TITLES: Record<FeatureFamily, string> = {
-  phenotypes: 'Phenotypes',
-  genes: 'Genes',
-  classifications: 'Categories',
-  body_systems: 'Body systems',
-  inheritance: 'Inheritance',
-  onset: 'Onset',
-  approved_drugs: 'Approved drugs',
 }
 
 export function DetailPanel(props: Props) {
   const { selection } = props
   if (!selection) return <Overview {...props} />
   if (selection.kind === 'disease') {
-    const user = props.features.userDiseases.get(selection.id)
-    if (user) return <UserDiseaseDetail {...props} disease={user} />
+    const added = props.user.diseases.get(selection.id)
+    if (added) return <UserDiseaseDetail {...props} disease={added} />
     return <DiseaseDetail {...props} id={selection.id} />
   }
   return <PairDetail {...props} a={selection.a} b={selection.b} />
 }
 
-function OrphaLinks({ disease }: { disease: Disease }) {
-  if (disease.orphaId) {
-    return (
-      <a href={orphanetUrl(disease.orphaId)} target="_blank" rel="noreferrer">
-        {disease.orphaId}
-      </a>
-    )
-  }
-  if (disease.origin === 'user') return null
-  return <span className="warning-text">No single ORPHA ID</span>
+function SupportKey({ edge }: { edge: GraphEdge }) {
+  return <span className={`line-key support-${edge.support}${edge.origin === 'user' ? ' is-user' : ''}`} aria-hidden />
 }
 
-/** Why there is no feature profile for a disease, in words a researcher can act on. */
-function missingProfileReason(disease: Disease | undefined, features: FeatureContext): string {
-  if (features.catalogue === undefined) return 'Loading feature profiles…'
-  if (features.catalogue === null) {
-    return 'Feature profiles for catalogue diseases have not been generated yet. Run generate_features.py, then npm run features.'
-  }
-  if (!disease) return 'This disease has no feature profile.'
-  if (!disease.orphaId) return `${displayName(disease.name)} has no single ORPHA ID, so it has no feature profile.`
-  return `${disease.orphaId} is not in the feature catalogue.`
+function EdgeRow({ edge, other, nodes, filtered, onClick }: {
+  edge: GraphEdge
+  other: string
+  nodes: Map<string, GraphNode>
+  filtered?: boolean
+  onClick: () => void
+}) {
+  return (
+    <li className={filtered ? 'is-filtered' : undefined}>
+      <button type="button" onClick={onClick}>
+        <SupportKey edge={edge} />
+        <span className="pair-names">{displayName(nodes.get(other)?.name ?? other)}</span>
+        <span className="num">{percentile(edge.percentile)}</span>
+        <span className="muted">{modalityLabel(edge.mainModality)}</span>
+      </button>
+    </li>
+  )
 }
 
-function Overview({ graph, visible, diseases, onSelectPair }: Props) {
-  const strongest = useMemo(
-    () => [...visible].sort((x, y) => y.agg.evidenceScore - x.agg.evidenceScore || y.value - x.value).slice(0, 8),
+// --- Overview ----------------------------------------------------------------------
+
+function Overview({ graph, visible, nodes, onSelectPair }: Props) {
+  const novel = useMemo(
+    () => visible.filter((e) => e.support === 'novel' && e.origin === 'graph').sort((a, b) => b.score - a.score).slice(0, 8),
     [visible],
   )
+  const s = graph.stats
   return (
     <div className="panel-body">
       <section className="panel-section">
-        <h2>Explore literature-backed relationships</h2>
+        <h2>Rare disease similarity graph</h2>
         <p>
-          Each line joins two diseases that published papers compare. Select a disease or a line to see the evidence:
-          the papers, how strong their study designs are, and which similarity dimensions they support.
+          The v2 model compares diseases across {graph.modalities.length} modalities, including phenotypes, genes,
+          pathways, drugs, classification and clinical text. Each disease links to its {graph.k ?? 10} most similar
+          diseases. Select a disease or an edge to see why they are similar.
         </p>
         <p>
-          Use <strong>Add a disease</strong> to place your own disease in the graph from a form or a JSON file and see
-          which diseases it most resembles.
+          Use <strong>Add a disease</strong> to place a new disease in the graph from a form or a v2 JSON file.
         </p>
-        <p className="muted small">
-          Built from {plural(graph.stats.paperRows, 'paper row')} across {graph.datasets.length} curated sources. Scores
-          are abstract-level judgements, not validated measurements.
-        </p>
+        <div className="stats">
+          <div className="stat">
+            <span className="stat-value">{s.nodes.toLocaleString()}</span>
+            <span className="stat-label">Diseases</span>
+          </div>
+          <div className="stat">
+            <span className="stat-value">{s.edges.toLocaleString()}</span>
+            <span className="stat-label">Edges</span>
+          </div>
+          <div className="stat">
+            <span className="stat-value">{(s.support.novel ?? 0).toLocaleString()}</span>
+            <span className="stat-label">Novel hypotheses</span>
+          </div>
+        </div>
       </section>
       <section className="panel-section">
-        <h3>Strongest evidence in view</h3>
-        {strongest.length === 0 ? (
-          <p className="muted">No pairs match the current filters.</p>
+        <h3>Strongest novel hypotheses in view</h3>
+        <p className="muted small">{SUPPORT_MEANING.novel}</p>
+        {novel.length === 0 ? (
+          <p className="muted">None match the current filters.</p>
         ) : (
           <ul className="pair-list">
-            {strongest.map(({ edge, agg, value }) => (
-              <li key={edge.id}>
-                <button type="button" onClick={() => onSelectPair(edge.source, edge.target)}>
-                  <span className={`line-key rel-${agg.relationship.replace(/ /g, '-')}`} aria-hidden />
+            {novel.map((e) => (
+              <li key={e.id}>
+                <button type="button" onClick={() => onSelectPair(e.source, e.target)}>
+                  <SupportKey edge={e} />
                   <span className="pair-names">
-                    {displayName(diseases.get(edge.source)?.name ?? edge.source)} –{' '}
-                    {displayName(diseases.get(edge.target)?.name ?? edge.target)}
+                    {displayName(nodes.get(e.source)?.name ?? e.source)} – {displayName(nodes.get(e.target)?.name ?? e.target)}
                   </span>
-                  <span className="num">{score(value)}</span>
-                  <span className="muted">{agg.evidenceScore}/15</span>
+                  <span className="num">{percentile(e.percentile)}</span>
+                  <span className="muted">{modalityLabel(e.mainModality)}</span>
                 </button>
               </li>
             ))}
@@ -130,164 +140,117 @@ function Overview({ graph, visible, diseases, onSelectPair }: Props) {
   )
 }
 
-function FeatureNeighbours({
-  id,
-  disease,
-  features,
-  limit,
-  onSelectPair,
-}: {
-  id: string
-  disease: Disease | undefined
-  features: FeatureContext
-  limit: number
-  onSelectPair: (a: string, b: string) => void
-}) {
-  const profile = features.profileFor(id)
-  const neighbours = useMemo(
-    () => (profile ? rankNeighbours(profile, features.profiles, limit, features.weights) : []),
-    [profile, features.profiles, features.weights, limit],
-  )
-  if (!profile) return <p className="muted">{missingProfileReason(disease, features)}</p>
+// --- Disease -----------------------------------------------------------------------
+
+function ModalityChips({ graph, present }: { graph: GraphData; present: string[] }) {
   return (
-    <NeighbourList
-      target={profile}
-      neighbours={neighbours}
-      weights={features.weights}
-      onSelect={(other) => onSelectPair(id, other)}
-      empty={
-        features.profiles.length <= 1
-          ? 'There is nothing to compare with yet.'
-          : 'No other disease shares any of these features.'
-      }
-    />
+    <>
+      <p className="muted small">
+        {present.length} of {graph.modalities.length} modalities annotated
+      </p>
+      <ul className="modality-chips">
+        {graph.modalities.map((m) => (
+          <li
+            key={m}
+            className={present.includes(m) ? 'is-present' : undefined}
+            title={graph.modalityDescriptions[m]}
+          >
+            {modalityLabel(m)}
+          </li>
+        ))}
+      </ul>
+    </>
   )
 }
 
-function DiseaseDetail(props: Props & { id: string }) {
-  const { id, diseases, edgesByDisease, filters, visibleIds, features, onSelectPair } = props
-  const profile = features.profileFor(id)
-  const disease: Disease | undefined =
-    diseases.get(id) ??
-    (profile && {
-      id,
-      name: profile.name,
-      aliases: [],
-      orphaId: id,
-      candidateOrphaIds: [],
-      status: 'unknown',
-      degree: 0,
-      origin: 'catalogue',
-    })
-
-  const related = useMemo(() => {
-    const views = (edgesByDisease.get(id) ?? [])
-      .map((e) => viewEdge(e, filters))
-      .filter((v): v is EdgeView => v !== null)
-    return views.sort((x, y) => y.value - x.value || y.agg.evidenceScore - x.agg.evidenceScore)
-  }, [id, edgesByDisease, filters])
-
-  if (!disease) {
+function DiseaseDetail({ id, graph, nodes, edgesByNode, visibleIds, onSelectPair }: Props & { id: string }) {
+  const node = nodes.get(id)
+  const incident = useMemo(() => [...(edgesByNode.get(id) ?? [])].sort((a, b) => b.score - a.score), [edgesByNode, id])
+  if (!node) {
     return (
       <div className="panel-body">
-        <p className="muted panel-section">“{id}” is not in the literature graph or the feature catalogue.</p>
+        <p className="muted panel-section">“{id}” is not in the graph.</p>
       </div>
     )
   }
-
-  const totalPapers = related.reduce((s, v) => s + v.agg.nPapers, 0)
-  const hidden = related.filter((v) => !visibleIds.has(v.edge.id)).length
-
+  const hidden = incident.filter((e) => !visibleIds.has(e.id)).length
   return (
     <div className="panel-body">
       <section className="panel-section">
-        <p className="eyebrow">{disease.origin === 'catalogue' ? 'Catalogue disease' : 'Disease'}</p>
-        <h2>{displayName(disease.name)}</h2>
+        <p className="eyebrow">{node.origin === 'shared' ? 'Added with place_disease.py' : 'Disease'}</p>
+        <h2>{displayName(node.name)}</h2>
         <p className="meta-row">
-          <OrphaLinks disease={disease} />
-          {disease.status !== 'unknown' && (
-            <span className={`status status-${disease.status}`}>{capitalise(disease.status)}</span>
+          {isOrpha(node.id) && (
+            <a href={orphanetUrl(node.id)} target="_blank" rel="noreferrer">
+              {node.id}
+            </a>
           )}
+          {node.category && <span className="status">{node.category}</span>}
         </p>
-        {!disease.orphaId && (
-          <p className="callout">
-            The literature names this disease without a single Orphanet match, so feature-based comparison is not
-            possible yet.
-            {disease.candidateOrphaIds.length > 0 && (
-              <>
-                {' '}
-                Candidate IDs:{' '}
-                {disease.candidateOrphaIds.map((c, i) => (
-                  <span key={c}>
-                    {i > 0 && ', '}
-                    <a href={orphanetUrl(c)} target="_blank" rel="noreferrer">
-                      {c}
-                    </a>
-                  </span>
-                ))}
-              </>
-            )}
-          </p>
-        )}
-        {disease.aliases.length > 0 && <p className="muted small">Also recorded as: {disease.aliases.join('; ')}</p>}
+        {node.disorderType && <p className="muted small">{node.disorderType}</p>}
       </section>
-
+      <section className="panel-section">
+        <h3>Profile</h3>
+        <ModalityChips graph={graph} present={node.modalities} />
+      </section>
       <section className="panel-section">
         <h3>
-          Related in the literature{' '}
-          <span className="muted">
-            · {plural(related.length, 'pair')}, {plural(totalPapers, 'paper')}
-          </span>
+          Most similar diseases <span className="muted">· {plural(incident.length, 'edge')}</span>
         </h3>
-        {related.length > 0 && (
-          <p className="muted small">
-            Ranked by {measureLabel(filters.measure).toLowerCase()}.
-            {hidden > 0 && ` ${hidden} hidden from the graph by the current filters.`}
-          </p>
-        )}
-        {related.length === 0 ? (
-          <p className="muted">No literature pairs for the selected sources and score.</p>
-        ) : (
-          <ul className="pair-list">
-            {related.map(({ edge, agg, value }) => {
-              const other = otherEnd(edge, id)
-              return (
-                <li key={edge.id} className={visibleIds.has(edge.id) ? undefined : 'is-filtered'}>
-                  <button type="button" onClick={() => onSelectPair(id, other)}>
-                    <span className={`line-key rel-${agg.relationship.replace(/ /g, '-')}`} aria-hidden />
-                    <span className="pair-names">{displayName(diseases.get(other)?.name ?? other)}</span>
-                    <span className="num">{score(value)}</span>
-                    <span className="muted">{plural(agg.nPapers, 'paper')}</span>
-                  </button>
-                </li>
-              )
-            })}
-          </ul>
-        )}
-      </section>
-
-      <section className="panel-section">
-        <h3>Feature-based nearest neighbours</h3>
-        <FeatureNeighbours id={id} disease={disease} features={features} limit={10} onSelectPair={onSelectPair} />
+        <p className="muted small">
+          Ranked by score; percentile against random disease pairs.
+          {hidden > 0 && ` ${hidden} hidden from the graph by the current filters.`}
+        </p>
+        <ul className="pair-list">
+          {incident.map((e) => (
+            <EdgeRow
+              key={e.id}
+              edge={e}
+              other={otherEnd(e, id)}
+              nodes={nodes}
+              filtered={!visibleIds.has(e.id)}
+              onClick={() => onSelectPair(id, otherEnd(e, id))}
+            />
+          ))}
+        </ul>
       </section>
     </div>
   )
 }
 
-function UserDiseaseDetail(props: Props & { disease: UserDisease }) {
-  const { disease, features, onSelectPair } = props
-  const profile = features.profileFor(disease.id)
-  const termName = (family: FeatureFamily, term: string) => features.catalogue?.termNames[family].get(term)
-  const node: Disease = {
-    id: disease.id,
-    name: disease.name,
-    aliases: [],
-    orphaId: disease.orpha_id ?? null,
-    candidateOrphaIds: [],
-    status: disease.status,
-    degree: 0,
-    origin: 'user',
-  }
+// --- Added disease -----------------------------------------------------------------
+
+function placementBlocker(api: ApiHealth): string | null {
+  if (api.status === 'ready') return null
+  if (api.status === 'loading') return 'The v2 model is still loading.'
+  if (api.status === 'error') return `The placement service could not load the v2 model: ${api.error}`
+  return 'The placement service is not running. Start it with `python frontend/api/server.py`.'
+}
+
+function UserDiseaseDetail({ disease, graph, nodes, edgesByNode, user, onSelectPair }: Props & { disease: UserDisease }) {
+  const { input, placement, labels = {} } = disease
+  const incident = useMemo(
+    () => [...(edgesByNode.get(disease.id) ?? [])].sort((a, b) => b.score - a.score),
+    [edgesByNode, disease.id],
+  )
+  const blocker = placementBlocker(user.api)
+  const placing = user.placing.has(disease.id)
+  const error = user.errors.get(disease.id)
+  const phenotypes = Object.entries(phenotypeWeights(input))
+  const frequency = (w: number) => FREQUENCIES.find((f) => Math.abs(f.weight - w) < 0.01)?.label ?? w.toFixed(2)
+  const list = (values?: string[]) =>
+    values?.length ? (
+      <span className="shared-terms">
+        {values.map((v) => (
+          <span key={v} className="chip" title={labels[v] ?? v}>
+            {v}
+            {labels[v] && <span className="term-name"> {labels[v]}</span>}
+          </span>
+        ))}
+      </span>
+    ) : (
+      <span className="no-evidence">Not given</span>
+    )
 
   return (
     <div className="panel-body">
@@ -298,67 +261,150 @@ function UserDiseaseDetail(props: Props & { disease: UserDisease }) {
           </span>{' '}
           Added by you
         </p>
-        <h2>{disease.name}</h2>
+        <h2>{input.name}</h2>
         <p className="meta-row">
-          <OrphaLinks disease={node} />
-          {disease.status !== 'unknown' && <span className="status">{capitalise(disease.status)}</span>}
-          <button type="button" className="link-button" onClick={() => features.onEditUser(disease)}>
+          <button type="button" className="link-button" onClick={() => user.onEdit(disease)}>
             Edit
           </button>
-          <button type="button" className="link-button" onClick={() => features.onRemoveUser(disease)}>
+          <button
+            type="button"
+            className="link-button"
+            disabled={!!blocker || placing}
+            title={blocker ?? undefined}
+            onClick={() => user.onPlace(disease.id)}
+          >
+            {placing ? 'Placing…' : placement ? 'Place again' : 'Place now'}
+          </button>
+          <button
+            type="button"
+            className="link-button"
+            onClick={() => download(`${disease.id.replace(/[^a-z0-9-]+/gi, '_')}.json`, JSON.stringify({ id: disease.id, ...input }, null, 2), 'application/json')}
+          >
+            Download v2 JSON
+          </button>
+          <button type="button" className="link-button" onClick={() => user.onRemove(disease)}>
             Remove
           </button>
         </p>
-        {disease.notes && <p className="muted small">{disease.notes}</p>}
-      </section>
-
-      <section className="panel-section">
-        <h3>Most similar diseases</h3>
-        {features.catalogue === null && (
-          <p className="callout small">
-            Only your other added diseases are compared until catalogue feature profiles are generated.
-          </p>
+        {error && <p className="callout">{error}</p>}
+        {!placement && !error && (
+          <p className="callout">{blocker ? `Not placed yet. ${blocker}` : 'Not placed yet.'}</p>
         )}
-        <FeatureNeighbours id={disease.id} disease={node} features={features} limit={20} onSelectPair={onSelectPair} />
       </section>
 
+      {placement && (
+        <>
+          <section className="panel-section">
+            <h3>
+              Most similar diseases <span className="muted">· top {incident.length}</span>
+            </h3>
+            <p className="muted small">
+              Placed {new Date(placement.placedAt).toLocaleString()} using{' '}
+              {placement.present.map((m) => MODALITY_LABELS[m] ?? m).join(', ') || 'no modalities'}.
+            </p>
+            <ul className="pair-list">
+              {incident.map((e) => (
+                <EdgeRow
+                  key={e.id}
+                  edge={e}
+                  other={otherEnd(e, disease.id)}
+                  nodes={nodes}
+                  onClick={() => onSelectPair(disease.id, otherEnd(e, disease.id))}
+                />
+              ))}
+            </ul>
+          </section>
+          {placement.warnings.length > 0 && (
+            <section className="panel-section">
+              <h3>Warnings from v2</h3>
+              <ul className="warnings">
+                {placement.warnings.map((w) => (
+                  <li key={w}>{w}</li>
+                ))}
+              </ul>
+            </section>
+          )}
+          <section className="panel-section">
+            <details>
+              <summary>Model weights used for this disease</summary>
+              <p className="muted small">
+                v2 refits its fusion to the modalities a new disease has, moving weight onto those it can use.
+              </p>
+              <table className="components">
+                <tbody>
+                  {Object.entries(placement.weights)
+                    .sort((a, b) => b[1] - a[1])
+                    .map(([m, w]) => (
+                      <tr key={m}>
+                        <th scope="row" title={graph.modalityDescriptions[m]}>
+                          {modalityLabel(m)}
+                        </th>
+                        <td className="num">{score(w)}</td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
+            </details>
+          </section>
+        </>
+      )}
+
       <section className="panel-section">
-        <h3>Features entered</h3>
+        <h3>Description entered</h3>
         <dl className="feature-list">
-          {SET_FAMILIES.map((family) => {
-            const values = profile?.sets[family] ? [...profile.sets[family]!] : []
-            const raw = disease[FAMILY_COLUMNS[family] as FamilyColumn] as string[]
-            return (
-              <div key={family}>
-                <dt>{FAMILY_TITLES[family]}</dt>
-                <dd>
-                  {values.length === 0 ? (
-                    <span className="no-evidence">{raw.length ? 'None recognised' : 'Not given'}</span>
-                  ) : (
-                    <span className="shared-terms">
-                      {values.map((v) => (
-                        <span key={v} className="chip" title={termName(family, v) ?? v}>
-                          {v}
-                          {termName(family, v) && <span className="term-name"> {termName(family, v)}</span>}
-                        </span>
-                      ))}
+          <div>
+            <dt>Description</dt>
+            <dd>{input.description?.trim() || <span className="no-evidence">Not given</span>}</dd>
+          </div>
+          <div>
+            <dt>Synonyms</dt>
+            <dd>{list(input.synonyms)}</dd>
+          </div>
+          <div>
+            <dt>Phenotypes</dt>
+            <dd>
+              {phenotypes.length === 0 ? (
+                <span className="no-evidence">Not given</span>
+              ) : (
+                <span className="shared-terms">
+                  {phenotypes.map(([term, w]) => (
+                    <span key={term} className="chip" title={labels[term] ?? term}>
+                      {labels[term] ?? term} <span className="term-name">· {frequency(w)}</span>
                     </span>
-                  )}
-                </dd>
-              </div>
-            )
-          })}
+                  ))}
+                </span>
+              )}
+            </dd>
+          </div>
+          <div>
+            <dt>Genes</dt>
+            <dd>{list(input.genes)}</dd>
+          </div>
+          <div>
+            <dt>Drugs</dt>
+            <dd>{list(input.drugs)}</dd>
+          </div>
+          <div>
+            <dt>Inheritance</dt>
+            <dd>{list(input.inheritance)}</dd>
+          </div>
+          <div>
+            <dt>Onset</dt>
+            <dd>{list(input.onset)}</dd>
+          </div>
           <div>
             <dt>Prevalence</dt>
             <dd>
-              {disease.prevalence_estimated_per_person ? (
-                `1 in ${Math.round(1 / disease.prevalence_estimated_per_person).toLocaleString()}`
-              ) : disease.prevalence_class ? (
-                disease.prevalence_class
+              {input.prevalence ? (
+                `1 in ${Math.round(1 / input.prevalence).toLocaleString()}`
               ) : (
                 <span className="no-evidence">Not given</span>
               )}
             </dd>
+          </div>
+          <div>
+            <dt>Classification</dt>
+            <dd>{list(input.ontology_parents)}</dd>
           </div>
         </dl>
       </section>
@@ -366,42 +412,42 @@ function UserDiseaseDetail(props: Props & { disease: UserDisease }) {
   )
 }
 
-function PairDetail(props: Props & { a: string; b: string }) {
-  const { a, b, graph, diseases, edgesById, filters, features, onSelectDisease } = props
-  const edge = edgesById.get(pairId(a, b))
-  const view = edge ? (viewEdge(edge, filters) ?? viewEdge(edge, { ...filters, measure: 'overall' })) : null
-  const nodeFor = (id: string): Disease | undefined => {
-    const known = diseases.get(id)
-    if (known) return known
-    const user = features.userDiseases.get(id)
-    const profile = features.profileFor(id)
-    if (!user && !profile) return undefined
-    return {
-      id,
-      name: user?.name ?? profile!.name,
-      aliases: [],
-      orphaId: user ? (user.orpha_id ?? null) : id,
-      candidateOrphaIds: [],
-      status: user?.status ?? 'unknown',
-      degree: 0,
-      origin: user ? 'user' : 'catalogue',
-    }
-  }
-  const da = nodeFor(edge?.source ?? a)
-  const db = nodeFor(edge?.target ?? b)
-  const pa = features.profileFor(da?.id ?? a)
-  const pb = features.profileFor(db?.id ?? b)
-  const computed = useMemo(() => (pa && pb ? computeSimilarity(pa, pb, features.weights) : null), [pa, pb, features.weights])
-  const unavailable = !pa ? missingProfileReason(da, features) : !pb ? missingProfileReason(db, features) : undefined
+// --- Pair --------------------------------------------------------------------------
 
-  const nameButton = (d: Disease | undefined, fallback: string) => (
-    <button type="button" className="link-button" onClick={() => onSelectDisease(d?.id ?? fallback)}>
-      {d?.origin === 'user' && (
+function useEdgeDetail(graph: GraphData, edge: GraphEdge | undefined, userDetails: Map<string, EdgeDetail>) {
+  const [state, setState] = useState<{ id: string; detail?: EdgeDetail | null; error?: string }>()
+  const userDetail = edge?.origin === 'user' ? userDetails.get(edge.id) : undefined
+  useEffect(() => {
+    if (!edge || edge.origin === 'user') return
+    let cancelled = false
+    loadEdgeDetail(graph, edge.id).then(
+      (detail) => !cancelled && setState({ id: edge.id, detail }),
+      (e: Error) => !cancelled && setState({ id: edge.id, error: e.message }),
+    )
+    return () => {
+      cancelled = true
+    }
+  }, [graph, edge])
+  if (!edge) return { detail: null }
+  if (edge.origin === 'user') return { detail: userDetail ?? null }
+  if (state?.id !== edge.id) return { loading: true, detail: null }
+  return { detail: state.detail ?? null, error: state.error }
+}
+
+function PairDetail({ a, b, graph, nodes, edgesById, user, onSelectDisease }: Props & { a: string; b: string }) {
+  const edge = findEdge(edgesById, a, b)
+  const { detail, loading, error } = useEdgeDetail(graph, edge, user.edgeDetails)
+  const na = nodes.get(edge?.source ?? a)
+  const nb = nodes.get(edge?.target ?? b)
+
+  const nameButton = (n: GraphNode | undefined, fallback: string) => (
+    <button type="button" className="link-button" onClick={() => onSelectDisease(n?.id ?? fallback)}>
+      {n?.origin === 'user' && (
         <span className="user-mark" aria-hidden>
           ◆{' '}
         </span>
       )}
-      {displayName(d?.name ?? fallback)}
+      {displayName(n?.name ?? fallback)}
     </button>
   )
 
@@ -410,80 +456,75 @@ function PairDetail(props: Props & { a: string; b: string }) {
       <section className="panel-section">
         <p className="eyebrow">Disease pair</p>
         <h2 className="pair-heading">
-          {nameButton(da, a)}
+          {nameButton(na, a)}
           <span className="pair-sep" aria-hidden>
             ↔
           </span>
-          {nameButton(db, b)}
+          {nameButton(nb, b)}
         </h2>
         <p className="meta-row small">
-          {da && <OrphaLinks disease={da} />}
-          {db && <OrphaLinks disease={db} />}
+          {[na, nb].map((n) =>
+            n && isOrpha(n.id) ? (
+              <a key={n.id} href={orphanetUrl(n.id)} target="_blank" rel="noreferrer">
+                {n.id}
+              </a>
+            ) : null,
+          )}
         </p>
       </section>
 
-      {!view ? (
+      {!edge ? (
         <section className="panel-section">
-          <p className="muted">No literature evidence for this pair from the selected sources.</p>
+          <p className="muted">
+            These diseases are not among each other's top {graph.k ?? 10} neighbours, so the graph has no edge between
+            them.
+          </p>
         </section>
       ) : (
         <>
           <section className="panel-section">
             <div className="stats">
               <div className="stat">
-                <span className="stat-value">{score(view.agg.similarity)}</span>
-                <span className="stat-label">Overall similarity</span>
+                <span className="stat-value">{percentile(edge.percentile)}</span>
+                <span className="stat-label">Percentile</span>
               </div>
               <div className="stat">
-                <span className="stat-value">
-                  {view.agg.evidenceScore}
-                  <small>/15</small>
+                <span className="stat-value">{score(edge.score)}</span>
+                <span className="stat-label">Score (logit)</span>
+              </div>
+              <div className="stat">
+                <span className="stat-value stat-support">
+                  <SupportKey edge={edge} />
+                  {capitalise(edge.support)}
                 </span>
-                <span className="stat-label">Evidence strength</span>
-              </div>
-              <div className="stat">
-                <span className="stat-value">{view.agg.nPapers}</span>
-                <span className="stat-label">{view.agg.nPapers === 1 ? 'Paper' : 'Papers'}</span>
+                <span className="stat-label">Support</span>
               </div>
             </div>
-            <p className="meta-row">
-              <span className={`line-key rel-${view.agg.relationship.replace(/ /g, '-')}`} aria-hidden />
-              <span>
-                Mostly <strong>{view.agg.relationship}</strong>
-              </span>
-            </p>
-            <p className="muted small">Best study: {view.agg.bestDesign}</p>
-            {view.agg.flags.length > 0 && (
-              <ul className="caveats" aria-label="Evidence caveats">
-                {view.agg.flags.map((f) => (
-                  <li key={f}>
-                    <span className="caveat-icon" aria-hidden>
-                      !
-                    </span>
-                    {capitalise(f)}
-                  </li>
-                ))}
-              </ul>
+            <p className="small">{percentileSentence(edge.percentile)}.</p>
+            <p className="muted small">{SUPPORT_MEANING[edge.support]}</p>
+            {edge.origin === 'graph' && (
+              <p className="muted small">
+                {edge.mutual
+                  ? 'Mutual: each lists the other among its top neighbours.'
+                  : 'One-way: only one of the two lists the other among its top neighbours.'}{' '}
+                {[
+                  detail?.ranks[0] && `#${detail.ranks[0]} among ${displayName(na?.name ?? a)}'s neighbours`,
+                  detail?.ranks[1] && `#${detail.ranks[1]} among ${displayName(nb?.name ?? b)}'s neighbours`,
+                ]
+                  .filter(Boolean)
+                  .join('; ')
+                  .replace(/^./, (c) => c.toUpperCase())}
+                {detail?.ranks.some(Boolean) ? '.' : ''}
+              </p>
             )}
           </section>
-
-          <section className="panel-section">
-            <h3>Similarity by dimension</h3>
-            <DimensionBars
-              dimensions={view.agg.dimensions}
-              highlight={filters.measure === 'overall' ? undefined : filters.measure}
-            />
-          </section>
+          {loading && <p className="muted panel-section">Loading explanation…</p>}
+          {error && <p className="callout panel-section">{error}</p>}
+          {detail && <EdgeExplanation detail={detail} modalities={graph.modalities} descriptions={graph.modalityDescriptions} />}
+          {!loading && !error && !detail && (
+            <p className="muted panel-section">No explanation was recorded for this edge.</p>
+          )}
         </>
-      )}
-
-      <ComputedSimilarityCard result={computed} unavailable={unavailable} catalogue={features.catalogue} />
-
-      {view && (
-        <section className="panel-section">
-          <h3>Papers</h3>
-          <PaperList papers={view.papers} graph={graph} />
-        </section>
       )}
     </div>
   )

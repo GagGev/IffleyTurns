@@ -1,36 +1,34 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import ForceGraph2D from 'react-force-graph-2d'
 import type { ForceGraphMethods, LinkObject, NodeObject } from 'react-force-graph-2d'
-import type { ComputedEdge, Disease } from '../data/types'
-import type { EdgeView } from '../lib/graph'
-import { displayName, plural, score } from '../lib/format'
+import { edgeShard } from '../data/source'
+import type { GraphEdge, GraphNode } from '../data/types'
+import { displayName, modalityLabel, percentile, plural } from '../lib/format'
 import type { Selection } from '../lib/selection'
 import { type CanvasColours, withAlpha } from '../lib/theme'
 
 interface GNode {
   id: string
-  disease: Disease
+  disease: GraphNode
   degree: number
 }
-/** A literature edge (`view`) or a feature-based link from an added disease (`computed`). */
 interface GLink {
-  view?: EdgeView
-  computed?: ComputedEdge
+  edge: GraphEdge
 }
 type N = NodeObject<GNode>
 type L = LinkObject<GNode, GLink>
 
 interface Props {
-  diseases: Map<string, Disease>
-  edges: EdgeView[]
-  computedEdges: ComputedEdge[]
+  nodes: Map<string, GraphNode>
+  edges: GraphEdge[]
   /** Diseases to draw even without visible edges (the current selection). */
   pinnedIds: string[]
   selection: Selection
   /** Diseases to keep at full strength; everything else is dimmed. */
   highlightNodes: Set<string> | null
   highlightEdges: Set<string> | null
-  measureLabel: string
+  /** Use the precomputed layout instead of simulating one. */
+  fixedLayout: boolean
   /** Changes whenever the graph should re-fit to the viewport. */
   fitKey: string
   colours: CanvasColours
@@ -42,29 +40,37 @@ interface Props {
 type Hover = { kind: 'node'; node: N } | { kind: 'link'; link: L } | null
 
 /**
- * Layout state owned by the force simulation, which writes x/y into these
- * node objects.  Kept outside React state on purpose: reusing the objects is
- * what keeps positions stable when filters change.
+ * Layout state owned by the graph engine, which writes x/y into these node
+ * objects.  Kept outside React state on purpose: reusing the objects keeps
+ * positions stable when filters change.
  */
 class NodeStore {
   private nodes = new Map<string, N>()
-  private diseases = new Map<string, Disease>()
+  private records = new Map<string, GraphNode>()
 
-  sync(diseases: Map<string, Disease>) {
-    if (diseases === this.diseases) return
-    this.diseases = diseases
+  sync(records: Map<string, GraphNode>) {
+    if (records === this.records) return
+    this.records = records
     for (const [id, node] of this.nodes) {
-      const d = diseases.get(id)
+      const d = records.get(id)
       if (d) node.disease = d
     }
   }
 
-  node(id: string, degree: number): N | undefined {
-    const disease = this.diseases.get(id)
+  node(id: string, degree: number, fixed: boolean): N | undefined {
+    const disease = this.records.get(id)
     if (!disease) return undefined
     let node = this.nodes.get(id)
     if (!node) {
       node = { id, disease, degree }
+      if (disease.x !== undefined && disease.y !== undefined) {
+        node.x = disease.x
+        node.y = disease.y
+        if (fixed) {
+          node.fx = disease.x
+          node.fy = disease.y
+        }
+      }
       this.nodes.set(id, node)
     }
     node.degree = degree
@@ -76,12 +82,19 @@ class NodeStore {
   }
 }
 
-const nodeRadius = (degree: number) => 2.5 + Math.sqrt(degree) * 1.6
-const linkId = (link: L) => (link.computed ? link.computed.id : link.view!.edge.id)
+const nodeRadius = (degree: number) => 1.6 + Math.sqrt(degree) * 0.55
 const endId = (end: L['source']) => (typeof end === 'object' ? (end as N).id : String(end))
 
+function diamond(ctx: CanvasRenderingContext2D, x: number, y: number, d: number) {
+  ctx.moveTo(x, y - d)
+  ctx.lineTo(x + d, y)
+  ctx.lineTo(x, y + d)
+  ctx.lineTo(x - d, y)
+  ctx.closePath()
+}
+
 export function GraphView(props: Props) {
-  const { diseases, edges, computedEdges, pinnedIds, selection, highlightNodes, highlightEdges, colours } = props
+  const { nodes, edges, pinnedIds, selection, highlightNodes, highlightEdges, colours, fixedLayout } = props
   const wrapper = useRef<HTMLDivElement>(null)
   const graph = useRef<ForceGraphMethods<N, L>>(undefined)
   const [store] = useState(() => new NodeStore())
@@ -101,38 +114,50 @@ export function GraphView(props: Props) {
   }, [])
 
   // Only pinned diseases that no visible edge already draws change the graph
-  // data; otherwise selecting a node would restart the simulation.
+  // data; otherwise selecting a node would rebuild it.
   const extraPinned = useMemo(() => {
     const drawn = new Set<string>()
-    for (const { source, target } of [...edges.map((v) => v.edge), ...computedEdges]) {
+    for (const { source, target } of edges) {
       drawn.add(source)
       drawn.add(target)
     }
     return pinnedIds.filter((id) => !drawn.has(id)).join('\n')
-  }, [edges, computedEdges, pinnedIds])
+  }, [edges, pinnedIds])
 
-  // Node objects are reused across filter changes so the layout stays put.
-  // Disease records come from the store, so a new disease map (e.g. after a
-  // selection) does not rebuild the graph data and restart the simulation.
-  store.sync(diseases)
+  store.sync(nodes)
   const data = useMemo(() => {
     const degree = new Map<string, number>()
-    for (const { source, target } of [...edges.map((v) => v.edge), ...computedEdges]) {
+    for (const { source, target } of edges) {
       degree.set(source, (degree.get(source) ?? 0) + 1)
       degree.set(target, (degree.get(target) ?? 0) + 1)
     }
-    for (const id of extraPinned ? extraPinned.split('\n') : []) degree.set(id, 0)
-    const nodes: N[] = []
-    for (const [id, d] of degree) {
-      const node = store.node(id, d)
-      if (node) nodes.push(node)
+    for (const id of extraPinned ? extraPinned.split('\n') : []) {
+      const record = nodes.get(id)
+      if (!fixedLayout || record?.x !== undefined) degree.set(id, 0)
     }
-    const links: L[] = [
-      ...edges.map((view) => ({ source: view.edge.source, target: view.edge.target, view })),
-      ...computedEdges.map((computed) => ({ source: computed.source, target: computed.target, computed })),
-    ]
-    return { nodes, links }
-  }, [edges, computedEdges, extraPinned, store])
+    const out: N[] = []
+    for (const [id, d] of degree) {
+      const node = store.node(id, d, fixedLayout)
+      if (node) out.push(node)
+    }
+    // Added diseases have no precomputed position: put them beside their matches.
+    if (fixedLayout) {
+      for (const node of out) {
+        if (node.fx !== undefined) continue
+        const linked = edges
+          .filter((e) => e.source === node.id || e.target === node.id)
+          .map((e) => store.get(e.source === node.id ? e.target : e.source))
+          .filter((n): n is N => n?.fx !== undefined)
+        if (linked.length === 0) continue
+        // Deterministic offset so the node stays put across reloads.
+        const jitter = (edgeShard(node.id, 31) - 15) * 2
+        node.fx = node.x = linked.reduce((s, n) => s + n.fx!, 0) / linked.length + jitter
+        node.fy = node.y = linked.reduce((s, n) => s + n.fy!, 0) / linked.length - 25
+      }
+    }
+    const links: L[] = edges.map((edge) => ({ source: edge.source, target: edge.target, edge }))
+    return { nodes: out, links }
+  }, [edges, extraPinned, store, fixedLayout, nodes])
 
   // The simulation reheats whenever the data changes; camera moves made while
   // it runs are repeated once it settles.
@@ -147,31 +172,40 @@ export function GraphView(props: Props) {
 
   useEffect(() => {
     const fg = graph.current
-    if (!fg) return
-    // Short-range repulsion keeps the many small components near the centre.
+    if (!fg || fixedLayout) return
     const charge = fg.d3Force('charge') as unknown as { strength: (s: number) => { distanceMax: (d: number) => void } }
-    charge?.strength(-28).distanceMax(220)
+    charge?.strength(-20).distanceMax(200)
     const link = fg.d3Force('link') as unknown as { distance: (d: number) => void }
-    link?.distance(28)
-  }, [])
+    link?.distance(24)
+  }, [fixedLayout, size.width])
 
-  // Bring the selection (and, for a disease, its neighbours) into view, or wait
-  // for the layout if those nodes have no position yet.
-  const centerPending = useRef(false)
-  const focusRef = useRef(highlightNodes)
+  // Bring the selection into view with its neighbours around it, so a close
+  // pair is not blown up to fill the screen.
+  const frame = useMemo(() => {
+    if (!selection) return new Set<string>()
+    const ids = selection.kind === 'disease' ? [selection.id] : [selection.a, selection.b]
+    const out = new Set(ids)
+    for (const e of edges) {
+      if (ids.includes(e.source)) out.add(e.target)
+      if (ids.includes(e.target)) out.add(e.source)
+    }
+    return out
+  }, [selection, edges])
+  // Re-frame when the selection changes or gains edges (e.g. a placement arrives).
+  const frameKey = selection ? `${JSON.stringify(selection)}:${frame.size}` : ''
+  const frameRef = useRef(frame)
   useEffect(() => {
-    focusRef.current = highlightNodes
-  }, [highlightNodes])
+    frameRef.current = frame
+  }, [frame])
+  const centerPending = useRef(false)
   const centerOnSelection = useCallback((): boolean => {
     const fg = graph.current
-    if (!fg || !selection) return false
-    const ids = selection.kind === 'disease' ? [selection.id] : [selection.a, selection.b]
-    if (!ids.some((id) => store.get(id)?.x !== undefined)) return false
-    const frame = selection.kind === 'disease' && focusRef.current ? focusRef.current : new Set(ids)
-    // One camera move only: separate centerAt + zoom transitions interrupt each other.
-    fg.zoomToFit(600, 120, (n) => frame.has(n.id))
+    if (!fg || !frameKey) return false
+    const placed = [...frameRef.current].filter((id) => store.get(id)?.x !== undefined)
+    if (placed.length === 0) return false
+    fg.zoomToFit(600, 60, (n) => frameRef.current.has(n.id))
     return true
-  }, [selection, store])
+  }, [frameKey, store])
 
   useEffect(() => {
     centerPending.current = !centerOnSelection() || engineRunning.current
@@ -188,44 +222,20 @@ export function GraphView(props: Props) {
       const dimmed = highlightNodes !== null && !highlightNodes.has(node.id)
       const selected = selectedIds.has(node.id)
       const hovered = hover?.kind === 'node' && hover.node.id === node.id
-      const alpha = dimmed ? 0.15 : 1
-      const common = node.disease.status === 'common'
+      const added = node.disease.origin !== 'catalogue'
+      const x = node.x!
+      const y = node.y!
 
-      const user = node.disease.origin === 'user'
       ctx.beginPath()
-      if (user) {
-        // Added diseases are diamonds, so they are identifiable without colour.
-        const d = r * 1.35
-        ctx.moveTo(node.x!, node.y! - d)
-        ctx.lineTo(node.x! + d, node.y!)
-        ctx.lineTo(node.x!, node.y! + d)
-        ctx.lineTo(node.x! - d, node.y!)
-        ctx.closePath()
-      } else {
-        ctx.arc(node.x!, node.y!, r, 0, 2 * Math.PI)
-      }
-      if (common) {
-        ctx.fillStyle = withAlpha(colours.surface, alpha)
-        ctx.fill()
-        ctx.lineWidth = Math.max(1.4 / scale, 0.6)
-        ctx.strokeStyle = withAlpha(colours.node, alpha)
-        ctx.stroke()
-      } else {
-        ctx.fillStyle = withAlpha(colours.node, alpha)
-        ctx.fill()
-      }
+      if (added) diamond(ctx, x, y, r * 1.4)
+      else ctx.arc(x, y, r, 0, 2 * Math.PI)
+      ctx.fillStyle = withAlpha(colours.node, dimmed ? 0.12 : 0.9)
+      ctx.fill()
+
       if (selected || hovered) {
         ctx.beginPath()
-        if (user) {
-          const d = r * 1.35 + 3.5 / scale
-          ctx.moveTo(node.x!, node.y! - d)
-          ctx.lineTo(node.x! + d, node.y!)
-          ctx.lineTo(node.x!, node.y! + d)
-          ctx.lineTo(node.x! - d, node.y!)
-          ctx.closePath()
-        } else {
-          ctx.arc(node.x!, node.y!, r + 2.5 / scale, 0, 2 * Math.PI)
-        }
+        if (added) diamond(ctx, x, y, r * 1.4 + 3 / scale)
+        else ctx.arc(x, y, r + 2.5 / scale, 0, 2 * Math.PI)
         ctx.lineWidth = (selected ? 2.5 : 1.5) / scale
         ctx.strokeStyle = colours.selection
         ctx.stroke()
@@ -233,26 +243,30 @@ export function GraphView(props: Props) {
 
       const inFocus = highlightNodes !== null && highlightNodes.has(node.id) && highlightNodes.size <= 40
       const showLabel =
-        selected || hovered || inFocus || (user && !dimmed) || (!dimmed && ((scale > 2.4 && node.degree >= 3) || scale > 4.5))
+        selected ||
+        hovered ||
+        inFocus ||
+        (node.disease.origin === 'user' && !dimmed) ||
+        (!dimmed && ((scale > 3 && node.degree >= 25) || scale > 7))
       if (!showLabel) return
       const fontSize = (selected ? 13 : 11) / scale
       ctx.font = `${selected ? 600 : 400} ${fontSize}px system-ui, -apple-system, "Segoe UI", sans-serif`
       ctx.textAlign = 'center'
-      // The two ends of a selected pair sit close together: label the upper one above it.
+      // The two ends of a selected pair can sit close together: label the upper one above it.
       const partnerId =
         selection?.kind === 'pair' && selected ? (selection.a === node.id ? selection.b : selection.a) : null
       const partner = partnerId ? store.get(partnerId) : undefined
-      const above = partner?.y !== undefined && partner.y > node.y!
+      const above = partner?.y !== undefined && partner.y > y
       ctx.textBaseline = above ? 'bottom' : 'top'
       const label = displayName(node.disease.name)
-      const extent = user ? r * 1.35 : r
-      const y = above ? node.y! - extent - 3 / scale : node.y! + extent + 3 / scale
+      const extent = added ? r * 1.4 : r
+      const ly = above ? y - extent - 3 / scale : y + extent + 3 / scale
       ctx.lineJoin = 'round'
       ctx.lineWidth = 3 / scale
       ctx.strokeStyle = withAlpha(colours.surface, 0.9)
-      ctx.strokeText(label, node.x!, y)
+      ctx.strokeText(label, x, ly)
       ctx.fillStyle = dimmed ? colours.muted : colours.ink
-      ctx.fillText(label, node.x!, y)
+      ctx.fillText(label, x, ly)
     },
     [highlightNodes, selectedIds, hover, colours, selection, store],
   )
@@ -261,36 +275,31 @@ export function GraphView(props: Props) {
     // Hit target larger than the dot so small nodes are easy to click.
     ctx.fillStyle = colour
     ctx.beginPath()
-    ctx.arc(node.x!, node.y!, nodeRadius(node.degree) + 5 / scale, 0, 2 * Math.PI)
+    ctx.arc(node.x!, node.y!, nodeRadius(node.degree) + 4 / scale, 0, 2 * Math.PI)
     ctx.fill()
   }, [])
 
   const linkColour = useCallback(
     (link: L) => {
-      const base = link.computed ? colours.computed : colours.relationship[link.view!.agg.relationship]
-      const value = link.computed ? link.computed.similarity : link.view!.value
-      const isHover = hover?.kind === 'link' && hover.link === link
-      if (isHover) return base
-      if (highlightEdges !== null && !highlightEdges.has(linkId(link))) return withAlpha(base, 0.06)
-      return withAlpha(base, 0.3 + 0.65 * value)
+      const base = colours.support[link.edge.support]
+      if (hover?.kind === 'link' && hover.link === link) return base
+      if (highlightEdges !== null) return highlightEdges.has(link.edge.id) ? withAlpha(base, 0.95) : withAlpha(base, 0.05)
+      return withAlpha(base, 0.4)
     },
     [colours, highlightEdges, hover],
   )
 
   const linkWidth = useCallback(
     (link: L) => {
-      const base = link.computed
-        ? 1 + link.computed.similarity * 2.5
-        : 0.6 + Math.min(link.view!.agg.nPapers, 6) * 0.45
-      const emphasised = highlightEdges?.has(linkId(link)) || (hover?.kind === 'link' && hover.link === link)
-      return emphasised ? base * 1.7 : base
+      const emphasised = highlightEdges?.has(link.edge.id) || (hover?.kind === 'link' && hover.link === link)
+      return emphasised ? 2.2 : 0.7
     },
     [highlightEdges, hover],
   )
 
-  const tooltip = hover && renderTooltip(hover, diseases, props.measureLabel)
+  const tooltip = hover && renderTooltip(hover, nodes)
   const tooltipStyle = useMemo(() => {
-    const width = 280
+    const width = 300
     const left = Math.min(pointer.x + 14, size.width - width - 8)
     const top = pointer.y + 14 > size.height - 120 ? pointer.y - 110 : pointer.y + 14
     return { left: Math.max(8, left), top: Math.max(8, top), maxWidth: width }
@@ -301,7 +310,7 @@ export function GraphView(props: Props) {
       ref={wrapper}
       className="graph-canvas"
       role="img"
-      aria-label={`Network of ${data.nodes.length} diseases and ${data.links.length} literature-backed pairs. The table view lists the same pairs.`}
+      aria-label={`Similarity network of ${data.nodes.length} diseases and ${data.links.length} edges. The table view lists the same edges.`}
       onMouseMove={(e) => {
         const rect = e.currentTarget.getBoundingClientRect()
         setPointer({ x: e.clientX - rect.left, y: e.clientY - rect.top })
@@ -320,13 +329,12 @@ export function GraphView(props: Props) {
           nodePointerAreaPaint={paintNodeArea}
           linkColor={linkColour}
           linkWidth={linkWidth}
-          linkLineDash={(link) =>
-            link.computed ? [1.5, 2.5] : link.view!.agg.relationship === 'unrelated' ? [3, 2] : null
-          }
-          linkHoverPrecision={6}
-          maxZoom={5}
-          cooldownTicks={200}
-          warmupTicks={40}
+          linkLineDash={(link) => (link.edge.origin === 'user' ? [2, 2] : null)}
+          linkHoverPrecision={4}
+          maxZoom={6}
+          minZoom={0.05}
+          cooldownTicks={fixedLayout ? 0 : 150}
+          warmupTicks={fixedLayout ? 0 : 30}
           onEngineStop={() => {
             engineRunning.current = false
             if (centerPending.current && centerOnSelection()) {
@@ -334,7 +342,7 @@ export function GraphView(props: Props) {
               fitPending.current = false
             } else if (fitPending.current) {
               fitPending.current = false
-              graph.current?.zoomToFit(400, 40)
+              graph.current?.zoomToFit(400, 30)
             }
           }}
           onNodeHover={(node) => setHover(node ? { kind: 'node', node } : null)}
@@ -353,50 +361,30 @@ export function GraphView(props: Props) {
   )
 }
 
-function renderTooltip(hover: NonNullable<Hover>, diseases: Map<string, Disease>, measureLabel: string) {
+function renderTooltip(hover: NonNullable<Hover>, nodes: Map<string, GraphNode>) {
   if (hover.kind === 'node') {
     const d = hover.node.disease
     return (
       <>
         <div className="tooltip-title">{displayName(d.name)}</div>
         <div className="tooltip-meta">
-          {plural(hover.node.degree, 'connection')} · {d.status}
-          {d.orphaId ? ` · ${d.orphaId}` : ' · no ORPHA ID'}
+          {d.origin === 'user' ? 'Added by you' : d.category || d.id} · {plural(hover.node.degree, 'edge')}
         </div>
       </>
     )
   }
-  if (hover.link.computed) {
-    const c = hover.link.computed
-    return (
-      <>
-        <div className="tooltip-value">
-          {score(c.similarity)} <span className="tooltip-meta">feature similarity</span>
-        </div>
-        <div className="tooltip-title">
-          {displayName(diseases.get(c.source)?.name ?? c.source)} – {displayName(diseases.get(c.target)?.name ?? c.target)}
-        </div>
-        <div className="tooltip-meta">
-          <span className="line-key rel-computed" aria-hidden />
-          computed from shared features
-        </div>
-      </>
-    )
-  }
-  const { edge, agg, value } = hover.link.view!
-  const a = diseases.get(edge.source)
-  const b = diseases.get(edge.target)
+  const e = hover.link.edge
   return (
     <>
       <div className="tooltip-value">
-        {score(value)} <span className="tooltip-meta">{measureLabel.toLowerCase()}</span>
+        {percentile(e.percentile)} <span className="tooltip-meta">percentile vs random pairs</span>
       </div>
       <div className="tooltip-title">
-        {displayName(a?.name ?? edge.source)} – {displayName(b?.name ?? edge.target)}
+        {displayName(nodes.get(e.source)?.name ?? e.source)} – {displayName(nodes.get(e.target)?.name ?? e.target)}
       </div>
       <div className="tooltip-meta">
-        <span className={`line-key rel-${agg.relationship.replace(/ /g, '-')}`} aria-hidden />
-        {agg.relationship} · {plural(agg.nPapers, 'paper')} · evidence {agg.evidenceScore}/15
+        <span className={`line-key support-${e.support}${e.origin === 'user' ? ' is-user' : ''}`} aria-hidden />
+        {e.support} · mainly {modalityLabel(e.mainModality).toLowerCase()}
       </div>
     </>
   )

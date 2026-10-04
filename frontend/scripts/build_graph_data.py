@@ -103,7 +103,7 @@ def layout(ids: list[str], graph_dir: Path) -> dict[str, tuple[float, float]] | 
         return None
     table = pq.read_table(path).to_pandas()
     dims = [c for c in table.columns if c.startswith("dim_")][:50]
-    vectors = table[dims].to_numpy(dtype="float32")
+    vectors = np.array(table[dims].to_numpy(dtype="float32"))  # writable copy
     vectors /= np.maximum(np.linalg.norm(vectors, axis=1, keepdims=True), 1e-9)
     print(f"Computing t-SNE layout for {len(vectors):,} diseases...")
     perplexity = min(30, max(2, (len(vectors) - 1) // 3))

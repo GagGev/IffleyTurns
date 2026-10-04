@@ -12,10 +12,9 @@
   --node: #52514e;
   --bar: #4a3aa7;
   --bar-track: #e1e0d9;
-  --edge-similar: #2a78d6;
-  --edge-related: #eb6834;
-  --edge-unrelated: #898781;
-  --edge-computed: #1baf7a;
+  --support-curated: #2a78d6;
+  --support-plausible: #1baf7a;
+  --support-novel: #eb6834;
   --warning-ink: #8a4b00;
   --warning-bg: #fdf3e1;
   --link: #1c5cab;
@@ -43,10 +42,9 @@
     --node: #c3c2b7;
     --bar: #9085e9;
     --bar-track: #2c2c2a;
-    --edge-similar: #3987e5;
-    --edge-related: #d95926;
-    --edge-unrelated: #898781;
-    --edge-computed: #199e70;
+    --support-curated: #3987e5;
+    --support-plausible: #199e70;
+    --support-novel: #d95926;
     --warning-ink: #fab219;
     --warning-bg: #2e2412;
     --link: #86b6ef;
@@ -68,10 +66,9 @@
   --node: #c3c2b7;
   --bar: #9085e9;
   --bar-track: #2c2c2a;
-  --edge-similar: #3987e5;
-  --edge-related: #d95926;
-  --edge-unrelated: #898781;
-  --edge-computed: #199e70;
+  --support-curated: #3987e5;
+  --support-plausible: #199e70;
+  --support-novel: #d95926;
   --warning-ink: #fab219;
   --warning-bg: #2e2412;
   --link: #86b6ef;
@@ -389,18 +386,16 @@ input[type='checkbox'] {
   vertical-align: middle;
   flex: none;
 }
-.rel-similar {
-  border-color: var(--edge-similar);
+.support-curated {
+  border-color: var(--support-curated);
 }
-.rel-related-but-distinct {
-  border-color: var(--edge-related);
+.support-plausible {
+  border-color: var(--support-plausible);
 }
-.rel-unrelated {
-  border-color: var(--edge-unrelated);
-  border-top-style: dashed;
+.support-novel {
+  border-color: var(--support-novel);
 }
-.rel-computed {
-  border-color: var(--edge-computed);
+.line-key.is-user {
   border-top-style: dotted;
 }
 
@@ -1296,6 +1291,154 @@ input[type='checkbox'] {
   display: flex;
   justify-content: space-between;
   gap: 12px;
+}
+
+/* ---------- v2 explanations ---------- */
+
+.filter-note {
+  margin-top: -8px;
+}
+.filters .check .muted {
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+}
+.modality-chips {
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.modality-chips li {
+  font-size: 12px;
+  border: 1px dashed var(--border-strong);
+  color: var(--text-muted);
+  border-radius: 999px;
+  padding: 1px 8px;
+}
+.modality-chips li.is-present {
+  border-style: solid;
+  color: var(--text-primary);
+  background: var(--surface-2);
+}
+.evidence-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.evidence-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 13px;
+}
+.contributions {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.contributions thead th {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 500;
+  text-align: left;
+  padding: 0 0 4px;
+}
+.contributions thead th + th {
+  padding-left: 8px;
+}
+.contributions thead th.num {
+  text-align: right;
+}
+.contributions th[scope='row'] {
+  text-align: left;
+  font-weight: 400;
+  color: var(--text-secondary);
+  padding: 4px 8px 4px 0;
+  white-space: nowrap;
+}
+.contributions td {
+  padding: 4px 0 4px 8px;
+}
+.contributions tr.is-unavailable th {
+  color: var(--text-muted);
+}
+.bar-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.bar-row .bar-track {
+  flex: 1;
+}
+.relations {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+}
+.relations dt {
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+.relations dd {
+  margin: 0;
+}
+.stat-support {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 17px;
+}
+.warnings {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 13px;
+  color: var(--warning-ink);
+}
+.preview-list {
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+}
+.preview-list li {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+}
+.term-chip select {
+  font: inherit;
+  font-size: 11px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  padding: 0;
+  max-width: 100px;
+}
+details summary {
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 13px;
+}
+details[open] summary {
+  margin-bottom: 8px;
+}
+.setup {
+  background: var(--surface-2);
+  border-radius: 8px;
+  padding: 12px 14px;
+  font-size: 13px;
+  overflow-x: auto;
+  color: var(--text-primary);
 }
 
 /* ---------- Responsive ---------- */

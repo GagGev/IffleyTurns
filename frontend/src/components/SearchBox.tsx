@@ -1,18 +1,17 @@
 import { useId, useMemo, useState } from 'react'
-import type { Disease } from '../data/types'
+import type { GraphNode } from '../data/types'
 import { displayName, plural } from '../lib/format'
 import { searchKey } from '../lib/graph'
 
 interface Props {
-  diseases: Disease[]
+  diseases: GraphNode[]
   onSelect: (id: string) => void
 }
 
 interface Indexed {
-  disease: Disease
+  disease: GraphNode
   name: string
-  aliases: string[]
-  orpha: string
+  id: string
 }
 
 const MAX_RESULTS = 10
@@ -25,12 +24,7 @@ export function SearchBox({ diseases, onSelect }: Props) {
 
   const index = useMemo<Indexed[]>(
     () =>
-      diseases.map((d) => ({
-        disease: d,
-        name: searchKey(d.name),
-        aliases: d.aliases.map(searchKey),
-        orpha: [d.orphaId, ...d.candidateOrphaIds].filter(Boolean).join(' ').toLowerCase(),
-      })),
+      diseases.map((d) => ({ disease: d, name: searchKey(d.name), id: d.id.toLowerCase() })),
     [diseases],
   )
 
@@ -38,22 +32,15 @@ export function SearchBox({ diseases, onSelect }: Props) {
     const q = searchKey(query.trim())
     if (!q) return []
     const numeric = q.replace(/^orpha:?/, '')
-    const scored: { d: Disease; rank: number; via?: string }[] = []
+    const scored: { d: GraphNode; rank: number }[] = []
+    const wordStart = new RegExp(`\\b${q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`)
     for (const item of index) {
       let rank = -1
-      let via: string | undefined
-      if (item.name.startsWith(q)) rank = 0
-      else if (item.name.includes(q)) rank = 1
-      else {
-        const alias = item.aliases.findIndex((a) => a.includes(q))
-        if (alias >= 0) {
-          rank = 2
-          via = item.disease.aliases[alias]
-        } else if (/^\d+$/.test(numeric) && item.orpha.split(' ').some((id) => id === `orpha:${numeric}`)) {
-          rank = 0
-        }
-      }
-      if (rank >= 0) scored.push({ d: item.disease, rank, via })
+      if (/^\d+$/.test(numeric) && item.id === `orpha:${numeric}`) rank = 0
+      else if (item.name.startsWith(q)) rank = 0
+      else if (wordStart.test(item.name)) rank = 1
+      else if (item.name.includes(q)) rank = 2
+      if (rank >= 0) scored.push({ d: item.disease, rank })
     }
     scored.sort((x, y) => x.rank - y.rank || y.d.degree - x.d.degree || x.d.name.localeCompare(y.d.name))
     return scored.slice(0, MAX_RESULTS)
@@ -104,7 +91,7 @@ export function SearchBox({ diseases, onSelect }: Props) {
       {open && query.trim() && (
         <ul className="search-results" role="listbox" id={listId}>
           {results.length === 0 && <li className="search-empty">No matching diseases.</li>}
-          {results.map(({ d, via }, i) => (
+          {results.map(({ d }, i) => (
             <li
               key={d.id}
               id={`${listId}-${i}`}
@@ -119,12 +106,8 @@ export function SearchBox({ diseases, onSelect }: Props) {
             >
               <span className="search-name">{displayName(d.name)}</span>
               <span className="search-meta">
-                {d.origin === 'user'
-                  ? 'Added by you'
-                  : d.origin === 'catalogue'
-                    ? `${d.orphaId} · feature profile only`
-                    : `${d.orphaId ?? 'no ORPHA ID'} · ${plural(d.degree, 'pair')}`}
-                {via && <> · also “{via}”</>}
+                {d.origin === 'user' ? 'Added by you' : `${d.id} · ${d.category || d.disorderType}`} ·{' '}
+                {plural(d.degree, 'edge')}
               </span>
             </li>
           ))}

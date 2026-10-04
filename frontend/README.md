@@ -1,115 +1,117 @@
-# Rare Disease Relationship Explorer
+# Rare Disease Similarity Explorer
 
-A React frontend for researchers to explore relationships between rare diseases.
+A React frontend that lets researchers explore the **v2** rare-disease
+similarity graph and place new diseases in it.
 
-It works today without the Python backend. The graph is built from the
-literature-review CSVs already in the repository. Feature-based similarity from
-`evaluation.py` is shown as "not connected" until a backend exists.
+Everything shown comes from the v2 model in `../v2`. That covers the edges,
+scores, percentiles, support levels and explanations, and the placement of new
+diseases. The frontend does not compute similarity itself.
 
-## Run
+## Setup
 
-```sh
-cd frontend
-npm install
-npm run dev        # rebuilds the data, then serves on http://localhost:5173
-```
+1. Build the v2 graph (see `v2/README.md`). From the repository root:
 
-`npm run dev` and `npm run build` first run `scripts/build_literature_graph.py`
-(Python 3, standard library only), which writes `public/data/literature_graph.json`.
-Run `npm run data` by hand after editing the literature CSVs.
+   ```sh
+   python download_databases.py && python generate_features.py
+   python v2/run_evaluation.py
+   python v2/build_graph.py
+   ```
+
+2. Convert it for the frontend:
+
+   ```sh
+   cd frontend
+   npm install
+   npm run data     # v2/.data/graph -> public/data (graph.json + detail shards)
+   ```
+
+   If pyarrow and scikit-learn are installed, `npm run data` also computes a
+   t-SNE layout from v2's fused embedding. That takes about a minute, and the
+   browser then shows the 7,500-disease graph without simulating it. Without
+   them, the browser lays the graph out itself, which is slower.
+
+3. Start the placement service, using the Python environment you used for v2:
+
+   ```sh
+   python frontend/api/server.py   # from the repository root; http://127.0.0.1:8765
+   ```
+
+4. Run the app:
+
+   ```sh
+   npm run dev      # proxies /api to the placement service
+   ```
+
+   Or run `npm run build` once. `frontend/api/server.py` then serves the built
+   app as well, at http://127.0.0.1:8765, which is the simplest option for
+   researchers.
+
+Until step 1 has run, the app shows these instructions. Without the placement
+service, the graph still works, and added diseases are saved but not placed
+until the service is running.
 
 ## What it shows
 
-- **Graph**: diseases as nodes and literature-backed pairs as edges. Edge colour
-  is the dominant relationship (similar, related but distinct, unrelated), width
-  is the number of papers, and strength of colour is the score.
-- **Table**: the same pairs, sortable and keyboard accessible.
-- **Disease panel**: ORPHA link, aliases, and related diseases ranked by score.
-- **Pair panel**: overall similarity, evidence strength (0–15), evidence caveats,
-  consensus score for each of the 7 similarity dimensions, and every paper with
-  its finding and PubMed link.
-- **Filters**: score by overall or a single dimension, minimum score, evidence
-  strength and paper count, relationship type, rarity, and evidence source.
-- **Neighbourhood** mode limits the view to 1–3 steps around the selection.
-- **Export CSV** downloads the pairs currently in view.
-- The URL hash records the selection, so a view can be bookmarked or shared.
-- **Add a disease**: a form or a JSON upload places a researcher's own disease in
-  the graph. It links (dotted aqua lines, diamond node) to its most similar
-  diseases by features, and its panel ranks every comparable disease with the
-  shared terms behind each score. Added diseases are kept in the browser's local
-  storage. **Export JSON** saves them, and the file can be uploaded again later.
+- **Graph**: every Orphanet disease in v2's cohort linked to its 10 most
+  similar diseases. Edge colour is v2's support level:
+  - **curated**: an Orphanet relation, shared causal gene or shared trial drug backs the edge;
+  - **plausible**: the diseases share an Orphanet group, a gene or a drug;
+  - **novel**: none of these, so the edge is a hypothesis to review.
 
-## Data
+  By default only mutual edges are drawn, where both diseases list each other.
+- **Filters**: support level, mutual only, minimum percentile against random
+  pairs, the modality that contributes most (for example drugs, for repurposing
+  leads), and Orphanet category.
+- **Disease panel**: which of the 12 modalities are annotated, and the most
+  similar diseases.
+- **Pair panel**: the percentile, score and support level, any curated
+  relations, the shared features behind the top modalities (phenotypes, genes,
+  pathways, drugs and so on), and each modality's contribution to the score.
+- **Table view**, **CSV export**, **neighbourhood mode**, and shareable links:
+  the URL hash records the selection.
 
-`scripts/build_literature_graph.py` merges two sources:
+## Adding a disease
 
-| Source | Files |
-|---|---|
-| Literature review | `literature_review/literature_disease_pairs.csv`, `paper_dimension_scores.csv` |
-| Pair-first run | `literature_review/additional_runs/*_pairfirst.csv` |
-
-Diseases are merged by ORPHA ID. Rows with a missing or ambiguous ORPHA mapping
-become name-keyed nodes, and the disease panel flags them. Edge aggregates use
-the same scoring as `literature_review/build_edge_ranking.py`. Dimension
-consensus is the paper-weighted mean used by `models/linear_regression_7_dimension.py`.
-Aggregates are precomputed for each evidence-source selection, so the frontend
-never re-implements the scoring.
-
-## Feature-based similarity
-
-Similarity between feature profiles is computed in the browser by
-`src/lib/similarity.ts`, a port of the metric in `evaluation.py`. It uses the
-same feature families, weights, Jaccard overlap, prevalence decay and
-renormalisation over the features both diseases have. Check that the two still
-agree after changing either one:
-
-```sh
-npm run check:similarity   # compares both on 1,830 random pairs
-```
-
-Feature profiles for catalogue diseases come from the backend's feature tables:
-
-```sh
-python download_databases.py && python generate_features.py   # from the repository root
-cd frontend && npm run features   # writes public/data/disease_features.json (needs pyarrow)
-```
-
-Until that file exists, the header shows "Feature profiles: not generated".
-Added diseases can then only be compared with each other. Once it exists:
-- added diseases are compared with every Orphanet disease;
-- each disease panel lists its feature-based nearest neighbours;
-- each pair panel shows the feature breakdown next to the literature evidence;
-- form fields suggest HPO terms, body systems, categories and drugs by name.
-
-### Uploading diseases as JSON
-
-Upload one object, a list, or `{"diseases": [...]}`. Field names match
-`diseases.parquet`, so backend rows can be uploaded as they are. Only `name` is
-required:
+**Add a disease** takes a form or a JSON upload. The JSON is v2's own input
+format, the same one `python v2/place_disease.py --json` accepts:
 
 ```json
 {
-  "name": "Example disease",
-  "orpha_id": "ORPHA:558",
-  "status": "rare",
-  "hpo_ids": ["HP:0001166"],
-  "gene_symbols": ["FBN1"],
-  "inheritance": ["Autosomal dominant"],
-  "onset": ["Childhood"],
-  "category_ids": [],
-  "body_system_ids": [],
-  "approved_drug_ids": [],
-  "prevalence_class": "1-5 / 10 000"
+  "name": "...", "description": "free text", "synonyms": ["..."],
+  "phenotypes": {"HP:0001250": 1.0, "HP:0001263": 0.8},
+  "genes": ["CDKL5"], "drugs": ["CHEMBL1234 or a drug name"],
+  "inheritance": ["X-linked dominant"], "onset": ["Infancy"],
+  "prevalence": 1e-6, "ontology_parents": ["ORPHA:102369"]
 }
 ```
 
-`prevalence_estimated_per_person` (a number between 0 and 1) can be given
-instead of `prevalence_class`. Invalid values are dropped and unknown fields
-ignored, and the upload preview lists both.
+Only `name` is required. Uploads may also include v2's optional `pathways`
+(Reactome IDs). The form autocompletes HPO terms, genes, drugs and
+classification parents from v2's vocabulary, and asks how often each phenotype
+occurs, which v2 uses as the phenotype weight. "Preview matches" shows the
+closest diseases before saving.
 
-## Connecting the backend
+The placement service runs v2's `record_from_user_input` and `place`. v2
+refits its fusion to the modalities the new disease has, so the scores match
+`place_disease.py`. Warnings about ignored values are shown on the disease.
+Each added disease is also matched against the user's other added diseases.
 
-All data access goes through `src/data/source.ts`. A backend only needs to
-serve the same two documents: the literature graph and the feature catalogue.
-Comparisons happen in the browser, so researchers can add diseases without
-sending them to a server.
+Added diseases are kept in the browser's local storage and are never written
+to the v2 graph files. **Export JSON** saves them, and **Download v2 JSON**
+on a disease gives a file for `place_disease.py --json --add` to add it to the
+shared graph.
+
+## API
+
+`api/server.py` uses only the standard library, plus v2's own dependencies
+for the model.
+
+| Endpoint | |
+|---|---|
+| `GET /api/health` | `{"status": "loading" \| "ready" \| "error", "diseases": n}` |
+| `POST /api/place` | `{"disease": {...}, "id": "USER:...", "top": 20, "others": [{"id", "disease"}]}` → neighbours with v2's explanation, support, warnings and refitted weights |
+| `GET /api/suggest?field=phenotypes\|genes\|drugs\|ontology&q=...` | vocabulary matches for the form |
+
+```sh
+npm run test:api   # request handling, with a stub in place of the model
+```

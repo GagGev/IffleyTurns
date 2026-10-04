@@ -1,11 +1,10 @@
-import type { FeatureCatalogue } from '../data/features'
-import { plural } from '../lib/format'
-import { featureCount } from '../lib/similarity'
-import { toProfile, type UserDisease } from '../lib/userDiseases'
+import type { ApiHealth } from '../data/types'
+import type { UserDisease } from '../lib/userDiseases'
 
 interface Props {
   diseases: UserDisease[]
-  catalogue: FeatureCatalogue | null | undefined
+  api: ApiHealth
+  placing: Set<string>
   linksPerDisease: number
   selectedId: string | null
   onLinksChange: (n: number) => void
@@ -13,11 +12,13 @@ interface Props {
   onSelect: (id: string) => void
   onEdit: (disease: UserDisease) => void
   onRemove: (disease: UserDisease) => void
+  onPlaceAll: () => void
   onExport: () => void
 }
 
 export function UserDiseasesPanel(props: Props) {
-  const { diseases, catalogue } = props
+  const { diseases, api, placing } = props
+  const unplaced = diseases.filter((d) => !d.placement).length
   return (
     <div className="user-panel">
       <div className="filters-header">
@@ -42,8 +43,14 @@ export function UserDiseasesPanel(props: Props) {
                     ◆
                   </span>
                   <span className="user-name-text">
-                    {d.name}
-                    <span className="muted small">{plural(featureCount(toProfile(d, catalogue ?? null)), 'feature')}</span>
+                    {d.input.name}
+                    <span className="muted small">
+                      {placing.has(d.id)
+                        ? 'Placing…'
+                        : d.placement
+                          ? 'Placed'
+                          : 'Not placed yet'}
+                    </span>
                   </span>
                 </button>
                 <span className="user-actions">
@@ -58,7 +65,7 @@ export function UserDiseasesPanel(props: Props) {
             ))}
           </ul>
           <label className="field">
-            <span>Similarity links per added disease</span>
+            <span>Links shown per added disease</span>
             <select value={props.linksPerDisease} onChange={(e) => props.onLinksChange(Number(e.target.value))}>
               {[3, 5, 10, 20].map((n) => (
                 <option key={n} value={n}>
@@ -67,17 +74,24 @@ export function UserDiseasesPanel(props: Props) {
               ))}
             </select>
           </label>
+          {api.status === 'ready' && (
+            <button type="button" className="link-button small" onClick={props.onPlaceAll} disabled={placing.size > 0}>
+              {unplaced > 0 ? `Place ${unplaced} unplaced` : 'Place all again'} (also matches them with each other)
+            </button>
+          )}
         </>
       )}
 
-      {catalogue === null && (
+      {api.status !== 'ready' && (
         <p className="callout small">
-          Feature profiles for catalogue diseases have not been generated, so added diseases can only be compared with
-          each other for now. Run <code>generate_features.py</code>, then{' '}
-          <code>npm run features</code>, to compare against every Orphanet disease.
+          {api.status === 'loading'
+            ? 'The placement service is loading the v2 model…'
+            : api.status === 'error'
+              ? `The placement service could not load the v2 model: ${api.error}`
+              : 'To place new diseases, start the placement service: python frontend/api/server.py'}
         </p>
       )}
-      <p className="muted small">Saved in this browser only. Use Export JSON to keep or share them.</p>
+      <p className="muted small">Saved in this browser only. Export JSON to keep or share them.</p>
     </div>
   )
 }

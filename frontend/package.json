@@ -4,12 +4,10 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "data": "python3 scripts/build_literature_graph.py",
-    "features": "python3 scripts/export_disease_features.py",
-    "check:similarity": "python3 scripts/check_similarity_parity.py",
-    "predev": "npm run data",
+    "data": "python3 scripts/build_graph_data.py",
+    "api": "python3 api/server.py",
+    "test:api": "python3 -m unittest api/test_server.py",
     "dev": "vite",
-    "prebuild": "npm run data",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
     "preview": "vite preview"

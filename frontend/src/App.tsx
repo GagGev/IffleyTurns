@@ -1,38 +1,37 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { AddDiseaseDialog, type DialogMode } from './components/AddDiseaseDialog'
-import { DetailPanel, type FeatureContext } from './components/DetailPanel'
+import { AddDiseaseDialog, type DialogMode, type SavedDisease } from './components/AddDiseaseDialog'
+import { DetailPanel, type UserContext } from './components/DetailPanel'
 import { EdgeTable } from './components/EdgeTable'
 import { FilterPanel } from './components/FilterPanel'
 import { GraphView } from './components/GraphView'
 import { Legend } from './components/Legend'
 import { SearchBox } from './components/SearchBox'
 import { UserDiseasesPanel } from './components/UserDiseasesPanel'
-import { DEFAULT_WEIGHTS, type FeatureCatalogue } from './data/features'
-import { dataSource } from './data/source'
-import type { ComputedEdge, Disease, Edge, LiteratureGraph } from './data/types'
+import { apiHealth, detailFromPlacement, GraphNotBuiltError, loadGraph, placeDisease } from './data/source'
+import type { ApiHealth, EdgeDetail, GraphData, GraphEdge, GraphNode } from './data/types'
 import { exportCsv } from './lib/export'
-import { measureLabel, plural } from './lib/format'
-import { DEFAULT_FILTERS, type Filters, filterEdges, neighbourhood, pairId } from './lib/graph'
+import { download, plural } from './lib/format'
+import { DEFAULT_FILTERS, type Filters, filterEdges, findEdge, neighbourhood } from './lib/graph'
 import { useHashSelection } from './lib/selection'
-import { rankNeighbours } from './lib/similarity'
 import { useCanvasColours } from './lib/theme'
-import { exportJson, toProfile, type UserDisease, useUserDiseases } from './lib/userDiseases'
+import { exportJson, type UserDisease, useUserDiseases } from './lib/userDiseases'
 
 type View = 'graph' | 'table'
 type Scope = 'all' | 'neighbourhood'
 
 export default function App() {
-  const [graph, setGraph] = useState<LiteratureGraph | null>(null)
-  const [loadError, setLoadError] = useState<string | null>(null)
+  const [graph, setGraph] = useState<GraphData | null>(null)
+  const [loadError, setLoadError] = useState<'not-built' | string | null>(null)
 
   useEffect(() => {
-    dataSource.loadLiteratureGraph().then(setGraph, (e: Error) => setLoadError(e.message))
+    loadGraph().then(setGraph, (e: Error) => setLoadError(e instanceof GraphNotBuiltError ? 'not-built' : e.message))
   }, [])
 
+  if (loadError === 'not-built') return <SetupNeeded />
   if (loadError) {
     return (
       <div className="app-message">
-        <h1>Could not load data</h1>
+        <h1>Could not load the graph</h1>
         <p>{loadError}</p>
       </div>
     )
@@ -40,201 +39,268 @@ export default function App() {
   if (!graph) {
     return (
       <div className="app-message" aria-live="polite">
-        Loading literature graph…
+        Loading the similarity graph…
       </div>
     )
   }
   return <Explorer graph={graph} />
 }
 
-const userNode = (d: UserDisease): Disease => ({
-  id: d.id,
-  name: d.name,
-  aliases: [],
-  orphaId: d.orpha_id ?? null,
-  candidateOrphaIds: [],
-  status: d.status,
-  degree: 0,
-  origin: 'user',
-})
-
-const catalogueNode = (id: string, name: string): Disease => ({
-  id,
-  name,
-  aliases: [],
-  orphaId: id,
-  candidateOrphaIds: [],
-  status: 'unknown',
-  degree: 0,
-  origin: 'catalogue',
-})
-
-function download(name: string, text: string, type: string) {
-  const url = URL.createObjectURL(new Blob([text], { type }))
-  const a = document.createElement('a')
-  a.href = url
-  a.download = name
-  a.click()
-  URL.revokeObjectURL(url)
+function SetupNeeded() {
+  return (
+    <div className="app-message">
+      <h1>The v2 graph has not been built yet</h1>
+      <p>The explorer shows the graph produced by the v2 model. From the repository root:</p>
+      <pre className="setup">
+        {`python download_databases.py
+python generate_features.py
+python v2/run_evaluation.py
+python v2/build_graph.py
+python3 frontend/scripts/build_graph_data.py`}
+      </pre>
+      <p>
+        Then reload this page. To place new diseases, also run <code>python frontend/api/server.py</code>.
+      </p>
+    </div>
+  )
 }
 
-function Explorer({ graph }: { graph: LiteratureGraph }) {
+/** Poll the placement service until it is ready, then stop. */
+function useApiHealth(): ApiHealth {
+  const [health, setHealth] = useState<ApiHealth>({ status: 'offline' })
+  useEffect(() => {
+    let cancelled = false
+    let timer: ReturnType<typeof setTimeout>
+    const check = async () => {
+      const h = await apiHealth()
+      if (cancelled) return
+      setHealth(h)
+      if (h.status !== 'ready') timer = setTimeout(check, h.status === 'loading' ? 2000 : 8000)
+    }
+    void check()
+    return () => {
+      cancelled = true
+      clearTimeout(timer)
+    }
+  }, [])
+  return health
+}
+
+function Explorer({ graph }: { graph: GraphData }) {
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS)
   const [selection, select] = useHashSelection()
   const [view, setView] = useState<View>('graph')
   const [scope, setScope] = useState<Scope>('all')
   const [depth, setDepth] = useState(1)
   const colours = useCanvasColours()
+  const api = useApiHealth()
 
-  // --- Feature profiles and the user's own diseases ---------------------------
-  const [catalogue, setCatalogue] = useState<FeatureCatalogue | null | undefined>(undefined)
-  useEffect(() => {
-    dataSource.loadFeatureCatalogue().then(setCatalogue, () => setCatalogue(null))
-  }, [])
+  // --- Added diseases and their placements ------------------------------------------
   const user = useUserDiseases()
-  const [linksPerDisease, setLinksPerDisease] = useState(5)
+  const [placing, setPlacing] = useState<Set<string>>(new Set())
+  const [placeErrors, setPlaceErrors] = useState<Map<string, string>>(new Map())
+  const [linksPerDisease, setLinksPerDisease] = useState(10)
   const [dialog, setDialog] = useState<DialogMode>(null)
-  const weights = catalogue?.weights ?? DEFAULT_WEIGHTS
 
-  const userById = useMemo(() => new Map(user.diseases.map((d) => [d.id, d])), [user.diseases])
-  const userProfiles = useMemo(() => user.diseases.map((d) => toProfile(d, catalogue ?? null)), [user.diseases, catalogue])
-  const allProfiles = useMemo(() => [...(catalogue?.profiles ?? []), ...userProfiles], [catalogue, userProfiles])
-
-  const literatureDiseases = useMemo(() => new Map<string, Disease>(graph.nodes.map((n) => [n.id, n])), [graph])
-  const profileFor = useCallback(
-    (id: string) => {
-      const own = userProfiles.find((p) => p.id === id)
-      if (own) return own
-      const orpha = literatureDiseases.get(id)?.orphaId ?? id
-      return catalogue?.byId.get(orpha)
+  const place = useCallback(
+    async (disease: UserDisease, all: UserDisease[]) => {
+      setPlacing((s) => new Set(s).add(disease.id))
+      setPlaceErrors((m) => {
+        const next = new Map(m)
+        next.delete(disease.id)
+        return next
+      })
+      try {
+        const others = all.filter((d) => d.id !== disease.id).map((d) => ({ id: d.id, disease: d.input }))
+        const placement = await placeDisease(disease.id, disease.input, others)
+        user.update(disease.id, { placement })
+      } catch (e) {
+        setPlaceErrors((m) => new Map(m).set(disease.id, (e as Error).message))
+      } finally {
+        setPlacing((s) => {
+          const next = new Set(s)
+          next.delete(disease.id)
+          return next
+        })
+      }
     },
-    [userProfiles, literatureDiseases, catalogue],
+    [user],
   )
 
-  /** Each added disease links to its most similar diseases by features. */
-  const computedEdges = useMemo(() => {
-    const out = new Map<string, ComputedEdge>()
-    for (const profile of userProfiles) {
-      for (const n of rankNeighbours(profile, allProfiles, linksPerDisease, weights)) {
-        const id = pairId(profile.id, n.profile.id)
-        if (!out.has(id)) out.set(id, { id, source: profile.id, target: n.profile.id, similarity: n.similarity })
+  const addDiseases = async (items: SavedDisease[]) => {
+    const created = user.add(items)
+    if (created.length === 1) select({ kind: 'disease', id: created[0].id })
+    if (api.status !== 'ready') return
+    const all = [...user.diseases, ...created]
+    for (const d of created) await place(d, all)
+  }
+
+  const updateDisease = async (id: string, item: SavedDisease) => {
+    const existing = user.diseases.find((d) => d.id === id)
+    if (!existing) return
+    const changed: UserDisease = { ...existing, input: item.input, labels: item.labels, placement: undefined }
+    user.update(id, { input: item.input, labels: item.labels, placement: undefined })
+    if (api.status === 'ready') await place(changed, user.diseases.map((d) => (d.id === id ? changed : d)))
+  }
+
+  const placeAll = async () => {
+    for (const d of user.diseases) await place(d, user.diseases)
+  }
+
+  const removeDisease = (d: UserDisease) => {
+    if (!window.confirm(`Remove “${d.input.name}” from your diseases?`)) return
+    user.remove(d.id)
+    if (selection && (selection.kind === 'disease' ? selection.id === d.id : selection.a === d.id || selection.b === d.id)) {
+      select(null)
+    }
+  }
+
+  // --- Graph plus added diseases ----------------------------------------------------
+  const graphNodes = useMemo(() => new Map(graph.nodes.map((n) => [n.id, n])), [graph])
+  const { userNodes, userEdges, userDetails } = useMemo(() => {
+    const userIds = new Set(user.diseases.map((d) => d.id))
+    const nodes: GraphNode[] = []
+    const edges = new Map<string, GraphEdge>()
+    const details = new Map<string, EdgeDetail>()
+    for (const d of user.diseases) {
+      for (const n of d.placement?.neighbours.slice(0, linksPerDisease) ?? []) {
+        if (!graphNodes.has(n.id) && !userIds.has(n.id)) continue
+        const key = [d.id, n.id].sort().join('|')
+        const existing = edges.get(key)
+        if (existing && existing.score >= n.score) continue
+        const id = `${d.id}|${n.id}`
+        const main = n.explanation[0]?.modality ?? null
+        edges.set(key, {
+          id,
+          source: d.id,
+          target: n.id,
+          score: n.score,
+          percentile: n.percentile,
+          support: n.support,
+          mutual: false,
+          mainModality: main,
+          origin: 'user',
+        })
+        details.set(id, detailFromPlacement(n, graph.modalities))
       }
     }
-    return [...out.values()]
-  }, [userProfiles, allProfiles, linksPerDisease, weights])
+    const degree = new Map<string, number>()
+    for (const e of edges.values()) {
+      degree.set(e.source, (degree.get(e.source) ?? 0) + 1)
+      degree.set(e.target, (degree.get(e.target) ?? 0) + 1)
+    }
+    for (const d of user.diseases) {
+      nodes.push({
+        id: d.id,
+        name: d.input.name,
+        category: 'Added by you',
+        disorderType: '',
+        modalities: d.placement?.present ?? [],
+        degree: degree.get(d.id) ?? 0,
+        origin: 'user',
+      })
+    }
+    return { userNodes: nodes, userEdges: [...edges.values()], userDetails: details }
+  }, [user.diseases, linksPerDisease, graphNodes, graph.modalities])
 
+  const nodes = useMemo(() => {
+    const map = new Map(graphNodes)
+    for (const n of userNodes) map.set(n.id, n)
+    return map
+  }, [graphNodes, userNodes])
+  const allEdges = useMemo(() => [...graph.edges, ...userEdges], [graph, userEdges])
+  const edgesById = useMemo(() => new Map(allEdges.map((e) => [e.id, e])), [allEdges])
+  const graphEdgesByNode = useMemo(() => {
+    const map = new Map<string, GraphEdge[]>()
+    for (const e of graph.edges) {
+      ;(map.get(e.source) ?? map.set(e.source, []).get(e.source)!).push(e)
+      ;(map.get(e.target) ?? map.set(e.target, []).get(e.target)!).push(e)
+    }
+    return map
+  }, [graph])
+  const edgesByNode = useMemo(() => {
+    const map = new Map(graphEdgesByNode)
+    for (const e of userEdges) {
+      for (const id of [e.source, e.target]) map.set(id, [...(map.get(id) ?? []), e])
+    }
+    return map
+  }, [graphEdgesByNode, userEdges])
+  const searchable = useMemo(() => [...graph.nodes, ...userNodes], [graph, userNodes])
+
+  // --- Filtering, scope and highlighting --------------------------------------------
+  const visible = useMemo(() => filterEdges(allEdges, filters, nodes), [allEdges, filters, nodes])
+  const visibleIds = useMemo(() => new Set(visible.map((e) => e.id)), [visible])
   const centres = useMemo(
     () => (!selection ? [] : selection.kind === 'disease' ? [selection.id] : [selection.a, selection.b]),
     [selection],
   )
-
-  // Literature diseases, plus added diseases and any catalogue disease that is
-  // linked or selected.
-  const diseases = useMemo(() => {
-    const map = new Map(literatureDiseases)
-    for (const d of user.diseases) map.set(d.id, userNode(d))
-    for (const id of [...computedEdges.flatMap((e) => [e.source, e.target]), ...centres]) {
-      const profile = !map.has(id) ? catalogue?.byId.get(id) : undefined
-      if (profile) map.set(id, catalogueNode(id, profile.name))
-    }
-    return map
-  }, [literatureDiseases, user.diseases, computedEdges, centres, catalogue])
-
-  const searchable = useMemo(() => {
-    const list = [...graph.nodes, ...user.diseases.map(userNode)]
-    for (const p of catalogue?.profiles ?? []) if (!literatureDiseases.has(p.id)) list.push(catalogueNode(p.id, p.name))
-    return list
-  }, [graph, user.diseases, catalogue, literatureDiseases])
-
-  // --- Literature edges --------------------------------------------------------
-  const edgesById = useMemo(() => new Map<string, Edge>(graph.edges.map((e) => [e.id, e])), [graph])
-  const edgesByDisease = useMemo(() => {
-    const map = new Map<string, Edge[]>()
-    for (const e of graph.edges) {
-      map.set(e.source, [...(map.get(e.source) ?? []), e])
-      map.set(e.target, [...(map.get(e.target) ?? []), e])
-    }
-    return map
-  }, [graph])
-
-  const visible = useMemo(() => filterEdges(graph, filters, literatureDiseases), [graph, filters, literatureDiseases])
-  const visibleIds = useMemo(() => new Set(visible.map((v) => v.edge.id)), [visible])
   const focused = scope === 'neighbourhood' && centres.length > 0
+  const scoped = useMemo(() => {
+    if (!focused) return visible
+    const keep = neighbourhood(visible, centres, depth)
+    return visible.filter((e) => keep.has(e.source) && keep.has(e.target))
+  }, [focused, visible, centres, depth])
 
-  const { scoped, scopedComputed } = useMemo(() => {
-    if (!focused) return { scoped: visible, scopedComputed: computedEdges }
-    const keep = neighbourhood([...visible.map((v) => v.edge), ...computedEdges], centres, depth)
-    const inside = (e: { source: string; target: string }) => keep.has(e.source) && keep.has(e.target)
-    return { scoped: visible.filter((v) => inside(v.edge)), scopedComputed: computedEdges.filter(inside) }
-  }, [focused, visible, computedEdges, centres, depth])
-
+  const selectedEdgeId = selection?.kind === 'pair' ? (findEdge(edgesById, selection.a, selection.b)?.id ?? null) : null
   const highlight = useMemo(() => {
     if (!selection) return { nodes: null, edges: null }
-    if (selection.kind === 'pair') {
-      return { nodes: new Set(centres), edges: new Set([pairId(selection.a, selection.b)]) }
-    }
-    const nodes = new Set(centres)
-    const edges = new Set<string>()
-    for (const e of [...scoped.map((v) => v.edge), ...scopedComputed]) {
-      if (e.source === selection.id || e.target === selection.id) {
-        edges.add(e.id)
-        nodes.add(e.source)
-        nodes.add(e.target)
+    if (selection.kind === 'pair') return { nodes: new Set(centres), edges: new Set(selectedEdgeId ? [selectedEdgeId] : []) }
+    const n = new Set(centres)
+    const e = new Set<string>()
+    for (const edge of scoped) {
+      if (edge.source === selection.id || edge.target === selection.id) {
+        e.add(edge.id)
+        n.add(edge.source)
+        n.add(edge.target)
       }
     }
-    return { nodes, edges }
-  }, [selection, centres, scoped, scopedComputed])
+    return { nodes: n, edges: e }
+  }, [selection, centres, scoped, selectedEdgeId])
 
   const diseaseCount = useMemo(() => {
     const ids = new Set<string>()
-    for (const e of [...scoped.map((v) => v.edge), ...scopedComputed]) {
+    for (const e of scoped) {
       ids.add(e.source)
       ids.add(e.target)
     }
     return ids.size
-  }, [scoped, scopedComputed])
+  }, [scoped])
 
   const fitKey = focused ? `n-${depth}-${centres.join(',')}` : 'all'
-  const label = measureLabel(filters.measure)
   const selectDisease = (id: string) => select({ kind: 'disease', id })
   const selectPair = (a: string, b: string) => select({ kind: 'pair', a, b })
 
-  const removeUserDisease = (d: UserDisease) => {
-    if (!window.confirm(`Remove “${d.name}” from your diseases?`)) return
-    user.remove(d.id)
-    if (centres.includes(d.id)) select(null)
+  const userContext: UserContext = {
+    diseases: new Map(user.diseases.map((d) => [d.id, d])),
+    api,
+    placing,
+    errors: placeErrors,
+    edgeDetails: userDetails,
+    onEdit: (disease) => setDialog({ kind: 'edit', disease }),
+    onRemove: removeDisease,
+    onPlace: (id) => {
+      const d = user.diseases.find((x) => x.id === id)
+      if (d) void place(d, user.diseases)
+    },
   }
 
-  const features: FeatureContext = {
-    catalogue,
-    profiles: allProfiles,
-    profileFor,
-    weights,
-    userDiseases: userById,
-    onEditUser: (disease) => setDialog({ kind: 'edit', disease }),
-    onRemoveUser: removeUserDisease,
-  }
-
-  const profileStatus =
-    catalogue === undefined
-      ? 'loading'
-      : catalogue === null
-        ? 'not generated'
-        : `${catalogue.profiles.length.toLocaleString()} diseases`
+  const apiLabel = { ready: 'ready', loading: 'loading model', error: 'error', offline: 'not running' }[api.status]
 
   return (
     <div className="app">
       <header className="app-header">
         <div>
-          <h1>Rare Disease Relationship Explorer</h1>
+          <h1>Rare Disease Similarity Explorer</h1>
           <p className="muted small">
-            {plural(graph.stats.nodes, 'disease')} · {plural(graph.stats.edges, 'literature-backed pair')} ·{' '}
-            {plural(graph.stats.paperRows, 'paper row')}
+            v2 model · {plural(graph.stats.nodes, 'disease')} · {plural(graph.stats.edges, 'edge')}
           </p>
         </div>
-        <span className={`backend-status ${catalogue ? 'is-on' : ''}`} title="Feature profiles used for computed similarity">
+        <span
+          className={`backend-status ${api.status === 'ready' ? 'is-on' : ''}`}
+          title={api.error ?? 'Local service that places new diseases with the v2 model'}
+        >
           <span className="dot" aria-hidden />
-          Feature profiles: {profileStatus}
+          Placement service: {apiLabel}
         </span>
       </header>
 
@@ -242,14 +308,16 @@ function Explorer({ graph }: { graph: LiteratureGraph }) {
         <SearchBox diseases={searchable} onSelect={selectDisease} />
         <UserDiseasesPanel
           diseases={user.diseases}
-          catalogue={catalogue}
+          api={api}
+          placing={placing}
           linksPerDisease={linksPerDisease}
           selectedId={selection?.kind === 'disease' ? selection.id : null}
           onLinksChange={setLinksPerDisease}
           onAdd={() => setDialog({ kind: 'add' })}
           onSelect={selectDisease}
           onEdit={(disease) => setDialog({ kind: 'edit', disease })}
-          onRemove={removeUserDisease}
+          onRemove={removeDisease}
+          onPlaceAll={() => void placeAll()}
           onExport={() => download('my-diseases.json', exportJson(user.diseases), 'application/json')}
         />
         <FilterPanel graph={graph} filters={filters} onChange={setFilters} />
@@ -290,15 +358,9 @@ function Explorer({ graph }: { graph: LiteratureGraph }) {
             </label>
           )}
           <span className="toolbar-count muted small" aria-live="polite">
-            {plural(scoped.length, 'pair')}
-            {scopedComputed.length > 0 && ` + ${scopedComputed.length} computed`} · {plural(diseaseCount, 'disease')}
+            {plural(scoped.length, 'edge')} · {plural(diseaseCount, 'disease')}
           </span>
-          <button
-            type="button"
-            className="button"
-            disabled={scoped.length === 0}
-            onClick={() => exportCsv(scoped, diseases, filters.measure)}
-          >
+          <button type="button" className="button" disabled={scoped.length === 0} onClick={() => exportCsv(scoped, nodes)}>
             Export CSV
           </button>
         </div>
@@ -306,14 +368,13 @@ function Explorer({ graph }: { graph: LiteratureGraph }) {
         <div className="main-content">
           {view === 'graph' ? (
             <GraphView
-              diseases={diseases}
+              nodes={nodes}
               edges={scoped}
-              computedEdges={scopedComputed}
               pinnedIds={centres}
               selection={selection}
               highlightNodes={highlight.nodes}
               highlightEdges={highlight.edges}
-              measureLabel={label}
+              fixedLayout={graph.hasLayout}
               fitKey={fitKey}
               colours={colours}
               onSelectDisease={selectDisease}
@@ -321,17 +382,9 @@ function Explorer({ graph }: { graph: LiteratureGraph }) {
               onClear={() => select(null)}
             />
           ) : (
-            <EdgeTable
-              edges={scoped}
-              diseases={diseases}
-              selection={selection}
-              measureLabel={label}
-              onSelectPair={selectPair}
-            />
+            <EdgeTable edges={scoped} nodes={nodes} selectedEdgeId={selectedEdgeId} onSelectPair={selectPair} />
           )}
-          {scoped.length === 0 && scopedComputed.length === 0 && view === 'graph' && (
-            <p className="empty-overlay">No pairs match the current filters.</p>
-          )}
+          {scoped.length === 0 && view === 'graph' && <p className="empty-overlay">No edges match the current filters.</p>}
         </div>
       </main>
 
@@ -343,14 +396,13 @@ function Explorer({ graph }: { graph: LiteratureGraph }) {
         )}
         <DetailPanel
           graph={graph}
-          diseases={diseases}
+          nodes={nodes}
           edgesById={edgesById}
-          edgesByDisease={edgesByDisease}
+          edgesByNode={edgesByNode}
           visible={visible}
           visibleIds={visibleIds}
-          filters={filters}
           selection={selection}
-          features={features}
+          user={userContext}
           onSelectDisease={selectDisease}
           onSelectPair={selectPair}
         />
@@ -358,14 +410,10 @@ function Explorer({ graph }: { graph: LiteratureGraph }) {
 
       <AddDiseaseDialog
         mode={dialog}
-        catalogue={catalogue ?? null}
-        candidates={allProfiles}
-        weights={weights}
-        onAdd={(items) => {
-          const created = user.add(items)
-          if (created.length === 1) selectDisease(created[0].id)
-        }}
-        onUpdate={user.update}
+        api={api}
+        others={user.diseases}
+        onAdd={(items) => void addDiseases(items)}
+        onUpdate={(id, item) => void updateDisease(id, item)}
         onClose={() => setDialog(null)}
       />
     </div>
