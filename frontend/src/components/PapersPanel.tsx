@@ -92,11 +92,16 @@ export function PapersPanel(props: Props) {
       >
         <input ref={file} type="file" hidden accept={ACCEPTED_FILES} onChange={(e) => take(e.target.files)} />
         <button type="button" className="button full" disabled={props.busy !== null} onClick={() => file.current?.click()}>
-          {props.busy ? `${props.busy}…` : 'Upload a paper'}
+          {props.busy ? 'Working…' : 'Upload a paper'}
         </button>
-        <p className="muted small">
-          PDF, text, XML, or a v2_5 result (JSON). Extraction is a <strong>mock</strong> until the v2_5 pipeline is connected.
-        </p>
+        {props.busy ? (
+          <p className="small" role="status">{props.busy}</p>
+        ) : (
+          <p className="muted small">
+            PDF, text, XML, or a v2_5 result (JSON). MedGemma reads the paper on this computer and v2 places the disease
+            it describes; this takes a few minutes.
+          </p>
+        )}
       </div>
       {props.error && <p className="callout small" role="alert">{props.error}</p>}
 
@@ -111,7 +116,10 @@ export function PapersPanel(props: Props) {
               >
                 <span className="paper-title">{d.paper!.title}</span>
                 <span className="muted small">
-                  {d.paper!.mock && <span className="badge-mock">mock</span>} {plural(d.paper!.claims.length, 'claim')}
+                  {d.paper!.mock && <span className="badge-mock">mock</span>}{' '}
+                  {d.paper!.claims.length > 0
+                    ? plural(d.paper!.claims.length, 'claim')
+                    : plural(d.paper!.result?.accepted_evidence.length ?? 0, 'feature')}
                 </span>
               </button>
               <button type="button" className="link-button small" onClick={() => props.onRemoveUpload(d)}>

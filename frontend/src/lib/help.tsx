@@ -101,7 +101,11 @@ export const HELP: Record<HelpTopic, { title: string; body: ReactNode }> = {
           and disease B share a phenotype", is drawn on the graph and checked:
         </p>
         {verdictList}
-        <p>Claim extraction is a mock until the paper pipeline is connected.</p>
+        <p>
+          For an uploaded paper, MedGemma (running on this computer) extracts the profile of the disease it describes, each
+          feature backed by a quote from the paper, and the v2 model places that disease in the graph. The profile is then
+          checked against its closest diseases.
+        </p>
       </>
     ),
   },

@@ -15,7 +15,7 @@ INTRO = """Disease pairs that published papers describe as related or similar.
 Nothing about them was used to train any model, except where a pair is also a curated relation (reported separately).
 For each pair, the partner's rank among the 7,493 catalogue diseases, in both directions."""
 TITLE = "Paper-stated disease pairs"
-MODEL_ORDER = ["v1", "v1_drugfree", "v2", "v2_drugfree", "v3_static", "v3_forecast", "v4_embedding"]
+MODEL_ORDER = ["v1", "v1_drugfree", "v2", "v2_drugfree", "v3_static", "v3_forecast"]
 
 
 def _auc(score, label):
@@ -26,13 +26,12 @@ def _auc(score, label):
     return float((r[label].sum() - n1 * (n1 + 1) / 2) / (n1 * n0))
 
 
-def run(tasks: dict, model_ids=None) -> tuple[dict, str]:
+def run(tasks: dict) -> tuple[dict, str]:
     pairs = tasks["paper_pairs"]
     ids = tasks["catalogue"]; col = {d: i for i, d in enumerate(ids)}; n = len(ids)
     queries = sorted({p[k] for p in pairs for k in ("a", "b")}); row = {q: i for i, q in enumerate(queries)}
     folder = core.DATA / "scores" / "paper_pairs"
-    selected = set(MODEL_ORDER if model_ids is None else model_ids)
-    models = [m for m in MODEL_ORDER if m in selected and (folder / f"{m}.npy").is_file()]
+    models = [m for m in MODEL_ORDER if (folder / f"{m}.npy").is_file()]
     ranks, sym = {}, {}
     for m in models:
         M = np.load(folder / f"{m}.npy")
@@ -90,14 +89,71 @@ def run(tasks: dict, model_ids=None) -> tuple[dict, str]:
                 + core.md_table(["Model", "Spearman with stated similarity [95% CI]", "AUROC similar vs related-but-distinct [95% CI]"], rows)
                 + f"\n\n{int(similar.sum())} pairs are “similar”, {int((~similar).sum())} “related but distinct”.\n")
 
-    comparisons = [
-        ("v2", "v1"),
-        ("v3_static", "v2_drugfree"),
-        ("v3_static", "v2"),
-        ("v3_forecast", "v3_static"),
-        ("v4_embedding", "v2_drugfree"),
-        ("v4_embedding", "v2"),
-    ]
+    # Disease level: share of diseases with at least one paper-stated partner within their top k.
+    def best_ranks(selector):
+        best = {m: {} for m in models}
+        for k in np.where(selector)[0]:
+            for d, key in enumerate(("a", "b")):
+                for m in models:
+                    disease = pairs[k][key]
+                    best[m][disease] = min(best[m].get(disease, np.inf), ranks[m][k, d])
+        return best
+
+    def disease_hits(selector):
+        best = {m: {} for m in models}
+        for k in np.where(selector)[0]:
+            for d, key in enumerate(("a", "b")):
+                for m in models:
+                    disease = pairs[k][key]
+                    best[m][disease] = min(best[m].get(disease, np.inf), ranks[m][k, d])
+        return {m: {f"top{t}": float(np.mean([r <= t for r in best[m].values()])) for t in (1, 5, 10, 20)} | {"n_diseases": len(best[m])}
+                for m in models}
+
+    rows, disease_level = [], {}
+    for key, label in (("all", "all pairs"), ("no_curated_relation", "pairs with no curated relation")):
+        disease_level[key] = disease_hits(strata[key])
+        for m in models:
+            e = disease_level[key][m]
+            rows.append([label, core.MODELS[m][1], str(e["n_diseases"]), *(f"{100 * e[f'top{t}']:.1f}%" for t in (1, 5, 10, 20))])
+    metrics["disease_level_hits"] = disease_level
+    text.append("### Diseases with a paper-stated partner in their top k\n\n"
+                "Each disease counts once; it is a hit when at least one of the diseases papers link it to ranks within the top k of the "
+                "7,493-disease catalogue.\n\n"
+                + core.md_table(["Pairs", "Model", "Diseases", "top 1", "top 5", "top 10", "top 20"], rows) + "\n")
+
+    # Where does the graph fail? Disease-level top-10 hit rate by how well annotated the disease is and by Orphanet category.
+    best = best_ranks(strata["all"])
+    nmod, category = tasks.get("n_modalities", {}), tasks.get("category", {})
+    focus = [m for m in ("v1", "v2_drugfree", "v3_static") if m in models]
+    diseases = sorted(best[focus[0]])
+    if nmod and diseases:
+        cuts = np.percentile([nmod[d] for d in diseases], [33, 67])
+        def richness(d):
+            return "fewest modalities" if nmod[d] <= cuts[0] else "most modalities" if nmod[d] > cuts[1] else "middle"
+        groups = {}
+        for d in diseases:
+            groups.setdefault(("annotation richness", richness(d)), []).append(d)
+        counts = {}
+        for d in diseases:
+            counts[category.get(d, "?")] = counts.get(category.get(d, "?"), 0) + 1
+        for d in diseases:
+            if counts[category.get(d, "?")] >= 25:
+                groups.setdefault(("Orphanet category", category[d]), []).append(d)
+        rows, strat = [], {}
+        for (kind, name), members in sorted(groups.items()):
+            cells = []
+            for m in focus:
+                rate = float(np.mean([best[m][d] <= 10 for d in members]))
+                strat.setdefault(f"{kind}: {name}", {"n": len(members)})[m] = rate
+                cells.append(f"{100 * rate:.0f}%")
+            rows.append([kind, name, str(len(members)), *cells])
+        metrics["disease_level_top10_by_stratum"] = strat
+        text.append("### Where does it fail? Diseases with a paper-stated partner in their top 10, by stratum\n\n"
+                    "Annotation richness is the number of modalities a disease has (terciles, "
+                    f"≤{cuts[0]:.0f} / {cuts[0]:.0f}–{cuts[1]:.0f} / >{cuts[1]:.0f}); categories with at least 25 diseases are listed.\n\n"
+                    + core.md_table(["Stratum", "Group", "Diseases", *[core.MODELS[m][1] for m in focus]], rows) + "\n")
+
+    comparisons = [("v2", "v1"), ("v3_static", "v2_drugfree"), ("v3_static", "v2"), ("v3_forecast", "v3_static")]
     lines, diffs = [], {}
     for a, b in comparisons:
         if a not in percentile or b not in percentile:

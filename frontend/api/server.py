@@ -15,6 +15,8 @@ Endpoints:
     POST /api/patient/explain-disease     {"id", "name"}: Orphanet description in plain words
     POST /api/patient/explain-group       {"category", "examples", "shared"}: a group in plain words
     GET  /api/patient/papers?id=ORPHA:x   up to 2 most-cited papers about a disease (Europe PMC)
+    POST /api/papers/place                {"filename", "content" (base64), "disease_name"?}: v2_5 extraction
+                                          with MedGemma, then v2 placement (place_paper --output shape)
 
 POST /api/place body:
     {"disease": {<v2 JSON: name, description, phenotypes, genes, ...>},
@@ -48,6 +50,7 @@ from typing import Any, Callable, Optional
 from urllib.parse import parse_qs, urlparse
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+from papers import PaperPlacer  # noqa: E402
 from patient import MedGemma, PaperFinder, PatientHelper  # noqa: E402
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -55,6 +58,7 @@ V2_DIR = PROJECT_ROOT / "v2"
 DIST_DIR = PROJECT_ROOT / "frontend" / "dist"
 MAX_TOP = 50
 MAX_BODY = 1_000_000
+MAX_PAPER_BODY = 28_000_000
 SUGGEST_FIELDS = ("phenotypes", "genes", "drugs", "ontology")
 
 
@@ -192,6 +196,20 @@ class PlacementService:
                 break
         return [{"id": t, "label": l} for t, l in (prefix + contains)[:limit]]
 
+    def place_record(self, record: dict[str, Any], query_id: str, top: int) -> list[dict[str, Any]]:
+        """Place an already-built v2 record (e.g. one v2_5 extracted from a paper)."""
+
+        self._require_ready()
+        with self._lock:
+            results, _ = self._place(self.model, record, query_id, top)
+        for item in results:
+            item["support"] = support_level(item)
+        return to_json(results)
+
+    def knowledge(self) -> Any:
+        self._require_ready()
+        return self.model.knowledge
+
     def vocabulary(self, field: str) -> list[tuple[str, str]]:
         """(ID, label) pairs for a suggestion field; empty until the model has loaded."""
 
@@ -249,9 +267,18 @@ def load_v2() -> tuple[Any, Callable, Callable]:
 class Handler(SimpleHTTPRequestHandler):
     service: PlacementService
 
-    def __init__(self, *args, service: PlacementService, patient: Optional[PatientHelper], directory: Optional[str], **kwargs):
+    def __init__(
+        self,
+        *args,
+        service: PlacementService,
+        patient: Optional[PatientHelper],
+        papers: Optional[PaperPlacer],
+        directory: Optional[str],
+        **kwargs,
+    ):
         self.service = service
         self.patient = patient
+        self.papers = papers
         self.has_static = directory is not None
         super().__init__(*args, directory=directory or ".", **kwargs)
 
@@ -293,6 +320,11 @@ class Handler(SimpleHTTPRequestHandler):
             return self._send_json(HTTPStatus.NOT_FOUND, {"error": "Frontend not built; run `npm run build` in frontend/."})
         super().do_GET()
 
+    def _papers(self) -> PaperPlacer:
+        if self.papers is None:
+            raise RuntimeError("Paper placement is not configured.")
+        return self.papers
+
     def _patient(self) -> PatientHelper:
         if self.patient is None:
             raise RuntimeError("The patient view's language helper is not configured.")
@@ -304,12 +336,15 @@ class Handler(SimpleHTTPRequestHandler):
             "/api/patient/interpret": lambda b: self._patient().interpret(str(b.get("text", ""))),
             "/api/patient/explain-disease": lambda b: self._patient().explain_disease(str(b.get("id", "")), str(b.get("name", ""))),
             "/api/patient/explain-group": lambda b: self._patient().explain_group(b),
+            "/api/papers/place": lambda b: self._papers().place(b),
         }
-        route = routes.get(urlparse(self.path).path)
+        path = urlparse(self.path).path
+        route = routes.get(path)
         if route is None:
             return self._send_json(HTTPStatus.NOT_FOUND, {"error": "Unknown endpoint"})
         length = int(self.headers.get("Content-Length") or 0)
-        if length > MAX_BODY:
+        # Papers arrive base64-encoded, so allow for a third more than the 20 MB file limit.
+        if length > (MAX_PAPER_BODY if path == "/api/papers/place" else MAX_BODY):
             return self._send_json(HTTPStatus.REQUEST_ENTITY_TOO_LARGE, {"error": "Request too large"})
         try:
             body = json.loads(self.rfile.read(length) or b"{}")
@@ -330,9 +365,12 @@ def make_server(
     port: int,
     static_dir: Optional[Path],
     patient: Optional[PatientHelper] = None,
+    papers: Optional[PaperPlacer] = None,
 ) -> ThreadingHTTPServer:
     directory = str(static_dir) if static_dir and static_dir.is_dir() else None
-    return ThreadingHTTPServer((host, port), partial(Handler, service=service, patient=patient, directory=directory))
+    return ThreadingHTTPServer(
+        (host, port), partial(Handler, service=service, patient=patient, papers=papers, directory=directory)
+    )
 
 
 def main(argv: Optional[list[str]] = None) -> int:
@@ -351,7 +389,8 @@ def main(argv: Optional[list[str]] = None) -> int:
         service.vocabulary,
         PaperFinder(records.record),
     )
-    server = make_server(service, args.host, args.port, DIST_DIR, patient)
+    papers = PaperPlacer(service.knowledge, service.place_record)
+    server = make_server(service, args.host, args.port, DIST_DIR, patient, papers)
     where = f"http://{args.host}:{args.port}"
     print(f"Loading the v2 model in the background; API at {where}/api/health")
     if DIST_DIR.is_dir():

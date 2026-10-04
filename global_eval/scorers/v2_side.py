@@ -35,7 +35,32 @@ QUERIES_PER_RELATION = 400
 SEED = 0
 
 
-def build_tasks(model) -> dict:
+SYMPTOM_DISEASES = 500
+SYMPTOM_VARIANTS = [("k3", 3, 0), ("k5", 5, 0), ("k10", 10, 0), ("k5_noise1", 5, 1)]   # (name, true terms, unrelated terms)
+
+
+def symptom_queries(model, bundle, rng) -> list:
+    """Patient-style queries: a few of a disease's own phenotypes (plus, in one variant, unrelated ones) and nothing else."""
+    ids = list(model.ids)
+    eligible = [d for d in ids if sum(w > 0 for w in bundle.records[d]["phenotypes"].values()) >= 10]
+    chosen = sorted(rng.choice(eligible, min(SYMPTOM_DISEASES, len(eligible)), replace=False).tolist())
+    all_terms = sorted({t for d in ids for t in bundle.records[d]["phenotypes"]})
+    siblings = {}
+    for a, b in model.relation_evidence.get("orphanet_siblings", {}):
+        siblings.setdefault(a, set()).add(b); siblings.setdefault(b, set()).add(a)
+    queries = []
+    for d in chosen:
+        phen = bundle.records[d]["phenotypes"]
+        terms = sorted(t for t in phen if phen[t] > 0); weights = np.array([phen[t] for t in terms], dtype=float); weights /= weights.sum()
+        for name, k, noise in SYMPTOM_VARIANTS:
+            true = rng.choice(terms, k, replace=False, p=weights).tolist()
+            extra = [t for t in rng.choice(all_terms, noise + 5, replace=False).tolist() if t not in phen][:noise]
+            queries.append({"disease": d, "variant": name, "terms": true + extra, "n_true": k,
+                            "siblings": sorted(siblings.get(d, ()))})
+    return queries
+
+
+def build_tasks(model, bundle) -> dict:
     ids = list(model.ids)
     index = set(ids)
     pairs = load_pairs(index)
@@ -57,7 +82,11 @@ def build_tasks(model) -> dict:
             "n_pairs": len(evidence), "n_eligible_queries": len(eligible),
             "queries": {q: sorted(neighbours[q]) for q in chosen},
         }
+    sq = symptom_queries(model, bundle, np.random.default_rng(SEED + 1))
     return {
+        "symptom_queries": sq,
+        "n_modalities": dict(zip(ids, model.engine.available.sum(axis=1).astype(int).tolist())),
+        "category": dict(zip(ids, model.top_categories)),
         "catalogue": ids,
         "names": dict(zip(ids, model.names)),
         "split": {i: assign_split(i) for i in ids},
@@ -66,10 +95,34 @@ def build_tasks(model) -> dict:
     }
 
 
+def score_symptoms(tasks, model, bundle, ids) -> None:
+    """v1: Jaccard of raw HPO sets (the only family a symptom-only query has); v2: the fusion refitted to the modalities present."""
+    from data_sources import record_from_user_input
+    import scipy.sparse as sp
+    vocab: dict = {}
+    rows, cols = [], []
+    for i, d in enumerate(ids):
+        for t in bundle.v1_sets[d]["hpo_ids"]:
+            rows.append(i); cols.append(vocab.setdefault(t, len(vocab)))
+    gallery = sp.csr_matrix((np.ones(len(rows), np.float32), (rows, cols)), shape=(len(ids), len(vocab)))
+    sizes = np.asarray(gallery.sum(axis=1)).ravel()
+    v1, v2 = [], []
+    for q in tasks["symptom_queries"]:
+        known = [t for t in q["terms"] if t in vocab]
+        vec = np.zeros(len(vocab), np.float32); vec[[vocab[t] for t in known]] = 1.0
+        inter = gallery @ vec
+        v1.append(np.divide(inter, np.maximum(len(known) + sizes - inter, 1.0)))
+        record, _ = record_from_user_input({"name": "", "phenotypes": {t: 1.0 for t in q["terms"]}}, bundle.knowledge)
+        v2.append(model.score_record(record)["logits"])
+    folder = core.DATA / "scores" / "symptoms"; folder.mkdir(parents=True, exist_ok=True)
+    np.save(folder / "v1.npy", np.array(v1, np.float32)); np.save(folder / "v2.npy", np.array(v2, np.float32))
+    print(f"[v2] scored symptoms: {len(v1)} queries", flush=True)
+
+
 def main() -> None:
     model = load_model(); bundle = data_sources.load_bundle()
     ids = list(model.ids)
-    tasks = build_tasks(model)
+    tasks = build_tasks(model, bundle)
     core.write_json(core.DATA / "tasks.json", tasks)
     print(f"[v2] {len(tasks['paper_pairs'])} paper pairs; relations: "
           + ", ".join(f"{k} {len(v['queries'])}/{v['n_eligible_queries']} queries" for k, v in tasks["relations"].items()))
@@ -93,6 +146,7 @@ def main() -> None:
             np.save(folder / f"{m}.npy", np.concatenate(blocks).astype(np.float32))
         print(f"[v2] scored {name}: {len(queries)} queries")
 
+    score_symptoms(tasks, model, bundle, ids)
     pair_queries = sorted({p[k] for p in tasks["paper_pairs"] for k in ("a", "b")})
     score_task("paper_pairs", pair_queries, (), ())
     kind_to_spec = {"orphanet_siblings": "orphanet_siblings", "shared_causal_gene": "shared_causal_gene", "shared_drug": "shared_drug"}

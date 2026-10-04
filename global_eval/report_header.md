@@ -25,6 +25,9 @@ works in, so v2 and v3 can be compared like for like.
   (+0.052 over retrained v2, p = 6e-26) but it is a different task: popularity alone (designation count) already
   reaches 0.070, and the stacker ranks paper-stated similar pairs *worse* than the static score. The graph that
   should go to users is the static similarity; the forecast is for repurposing candidates.
+- **For symptom-only queries (the patient view), v2 beats v3.** With 5 symptoms the true disease is in v2's top 10 for
+  91% of queries and in v3's for 86%; with 3 symptoms 74% vs 68%; with one unrelated symptom added, 89% vs 79%. v1's
+  plain HPO Jaccard is competitive only when 10 symptoms are given (95% vs 99% for v2). The patient view should stay on v2.
 - **Papers' stated similarity is weakly tracked by every model** (Spearman 0.19–0.23, AUROC for "similar" vs
   "related but distinct" 0.63–0.64).
 

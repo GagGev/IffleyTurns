@@ -24,6 +24,18 @@ SPECS = {   # hidden modalities per relation (v2/benchmarks.py), restricted to v
 }
 
 
+def score_symptoms(tasks, model, cols) -> None:
+    from data_sources import record_from_user_input   # v3's own (the bundle's knowledge is shared with the world)
+    knowledge = model.world.bundle.knowledge
+    static = []
+    for q in tasks["symptom_queries"]:
+        record, _ = record_from_user_input({"name": "", "phenotypes": {t: 1.0 for t in q["terms"]}}, knowledge)
+        static.append(model.score_record(record)["block"]["static_logit"][0][cols])
+    folder = core.DATA / "scores" / "symptoms"; folder.mkdir(parents=True, exist_ok=True)
+    np.save(folder / "v3_static.npy", np.array(static, np.float32))
+    print(f"[v3] scored symptoms: {len(static)} queries", flush=True)
+
+
 def main() -> None:
     tasks = core.read_json(core.DATA / "tasks.json")
     model = load_model(); w = model.world; sim = model._sim
@@ -60,6 +72,7 @@ def main() -> None:
             np.save(folder / f"{key}.npy", np.concatenate(parts).astype(np.float32))
         print(f"[v3] scored {name}: {len(queries)} queries", flush=True)
 
+    score_symptoms(tasks, model, cols)
     pair_queries = sorted({p[k] for p in tasks["paper_pairs"] for k in ("a", "b")})
     run("paper_pairs", pair_queries, (), True)
     for kind, masked in SPECS.items():

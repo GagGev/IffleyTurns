@@ -7,7 +7,7 @@
     "data": "python3 scripts/build_graph_data.py",
     "data:annotations": "python3 scripts/build_annotations.py",
     "api": "python3 api/server.py",
-    "test:api": "python3 -m unittest api/test_server.py api/test_patient.py",
+    "test:api": "python3 -m unittest api/test_server.py api/test_patient.py api/test_papers.py",
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "oxlint",

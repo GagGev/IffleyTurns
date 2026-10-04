@@ -871,12 +871,20 @@ input[type='checkbox'] {
   list-style: none;
   margin: 0;
   padding: 0;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  column-gap: 8px;
+}
+.pair-list > li {
+  display: grid;
+  grid-template-columns: subgrid;
+  grid-column: 1 / -1;
 }
 .pair-list button {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  grid-template-columns: subgrid;
+  grid-column: 1 / -1;
   align-items: center;
-  gap: 8px;
   width: 100%;
   font: inherit;
   color: inherit;
@@ -893,6 +901,15 @@ input[type='checkbox'] {
 .pair-list .muted {
   font-size: 12px;
   white-space: nowrap;
+}
+.pair-list-head {
+  align-items: end;
+  padding: 0 6px 4px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 2px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-muted);
 }
 .pair-list li.is-filtered {
   opacity: 0.55;
@@ -1892,6 +1909,10 @@ details[open] summary {
 .claim-finding {
   margin: 2px 0 6px;
   color: var(--text-secondary);
+}
+.quote-check {
+  margin: -2px 0 6px;
+  color: var(--warning-ink);
 }
 .dimension-list {
   margin: 4px 0;

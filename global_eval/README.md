@@ -30,7 +30,9 @@ redirected with `--output-dir`.
 | `scorers/paper_pairs_data.py` | Loads the paper-stated pairs from `literature_review/` |
 | `benchmarks/paper_pairs.py` | Benchmark 1 |
 | `benchmarks/relations.py` | Benchmark 2 |
+| `benchmarks/symptom_retrieval.py` | Benchmark 4: symptom-only queries (the patient-view scenario) |
 | `benchmarks/forward_time.py` | Benchmark 3 (v3's temporal protocol) |
+| `review_sheet.py` | Blinded expert-review sheet and key (`results/expert_review/`) |
 | `results/` | `report.md`, `metrics.json`, `paper_pairs_per_pair.json`, v3 forward-time outputs |
 
 ## Benchmarks
@@ -45,6 +47,21 @@ redirected with `--output-dir`.
 3. **Forward in time.** v3's protocol: models trained on knowledge before a cutoff predict FDA/EMA orphan
    designation relations formed afterwards. It needs models retrained at each cutoff, so it is produced by
    `v3/run_evaluation.py` and imported here, not recomputed from the production weights (trained through 2026).
+
+4. **Symptom-only retrieval.** 3, 5 or 10 of a disease's own phenotypes (or 5 plus one unrelated term) and nothing
+   else, for 500 diseases. Does the disease, or one of its Orphanet siblings, come back in the top 10? This is the
+   patient view's situation and the cold-start case for papers that yield few features.
+
+## Not covered yet
+
+- **Papers as input (v2_5).** The paper-input benchmark in `v2/PAPER_INPUT_BENCHMARK.md` needs acquired full texts and
+  MedGemma; nothing here tests the upload path end to end.
+- **Expert judgement.** Ground truth lists only relations somebody recorded. `review_sheet.py` produces a blinded sheet
+  of 377 neighbour pairs for clinicians to rate; the ratings are not in yet.
+- **Standard external baselines** (Resnik/Phenomizer-style HPO similarity) and a popularity prior for paper pairs.
+- **Seed variance of v3 training** (the forward-in-time numbers moved by about 0.005 MAP between the README's run and
+  this one).
+- **Annotation date leakage** (HPO/ClinGen dates) for the static modalities.
 
 ## Models
 

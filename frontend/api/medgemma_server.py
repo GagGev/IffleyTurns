@@ -25,8 +25,29 @@ from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from typing import Any
 
-MAX_NEW_TOKENS = 1024
+MAX_NEW_TOKENS = 2048
 MAX_BODY = 200_000
+
+
+def with_response_format(messages: list[dict[str, str]], response_format: Any) -> list[dict[str, str]]:
+    """Honour OpenAI's ``response_format`` by instruction, since generation here is unconstrained.
+
+    Clients such as v2_5 send the JSON schema they expect this way instead of in the prompt.
+    """
+
+    if not isinstance(response_format, dict) or response_format.get("type") not in {"json_object", "json_schema"}:
+        return messages
+    instruction = "Reply with one JSON object only, with no text before or after it."
+    schema = (response_format.get("json_schema") or {}).get("schema")
+    if schema:
+        instruction += " It must match this JSON schema:\n" + json.dumps(schema, separators=(",", ":"))
+    out = [dict(m) for m in messages]
+    system = next((m for m in out if m["role"] == "system"), None)
+    if system:
+        system["content"] = f"{system['content']}\n\n{instruction}"
+    else:
+        out.insert(0, {"role": "system", "content": instruction})
+    return out
 
 
 class MedGemma:
@@ -87,6 +108,7 @@ class Handler(BaseHTTPRequestHandler):
             messages = [{"role": str(m["role"]), "content": str(m["content"])} for m in body["messages"]]
         except (json.JSONDecodeError, KeyError, TypeError) as error:
             return self._json(HTTPStatus.BAD_REQUEST, {"error": {"message": f"Invalid request: {error}"}})
+        messages = with_response_format(messages, body.get("response_format"))
         max_tokens = max(1, min(int(body.get("max_tokens") or 512), MAX_NEW_TOKENS))
         temperature = float(body.get("temperature") or 0.0)
         started = time.time()
