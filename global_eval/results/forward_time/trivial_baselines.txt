@@ -1,0 +1,26 @@
+
+validation fold (2014-01-01 -> 2018-01-01): 303 queries, 511 warm nodes, 532 new relations
+  model                              FULL gallery: MAP  Hits@10  P@10  nDCG@10 | WARM gallery: MAP  Hits@10  P@10  nDCG@10
+  random                             0.001  0.000   0.000  0.000   |   0.026  0.060   0.006  0.021
+  popularity (log #designations)     0.065  0.300   0.042  0.080   |   0.082  0.340   0.048  0.098
+  popularity + graph degree          0.065  0.300   0.042  0.080   |   0.082  0.340   0.048  0.097
+  adamic_adar                        0.060  0.231   0.037  0.080   |   0.082  0.272   0.043  0.097
+  drug mechanism                     0.039  0.125   0.016  0.045   |   0.062  0.175   0.022  0.063
+  v1 weighted Jaccard                0.014  0.063   0.007  0.015   |   0.075  0.250   0.034  0.084
+  static uniform mean of cosines     0.020  0.112   0.015  0.030   |   0.072  0.250   0.034  0.085
+  same top-level category            0.010  0.020   0.002  0.007   |   0.059  0.243   0.027  0.065
+  static mean + popularity           0.075  0.307   0.048  0.090   |   0.094  0.347   0.054  0.109
+  queries: 235 warm / 68 cold; 76 are group nodes
+
+test fold (2018-01-01 -> end): 447 queries, 638 warm nodes, 1123 new relations
+  model                              FULL gallery: MAP  Hits@10  P@10  nDCG@10 | WARM gallery: MAP  Hits@10  P@10  nDCG@10
+  random                             0.001  0.002   0.000  0.001   |   0.015  0.055   0.006  0.008
+  popularity (log #designations)     0.070  0.385   0.062  0.093   |   0.080  0.412   0.066  0.103
+  popularity + graph degree          0.070  0.385   0.061  0.093   |   0.080  0.412   0.065  0.103
+  adamic_adar                        0.050  0.253   0.043  0.075   |   0.070  0.300   0.050  0.090
+  drug mechanism                     0.039  0.159   0.020  0.043   |   0.057  0.230   0.029  0.058
+  v1 weighted Jaccard                0.014  0.065   0.007  0.013   |   0.087  0.343   0.050  0.106
+  static uniform mean of cosines     0.026  0.157   0.019  0.038   |   0.069  0.293   0.041  0.086
+  same top-level category            0.007  0.038   0.004  0.005   |   0.054  0.252   0.032  0.060
+  static mean + popularity           0.085  0.405   0.065  0.109   |   0.097  0.434   0.070  0.119
+  queries: 353 warm / 94 cold; 94 are group nodes
